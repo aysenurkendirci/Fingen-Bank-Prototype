@@ -1,4 +1,5 @@
 using Bank.Api.Security;
+using Bank.Application.Features.Preferences;
 using Bank.Application.Features.Privacy;
 using Bank.Application.Features.Profile;
 using Bank.Contracts.Account;
@@ -36,6 +37,15 @@ public sealed class MeController : ControllerBase
         RefreshCookie.Write(Response, result.RefreshToken);
         return Ok(result.Response);
     }
+
+    /// <summary>How the customer wants the app to look; the defaults until they change something.</summary>
+    [HttpGet("preferences")]
+    public async Task<ActionResult<PreferencesResponse>> Preferences(CancellationToken ct)
+        => Ok(await _sender.Send(new GetPreferencesQuery(), ct));
+
+    [HttpPut("preferences")]
+    public async Task<ActionResult<PreferencesResponse>> UpdatePreferences([FromBody] UpdatePreferencesRequest request, CancellationToken ct)
+        => Ok(await _sender.Send(new UpdatePreferencesCommand(request), ct));
 
     /// <summary>Downloads everything stored about the signed-in user as a JSON file (KVKK right of access).</summary>
     [HttpGet("data-export")]

@@ -8,6 +8,7 @@ namespace Bank.Contracts.Account;
 public sealed record PersonalDataExport(
     DateTime ExportedAt,
     PersonalProfile Profile,
+    PreferencesResponse Preferences,
     IReadOnlyList<CreditCardResponse> CreditCards,
     IReadOnlyList<RecurringCashFlowResponse> RecurringCashFlows,
     IReadOnlyList<InstallmentPlanResponse> InstallmentPlans,

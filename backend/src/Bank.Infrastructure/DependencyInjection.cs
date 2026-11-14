@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ICreditCardRepository, CreditCardRepository>();
         services.AddScoped<IRecurringCashFlowRepository, RecurringCashFlowRepository>();

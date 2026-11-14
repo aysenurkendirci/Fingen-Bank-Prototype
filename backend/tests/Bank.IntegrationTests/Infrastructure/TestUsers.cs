@@ -30,6 +30,19 @@ public static class TestUsers
         return (client, auth.UserId);
     }
 
+    /// <summary>A second, independent session for a user who already exists, as if from another device.</summary>
+    public static async Task<HttpClient> SignInAsync(this ApiFactory factory, string tcNo, string password)
+    {
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(tcNo, password));
+        response.EnsureSuccessStatusCode();
+
+        var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth!.Token);
+        return client;
+    }
+
     public static RegisterRequest NewRegistration()
     {
         var n = Interlocked.Increment(ref _sequence);

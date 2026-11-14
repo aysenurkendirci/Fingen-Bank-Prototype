@@ -2,6 +2,7 @@ using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
 using Bank.Application.Features.CreditCards;
 using Bank.Application.Features.InstallmentPlans;
+using Bank.Application.Features.Preferences;
 using Bank.Application.Features.RecurringCashFlows;
 using Bank.Contracts.Account;
 using Bank.Contracts.Finance;
@@ -27,6 +28,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
     private readonly IRecurringCashFlowRepository _recurring;
     private readonly IInstallmentPlanRepository _plans;
     private readonly ITransactionHistoryRepository _history;
+    private readonly IUserPreferencesRepository _preferences;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _time;
     private readonly ILogger<ExportPersonalDataQueryHandler> _logger;
@@ -37,6 +39,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         IRecurringCashFlowRepository recurring,
         IInstallmentPlanRepository plans,
         ITransactionHistoryRepository history,
+        IUserPreferencesRepository preferences,
         ICurrentUser currentUser,
         TimeProvider time,
         ILogger<ExportPersonalDataQueryHandler> logger)
@@ -46,6 +49,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         _recurring = recurring;
         _plans = plans;
         _history = history;
+        _preferences = preferences;
         _currentUser = currentUser;
         _time = time;
         _logger = logger;
@@ -59,6 +63,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         var recurring = await _recurring.ListAsync(userId, kind: null, ct);
         var plans = await InstallmentPlanMapping.ListAsync(userId, _plans, _cards, ct);
         var transactions = await _history.ListRangeAsync(userId, EarliestRecord, LatestRecord, ct);
+        var preferences = await _preferences.GetAsync(userId, ct);
 
         // Exports leave the system, so each one is recorded.
         _logger.LogInformation("User {UserId} exported their personal data", userId);
@@ -68,6 +73,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
             new PersonalProfile(
                 profile.TcNo, profile.FirstName, profile.LastName, profile.Email, profile.Phone,
                 profile.Membership, profile.CreatedAt, profile.LastLoginAt),
+            PreferencesMapping.ToResponse(preferences),
             cards.Select(CreditCardMapping.ToResponse).ToList(),
             recurring.Select(RecurringCashFlowMapping.ToResponse).ToList(),
             plans,
