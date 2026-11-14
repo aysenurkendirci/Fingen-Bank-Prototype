@@ -44,7 +44,7 @@ public static class FundsTransfer
             new LedgerPosting(target.Id, amount, target.Balance));
     }
 
-    // "AYŞE  YILMAZ" and "Ayse Yılmaz" are the same person; spacing, case and Turkish letters must not matter.
+    // "AYŞE  NUR KENDİRCİ" and "Ayse Nur Kendirci" are the same person; spacing, case and Turkish letters must not matter.
     private static bool NamesMatch(string typed, string holder)
         => TextFolding.Fold(typed) == TextFolding.Fold(holder);
 }

@@ -31,7 +31,7 @@ describe('authInterceptor', () => {
     http = TestBed.inject(HttpClient);
     backend = TestBed.inject(HttpTestingController);
     session = TestBed.inject(SessionService);
-    session.start({ token: 'old', fullName: 'Ayşe' });
+    session.start({ token: 'old', fullName: 'Ayşe Nur Kendirci' });
   });
 
   it('renews an expired token and repeats the request', async () => {
@@ -40,7 +40,7 @@ describe('authInterceptor', () => {
 
     backend.expectOne('/api/accounts').flush(null, unauthorized);
     await tick();
-    backend.expectOne('/api/auth/refresh').flush({ token: 'new', fullName: 'Ayşe' });
+    backend.expectOne('/api/auth/refresh').flush({ token: 'new', fullName: 'Ayşe Nur Kendirci' });
     await tick();
 
     const retry = backend.expectOne('/api/accounts');
@@ -57,7 +57,7 @@ describe('authInterceptor', () => {
     backend.expectOne('/api/cards').flush(null, unauthorized);
     await tick();
 
-    backend.expectOne('/api/auth/refresh').flush({ token: 'new', fullName: 'Ayşe' });
+    backend.expectOne('/api/auth/refresh').flush({ token: 'new', fullName: 'Ayşe Nur Kendirci' });
     await tick();
 
     expect(backend.expectOne('/api/accounts').request.headers.get('Authorization')).toBe('Bearer new');

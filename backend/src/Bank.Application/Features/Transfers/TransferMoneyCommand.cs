@@ -121,7 +121,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
 
     /// <summary>
     /// Fingerprint of what the client asked for. Names are folded and the amount is written invariantly, so the
-    /// same request typed slightly differently on a retry ("ayse yilmaz", 100 vs 100.00) still counts as the same.
+    /// same request typed slightly differently on a retry ("ayse nur kendirci", 100 vs 100.00) still counts as the same.
     /// </summary>
     private static byte[] Hash(TransferRequest request)
     {

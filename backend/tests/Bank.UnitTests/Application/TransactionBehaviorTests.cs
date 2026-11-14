@@ -15,7 +15,7 @@ public sealed class TransactionBehaviorTests
     private readonly TransactionBehavior<TransferMoneyCommand, string> _behavior;
 
     private static readonly TransferMoneyCommand Command =
-        new(new TransferRequest(1, "TR330006100519786457841326", "Ayşe Yılmaz", 10m, "Test"), "key");
+        new(new TransferRequest(1, "TR330006100519786457841326", "Ayşe Nur Kendirci", 10m, "Test"), "key");
 
     public TransactionBehaviorTests()
     {

@@ -4,7 +4,7 @@ import { IdempotentAttempt } from './idempotent-attempt';
 const request: TransferRequest = {
   sourceAccountId: 1,
   targetIban: 'TR330006100519786457841326',
-  recipientName: 'Ayşe Yılmaz',
+  recipientName: 'Ayşe Nur Kendirci',
   amount: 100,
   description: 'Kira',
 };

@@ -8,7 +8,7 @@ public sealed class FundsTransferTests
 {
     private static Money Try(decimal amount) => new(amount, Currency.TRY);
 
-    private static Account NewAccount(long id, decimal balance, string holder = "Ayşe Yılmaz",
+    private static Account NewAccount(long id, decimal balance, string holder = "Ayşe Nur Kendirci",
         AccountStatus status = AccountStatus.Active, Currency? currency = null)
         => new(id, userId: id * 10, Iban.For("99999", id), holder, status, new Money(balance, currency ?? Currency.TRY));
 
@@ -32,7 +32,7 @@ public sealed class FundsTransferTests
     {
         var source = NewAccount(1, 100m);
 
-        FundsTransfer.Execute(source, NewAccount(2, 0m), Try(100m), "Ayşe Yılmaz");
+        FundsTransfer.Execute(source, NewAccount(2, 0m), Try(100m), "Ayşe Nur Kendirci");
 
         Assert.True(source.Balance.IsZero);
     }
@@ -43,16 +43,16 @@ public sealed class FundsTransferTests
         var source = NewAccount(1, 100m);
         var target = NewAccount(2, 0m);
 
-        Assert.Throws<DomainException>(() => FundsTransfer.Execute(source, target, Try(100.01m), "Ayşe Yılmaz"));
+        Assert.Throws<DomainException>(() => FundsTransfer.Execute(source, target, Try(100.01m), "Ayşe Nur Kendirci"));
 
         Assert.Equal(Try(100m), source.Balance);
         Assert.Equal(Try(0m), target.Balance);
     }
 
     [Theory]
-    [InlineData("AYŞE YILMAZ")]
-    [InlineData("ayse  yilmaz")]
-    [InlineData(" Ayşe Yılmaz ")]
+    [InlineData("AYŞE NUR KENDİRCİ")]
+    [InlineData("ayse  nur kendirci")]
+    [InlineData(" Ayşe Nur Kendirci ")]
     public void RecipientName_IgnoresCaseSpacingAndTurkishLetters(string typed)
     {
         FundsTransfer.Execute(NewAccount(1, 100m), NewAccount(2, 0m), Try(10m), typed);
@@ -72,7 +72,7 @@ public sealed class FundsTransferTests
     {
         var account = NewAccount(1, 100m);
 
-        Assert.Throws<DomainException>(() => FundsTransfer.Execute(account, account, Try(10m), "Ayşe Yılmaz"));
+        Assert.Throws<DomainException>(() => FundsTransfer.Execute(account, account, Try(10m), "Ayşe Nur Kendirci"));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class FundsTransferTests
     {
         var usd = NewAccount(2, 0m, currency: Currency.USD);
 
-        Assert.Throws<DomainException>(() => FundsTransfer.Execute(NewAccount(1, 100m), usd, Try(10m), "Ayşe Yılmaz"));
+        Assert.Throws<DomainException>(() => FundsTransfer.Execute(NewAccount(1, 100m), usd, Try(10m), "Ayşe Nur Kendirci"));
     }
 
     [Theory]
@@ -90,7 +90,7 @@ public sealed class FundsTransferTests
     public void AmountMustBePositiveWholeCents(decimal amount)
     {
         Assert.Throws<DomainException>(
-            () => FundsTransfer.Execute(NewAccount(1, 100m), NewAccount(2, 0m), Try(amount), "Ayşe Yılmaz"));
+            () => FundsTransfer.Execute(NewAccount(1, 100m), NewAccount(2, 0m), Try(amount), "Ayşe Nur Kendirci"));
     }
 
     [Theory]
@@ -103,7 +103,7 @@ public sealed class FundsTransferTests
         var source = NewAccount(1, 100m, status: sourceStatus);
         var target = NewAccount(2, 0m, status: targetStatus);
 
-        Assert.Throws<DomainException>(() => FundsTransfer.Execute(source, target, Try(10m), "Ayşe Yılmaz"));
+        Assert.Throws<DomainException>(() => FundsTransfer.Execute(source, target, Try(10m), "Ayşe Nur Kendirci"));
         Assert.Equal(Try(100m), source.Balance);
     }
 }

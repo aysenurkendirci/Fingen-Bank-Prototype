@@ -26,9 +26,9 @@ public sealed class AuthCommandTests
     {
         UserId = 7,
         TcNo = TcNo,
-        FirstName = "Ayşe",
-        LastName = "Yılmaz",
-        Email = "ayse@example.com"
+        FirstName = "Ayşe Nur",
+        LastName = "Kendirci",
+        Email = "aysenur@example.com"
     };
 
     public AuthCommandTests()
@@ -48,7 +48,7 @@ public sealed class AuthCommandTests
         var response = await Login(new LoginRequest(TcNo, "correct"));
 
         Assert.Equal(7, response.UserId);
-        Assert.Equal("Ayşe Yılmaz", response.FullName);
+        Assert.Equal("Ayşe Nur Kendirci", response.FullName);
         Assert.Equal("jwt", response.Token);
         await _repo.Received(1).UpdateLastLoginAsync(7, Arg.Any<CancellationToken>());
     }
@@ -129,7 +129,7 @@ public sealed class AuthCommandTests
     }
 
     private static RegisterRequest NewRegistration()
-        => new(TcNo, "Ayşe", "Yılmaz", "ayse@example.com", "5550000000", "P@ssw0rd!", "Personal");
+        => new(TcNo, "Ayşe Nur", "Kendirci", "aysenur@example.com", "5550000000", "P@ssw0rd!", "Personal");
 }
 
 /// <summary>Keeps the rendered log lines so tests can check what would reach the log store.</summary>
