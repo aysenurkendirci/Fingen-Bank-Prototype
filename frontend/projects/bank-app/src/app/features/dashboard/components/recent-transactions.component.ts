@@ -17,14 +17,13 @@ import { TransactionItem } from '../../../data-access/models/dashboard.models';
       }
       <ul class="divide-y divide-line">
         @for (tx of transactions(); track tx.txId) {
-          <li class="flex items-center justify-between gap-4 px-4 py-3">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-ink truncate">{{ tx.title }}</p>
-              <p class="text-xs text-ink-faint mt-0.5">{{ tx.category }} · {{ tx.createdAt | date: 'd MMM y, HH:mm' }}</p>
-            </div>
-            <p class="text-sm font-medium tabular-nums shrink-0" [class]="tx.direction === 'Inbound' ? 'text-positive' : 'text-ink'">
+          <li class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 px-4 py-3">
+            <p class="text-sm font-medium text-ink truncate">{{ tx.title }}</p>
+            <p class="text-sm font-medium tabular-nums text-right" [class]="tx.direction === 'Inbound' ? 'text-positive' : 'text-ink'">
               {{ tx.direction === 'Inbound' ? '+' : '−' }}{{ tx.amount | currency }}
             </p>
+            <p class="text-xs text-ink-faint truncate">{{ tx.category }}</p>
+            <p class="text-xs text-ink-faint text-right">{{ tx.createdAt | date: 'd MMM, HH:mm' }}</p>
           </li>
         }
       </ul>

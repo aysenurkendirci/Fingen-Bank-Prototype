@@ -25,12 +25,12 @@ const PAGE_SIZE = 20;
     @if (account(); as account) {
       <header class="mt-3 mb-6 panel flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 class="section-title">{{ typeDisplay[account.accountType].label }} · {{ account.currencyCode }}</h1>
+          <h1 class="section-title">{{ typeDisplay[account.accountType].label }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span></h1>
           <app-iban-copy class="block mt-1" [iban]="account.iban" />
         </div>
         <div class="text-right">
           <p class="text-sm text-ink-soft">Bakiye</p>
-          <p class="text-2xl font-semibold tabular-nums"><app-money [amount]="account.balance" [currency]="account.currencyCode" /></p>
+          <p class="text-3xl font-semibold tracking-[-0.02em]"><app-money display [amount]="account.balance" [currency]="account.currencyCode" /></p>
         </div>
       </header>
     }
@@ -49,8 +49,9 @@ const PAGE_SIZE = 20;
           <li class="flex items-center justify-between gap-4 px-4 py-3">
             <div class="min-w-0">
               <p class="text-sm font-medium text-ink truncate">{{ entry.description }}</p>
-              <p class="text-xs text-ink-faint mt-0.5 truncate">
-                {{ entry.createdAt | date: 'd MMM y, HH:mm' }} · {{ printed(entry.counterpartyIban) }}
+              <p class="meta text-xs text-ink-faint mt-0.5">
+                <span>{{ entry.createdAt | date: 'd MMM y, HH:mm' }}</span>
+                <span class="tabular-nums">{{ printed(entry.counterpartyIban) }}</span>
               </p>
             </div>
             <div class="text-right shrink-0">

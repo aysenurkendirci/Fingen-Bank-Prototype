@@ -52,7 +52,7 @@ import { SkeletonComponent } from '../../shared/ui/skeleton.component';
           <li class="px-4 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
             <div class="min-w-0">
               <p class="text-sm font-medium text-ink">
-                {{ typeDisplay[account.accountType].label }} · {{ account.currencyCode }}
+                {{ typeDisplay[account.accountType].label }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span>
                 @if (account.status !== 'Active') {
                   <span class="badge bg-canvas text-ink-soft ml-1">{{ statusLabels[account.status] }}</span>
                 }
@@ -60,7 +60,7 @@ import { SkeletonComponent } from '../../shared/ui/skeleton.component';
               <app-iban-copy class="block mt-1" [iban]="account.iban" />
             </div>
             <div class="flex items-center gap-5">
-              <p class="text-base font-semibold tabular-nums"><app-money [amount]="account.balance" [currency]="account.currencyCode" /></p>
+              <p class="text-xl font-semibold tracking-[-0.01em]"><app-money display [amount]="account.balance" [currency]="account.currencyCode" /></p>
               <a class="btn-link" [routerLink]="['/dashboard/accounts', account.id]">Hareketler</a>
               @if (account.status === 'Active') {
                 <a class="btn-link" routerLink="/dashboard/transfer" [queryParams]="{ from: account.id }">Gönder</a>

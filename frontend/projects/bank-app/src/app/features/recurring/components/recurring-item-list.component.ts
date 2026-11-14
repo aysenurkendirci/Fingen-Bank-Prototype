@@ -24,10 +24,16 @@ import { KIND_LABELS, describeSchedule } from '../recurring-labels';
             >{{ kindLabels[item.kind] }}</span>
             <div>
               <p class="font-semibold text-ink">{{ item.name }}</p>
-              <p class="text-sm text-ink-soft">
-                {{ item.category }} · {{ schedule(item) }} · Başlangıç {{ item.startDate | date: 'd MMM y' }}
-                @if (item.endDate) { · Bitiş {{ item.endDate | date: 'd MMM y' }} }
-                @if (cardName(item.creditCardId); as card) { · {{ card }} kartından }
+              <p class="meta text-sm text-ink-soft">
+                <span>{{ item.category }}</span>
+                <span>{{ schedule(item) }}</span>
+                <span>Başlangıç {{ item.startDate | date: 'd MMM y' }}</span>
+                @if (item.endDate) {
+                  <span>Bitiş {{ item.endDate | date: 'd MMM y' }}</span>
+                }
+                @if (cardName(item.creditCardId); as card) {
+                  <span>{{ card }} kartından</span>
+                }
               </p>
             </div>
           </div>

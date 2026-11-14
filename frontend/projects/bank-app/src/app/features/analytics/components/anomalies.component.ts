@@ -18,9 +18,9 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
       @for (anomaly of anomalies(); track $index) {
         <li class="py-3 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p class="font-semibold text-ink">
-              {{ anomaly.description }}
-              <span class="text-sm text-ink-faint">· {{ anomaly.date | date: 'd MMM y' }}</span>
+            <p class="meta items-baseline">
+              <span class="font-semibold text-ink">{{ anomaly.description }}</span>
+              <span class="text-sm text-ink-faint">{{ anomaly.date | date: 'd MMM y' }}</span>
             </p>
             <p class="text-sm text-ink-soft">
               {{ anomaly.comparedWith }} için tipik tutarın ({{ anomaly.typicalAmount | currency }}) {{ anomaly.timesTypical }} katı

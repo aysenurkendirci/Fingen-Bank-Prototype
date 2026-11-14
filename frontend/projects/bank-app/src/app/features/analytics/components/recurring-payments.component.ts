@@ -22,10 +22,11 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
         <li class="py-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="font-semibold text-ink">{{ payment.merchant }}</p>
-            <p class="text-sm text-ink-soft">
-              {{ payment.direction === 'Inbound' ? 'Gelir' : payment.pattern === 'Fixed' ? 'Sabit tutarlı' : 'Tutarı değişen' }}
-              · ayın {{ payment.typicalDay }}. günü civarı · {{ payment.monthsObserved }} ayda görüldü
-              · sıradaki: {{ payment.nextExpected | date: 'd MMM y' }}
+            <p class="meta text-sm text-ink-soft">
+              <span>{{ payment.direction === 'Inbound' ? 'Gelir' : payment.pattern === 'Fixed' ? 'Sabit tutarlı' : 'Tutarı değişen' }}</span>
+              <span>Ayın {{ payment.typicalDay }}. günü civarı</span>
+              <span>{{ payment.monthsObserved }} ayda görüldü</span>
+              <span>Sıradaki: {{ payment.nextExpected | date: 'd MMM y' }}</span>
             </p>
           </div>
           <div class="flex items-center gap-4">

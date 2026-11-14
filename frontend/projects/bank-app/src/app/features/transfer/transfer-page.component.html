@@ -25,7 +25,7 @@
             <select class="input" formControlName="sourceAccountId">
               @for (account of accounts(); track account.id) {
                 <option [ngValue]="account.id">
-                  {{ typeDisplay[account.accountType].label }} · {{ account.balance | currency: account.currencyCode : 'symbol-narrow' }}
+                  {{ typeDisplay[account.accountType].label }} ({{ account.balance | currency: account.currencyCode : 'symbol-narrow' }})
                 </option>
               }
             </select>
@@ -96,7 +96,7 @@
       @if (receipt(); as receipt) {
         <section class="panel">
           <h2 class="section-title">Transfer tamamlandı</h2>
-          <p class="text-2xl font-semibold tabular-nums mt-2">{{ receipt.amount | currency: receipt.currencyCode : 'symbol-narrow' }}</p>
+          <p class="text-3xl font-semibold tracking-[-0.02em] mt-2"><app-money display [concealable]="false" [amount]="receipt.amount" [currency]="receipt.currencyCode" /></p>
           <dl class="mt-4 divide-y divide-line text-sm">
             <div class="py-2.5 flex justify-between gap-4"><dt class="text-ink-soft">İşlem no</dt><dd class="text-right tabular-nums">{{ receipt.id }}</dd></div>
             <div class="py-2.5 flex justify-between gap-4"><dt class="text-ink-soft">Tarih</dt><dd class="text-right">{{ receipt.createdAt | date: 'd MMMM y, HH:mm' }}</dd></div>

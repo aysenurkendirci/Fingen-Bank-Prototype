@@ -31,6 +31,9 @@
   .nav-item { @apply relative flex items-center gap-2.5 h-9 px-3 rounded-control text-sm text-ink-soft hover:bg-muted hover:text-ink; }
   .nav-item--active { @apply bg-surface text-ink font-medium before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-brand; }
 
+  // Secondary details on one line, separated by space rather than by dots.
+  .meta { @apply flex flex-wrap gap-x-3 gap-y-0.5; }
+
   // A list row that leads somewhere: the whole row is the target and answers the pointer.
   .row-link { @apply block hover:bg-muted; }
 }

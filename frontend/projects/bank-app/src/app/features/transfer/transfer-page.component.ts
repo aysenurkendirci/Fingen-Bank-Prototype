@@ -8,6 +8,7 @@ import { formatIban, isValidIban } from '../../core/util/iban';
 import { AccountsApi, TransfersApi } from '../../data-access/api/banking.api';
 import { Account, TransferReceipt, TransferRequest } from '../../data-access/models/banking.models';
 import { ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
+import { MoneyComponent } from '../../shared/finance/money.component';
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { SkeletonComponent } from '../../shared/ui/skeleton.component';
@@ -20,7 +21,7 @@ const ibanValidator = (control: AbstractControl<string>): ValidationErrors | nul
 
 /** Sending money in three steps: details, a last look, then the receipt. Money moves only on the second step. */
 @Component({
-  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, RouterLink, NoticeComponent, PageHeaderComponent, SkeletonComponent],
+  imports: [CurrencyPipe, DatePipe, ReactiveFormsModule, RouterLink, MoneyComponent, NoticeComponent, PageHeaderComponent, SkeletonComponent],
   templateUrl: './transfer-page.component.html',
 })
 export class TransferPageComponent extends BasePage implements OnInit {

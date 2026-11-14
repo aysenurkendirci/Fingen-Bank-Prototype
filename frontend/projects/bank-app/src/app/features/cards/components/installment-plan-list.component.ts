@@ -15,8 +15,10 @@ import { CreditCard, InstallmentPlan } from '../../../data-access/models/finance
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p class="font-semibold text-ink">{{ plan.description }}</p>
-              <p class="text-sm text-ink-soft">
-                {{ cardName(plan.creditCardId) }} · {{ plan.purchaseDate | date: 'd MMMM y' }} · {{ plan.installmentCount }} taksit
+              <p class="meta text-sm text-ink-soft">
+                <span>{{ cardName(plan.creditCardId) }}</span>
+                <span>{{ plan.purchaseDate | date: 'd MMMM y' }}</span>
+                <span>{{ plan.installmentCount }} taksit</span>
               </p>
             </div>
             <div class="flex items-center gap-4">
