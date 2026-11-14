@@ -51,6 +51,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         // The suite registers and logs in many users from one address; the limit itself is tested in SecurityTests.
         builder.UseSetting("RateLimiting:Auth:PermitLimit", "100000");
         builder.UseSetting("RateLimiting:Money:PermitLimit", "100000");
+        // The suite runs housekeeping itself when it needs to; a background run would race with the tests.
+        builder.UseSetting("Housekeeping:Enabled", "false");
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<TimeProvider>(new FakeTimeProvider(Now));

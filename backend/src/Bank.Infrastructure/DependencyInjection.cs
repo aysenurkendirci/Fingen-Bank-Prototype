@@ -3,6 +3,7 @@ using Bank.Application.Abstractions.Persistence;
 using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
 using Bank.Infrastructure.Health;
+using Bank.Infrastructure.Housekeeping;
 using Bank.Infrastructure.MarketData;
 using Bank.Infrastructure.Messaging;
 using Bank.Infrastructure.Persistence;
@@ -44,6 +45,12 @@ public static class DependencyInjection
         services.AddScoped<IErasureRepository, ErasureRepository>();
         services.AddMemoryCache();
         services.AddMarketData(configuration);
+
+        var housekeeping = configuration.GetSection(HousekeepingOptions.Section);
+        services.Configure<HousekeepingOptions>(housekeeping);
+        services.AddSingleton<HousekeepingRunner>();
+        if (housekeeping.GetValue(nameof(HousekeepingOptions.Enabled), true))
+            services.AddHostedService<HousekeepingService>();
 
         services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
