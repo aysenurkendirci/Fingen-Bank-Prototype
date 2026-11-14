@@ -145,6 +145,35 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// The API must not serve a schema it was not written for. In development it brings the database up to date
+// itself; anywhere else the migrator runs first (see docker-compose.yml), so pending scripts mean a broken
+// deployment, and the API stops with the names of the missing scripts instead of failing on the first query.
+// A database that cannot be reached is a different matter: the API starts and its readiness check reports it.
+{
+    var connectionString = builder.Configuration.GetConnectionString("BankDb")!;
+    IReadOnlyList<string> pending;
+    try
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            var result = Bank.Database.DatabaseMigrator.Migrate(connectionString, logToConsole: false);
+            if (!result.Successful)
+                throw new InvalidOperationException("Database migration failed.", result.Error);
+        }
+
+        pending = Bank.Database.DatabaseMigrator.PendingScripts(connectionString);
+    }
+    catch (System.Data.Common.DbException e)
+    {
+        app.Logger.LogWarning(e, "Could not check the database schema at startup; readiness will report the database");
+        pending = [];
+    }
+
+    if (pending.Count > 0)
+        throw new InvalidOperationException(
+            $"The database is behind this build; run the migrator first. Pending: {string.Join(", ", pending)}");
+}
+
 // Behind the nginx container every request arrives from the proxy's address, which would make the per-IP rate
 // limit count all users as one. With ReverseProxy:Enabled the client address is taken from X-Forwarded-For.
 // Only turn it on where the API is reachable solely through the proxy, or callers could forge the header.
