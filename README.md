@@ -53,7 +53,7 @@ movements, a strict Content-Security-Policy, and secret scanning, CodeQL and Dep
 ## Stack
 
 .NET 10, ASP.NET Core, MediatR, FluentValidation, Dapper, SQL Server (DbUp migrations), RabbitMQ, Serilog, Angular 21,
-Tailwind, ECharts. xUnit and Vitest for tests, GitHub Actions for CI.
+Tailwind, ECharts. xUnit, Vitest and Playwright for tests, GitHub Actions for CI.
 
 ## Layout
 
@@ -103,11 +103,16 @@ After signing up, İşlem geçmişi > 12 aylık demo verisi oluştur fills the a
 ```bash
 cd backend && dotnet test                   # integration tests need SQL Server
 cd frontend && npx ng test --watch=false
+cd frontend && npm run e2e                  # Playwright, against the API on :5164
 ```
 
 Integration tests run against a real database, `BankDb_IntegrationTests`, rebuilt from the migrations on every run. Set
 `INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services such as
 TCMB are replaced by fakes, so the suite never needs the internet.
+
+The end-to-end tests in `frontend/e2e` sign up their own customers and walk through accounts, transfers, planning, goals,
+the profile and erasure in a real browser. CI runs them against a fresh database, and also starts the whole system with
+`docker compose` and checks it through nginx.
 
 ## Docs
 

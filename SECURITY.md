@@ -35,6 +35,8 @@ Her push'ta CI şunları yapar:
 - Bilinen açığı olan NuGet paketlerinin kontrolü.
 - Katman kuralları.
 - Bütün testler. Yetki ve güvenlik testleri de buna dahil: başkasının kaydına erişim, istek sınırları, CSRF başlığı, yabancı origin ve zayıf şifre.
+- Gerçek tarayıcıda uçtan uca testler.
+- Bütün sistemin `docker compose` ile kurulup nginx üzerinden denenmesi.
 
 CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabot da bağımlılık güncellemelerini her hafta önerir.
 

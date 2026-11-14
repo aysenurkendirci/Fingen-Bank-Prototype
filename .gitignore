@@ -24,3 +24,7 @@ Thumbs.db
 # Personal AI assistant configuration
 **/.github/copilot-instructions.md
 **/.vscode/mcp.json
+
+# Playwright output
+frontend/playwright-report/
+frontend/test-results/
