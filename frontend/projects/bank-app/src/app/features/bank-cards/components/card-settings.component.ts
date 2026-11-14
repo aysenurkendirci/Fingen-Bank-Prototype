@@ -11,7 +11,10 @@ const LIMIT_RULES = [Validators.required, Validators.min(0), Validators.max(10_0
 const dailyWithinMonthly = (group: AbstractControl): ValidationErrors | null =>
   Number(group.get('dailyLimit')?.value) > Number(group.get('monthlyLimit')?.value) ? { dailyAboveMonthly: true } : null;
 
-/** Switches and limits of one card. Settings of a closed card stay visible but cannot be changed. */
+/**
+ * Switches and limits of one card. A temporary block leaves them editable, as the API allows, so limits can be
+ * set before the card is reopened; a cancelled card is final and stays read-only.
+ */
 @Component({
   selector: 'app-card-settings',
   imports: [ReactiveFormsModule],
@@ -61,7 +64,7 @@ export class CardSettingsComponent extends BaseForm<CardSettingsRequest> {
   readonly card = input.required<CardItem>();
   readonly toggleBlock = output<void>();
 
-  protected readonly locked = computed(() => this.card().status !== 'Active');
+  protected readonly locked = computed(() => this.card().status === 'Cancelled');
 
   protected readonly form = inject(FormBuilder).nonNullable.group(
     {
