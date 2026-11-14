@@ -7,6 +7,7 @@ export const ACCOUNT_TYPE_DISPLAY: Record<AccountType, { label: string; icon: st
   Demand: { label: 'Vadesiz Hesap', icon: 'account_balance' },
   Time: { label: 'Vadeli Mevduat', icon: 'trending_up' },
   ForeignCurrency: { label: 'Döviz Hesabı', icon: 'wallet' },
+  Savings: { label: 'Kumbara', icon: 'savings' },
 };
 
 export const ACCOUNT_STATUS_LABELS: Record<AccountStatus, string> = {

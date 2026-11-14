@@ -1,0 +1,74 @@
+@if (newYear()) {
+  <app-page-header title="Yılbaşı hedefleri" subtitle="Yeni yıla girerken koyduğunuz hedefler ve onlar için biriken para.">
+    <button type="button" class="btn-primary" (click)="startCreating()">Hedef ekle</button>
+  </app-page-header>
+
+  <div class="mb-6 flex flex-wrap items-center gap-2" role="tablist" aria-label="Yıl">
+    @for (year of years(); track year) {
+      <button type="button" role="tab" class="swatch" [attr.aria-selected]="year === selectedYear()" [attr.aria-pressed]="year === selectedYear()" (click)="selectedYear.set(year)">
+        {{ year }}
+      </button>
+    }
+  </div>
+
+  @if (yearSummary(); as summary) {
+    <section class="panel mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="text-sm text-ink-soft">{{ selectedYear() }} için {{ summary.count }} hedef</p>
+        <p class="text-3xl font-semibold tracking-[-0.02em] mt-1"><app-money display [amount]="summary.saved" /></p>
+        <p class="text-sm text-ink-soft">Toplam hedef {{ summary.target | currency: 'TRY' : 'symbol-narrow' : '1.0-0' }}, %{{ summary.percent }} tamamlandı</p>
+      </div>
+    </section>
+  }
+} @else {
+  <app-page-header title="Hedeflerim" subtitle="Her hedefin kendi kumbarası var. Elle ya da maaş gelince kendiliğinden dolar.">
+    <button type="button" class="btn-primary" (click)="startCreating()">Hedef ekle</button>
+  </app-page-header>
+}
+
+@if (error(); as message) {
+  <app-notice class="mb-4" [message]="message" />
+}
+
+@if (creating()) {
+  <app-goal-form class="mb-6" [resolutionYear]="newYear() ? selectedYear() : null" [busy]="busy()" (save)="create($event)" (cancel)="creating.set(false)" />
+}
+
+@if (loading() && goals().length === 0) {
+  <app-skeleton />
+} @else if (visibleGoals().length === 0 && !error() && !creating()) {
+  <app-empty-state>
+    @if (newYear()) {
+      {{ selectedYear() }} için henüz bir hedefiniz yok. Yeni yılda neye ulaşmak istediğinizi "Hedef ekle" ile yazın.
+    } @else {
+      Henüz bir hedefiniz yok. Araba, tatil ya da ev peşinatı gibi bir hedef ekleyip birikime başlayın.
+    }
+  </app-empty-state>
+} @else {
+  <div class="grid gap-4 lg:grid-cols-2 items-start">
+    @for (goal of visibleGoals(); track goal.id) {
+      <div class="space-y-3">
+        <app-goal-card [goal]="goal" (act)="open(goal, $event)" />
+
+        @if (panel(); as p) {
+          @if (p.goalId === goal.id) {
+            @switch (p.kind) {
+              @case ('deposit') {
+                <app-goal-money-form class="panel" [goal]="goal" [accounts]="accounts()" direction="deposit" [busy]="busy()" (save)="move(goal, 'deposit', $event)" (cancel)="panel.set(null)" />
+              }
+              @case ('withdraw') {
+                <app-goal-money-form class="panel" [goal]="goal" [accounts]="accounts()" direction="withdraw" [busy]="busy()" (save)="move(goal, 'withdraw', $event)" (cancel)="panel.set(null)" />
+              }
+              @case ('auto-save') {
+                <app-auto-save-form class="panel" [goal]="goal" [accounts]="accounts()" [busy]="busy()" (save)="saveRule(goal, $event)" (remove)="removeRule(goal)" (cancel)="panel.set(null)" />
+              }
+              @case ('edit') {
+                <app-goal-form [goal]="goal" [busy]="busy()" (save)="update(goal, $event)" (cancel)="panel.set(null)" />
+              }
+            }
+          }
+        }
+      </div>
+    }
+  </div>
+}

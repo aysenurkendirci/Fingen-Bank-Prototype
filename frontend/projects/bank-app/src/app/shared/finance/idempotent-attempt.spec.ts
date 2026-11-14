@@ -1,5 +1,5 @@
 import { TransferRequest } from '../../data-access/models/banking.models';
-import { TransferAttempt } from './transfer-attempt';
+import { IdempotentAttempt } from './idempotent-attempt';
 
 const request: TransferRequest = {
   sourceAccountId: 1,
@@ -9,10 +9,10 @@ const request: TransferRequest = {
   description: 'Kira',
 };
 
-describe('TransferAttempt', () => {
+describe('IdempotentAttempt', () => {
   const attempt = () => {
     let n = 0;
-    return new TransferAttempt(() => `key-${++n}`);
+    return new IdempotentAttempt<TransferRequest>(() => `key-${++n}`);
   };
 
   it('keeps the key across retries of the same transfer', () => {

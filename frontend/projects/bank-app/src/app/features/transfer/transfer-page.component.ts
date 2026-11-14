@@ -8,11 +8,11 @@ import { formatIban, isValidIban } from '../../core/util/iban';
 import { AccountsApi, TransfersApi } from '../../data-access/api/banking.api';
 import { Account, TransferReceipt, TransferRequest } from '../../data-access/models/banking.models';
 import { ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
+import { IdempotentAttempt } from '../../shared/finance/idempotent-attempt';
 import { MoneyComponent } from '../../shared/finance/money.component';
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { SkeletonComponent } from '../../shared/ui/skeleton.component';
-import { TransferAttempt } from './transfer-attempt';
 
 type Step = 'form' | 'review' | 'receipt';
 
@@ -30,7 +30,7 @@ export class TransferPageComponent extends BasePage implements OnInit {
 
   private readonly accountsApi = inject(AccountsApi);
   private readonly transfers = inject(TransfersApi);
-  private readonly attempt = new TransferAttempt();
+  private readonly attempt = new IdempotentAttempt<TransferRequest>();
 
   protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
   protected readonly printed = formatIban;
@@ -51,7 +51,8 @@ export class TransferPageComponent extends BasePage implements OnInit {
     this.load(
       this.accountsApi.list(),
       (accounts) => {
-        const usable = accounts.filter((a) => a.status === 'Active');
+        // Money in a goal leaves through the goal, never straight from its savings account.
+        const usable = accounts.filter((a) => a.status === 'Active' && a.accountType !== 'Savings');
         this.accounts.set(usable);
         const requested = usable.find((a) => a.id === Number(this.from()));
         this.form.controls.sourceAccountId.setValue((requested ?? usable[0])?.id ?? 0);

@@ -51,6 +51,17 @@ export const routes: Routes = [
         loadComponent: () => import('./features/bank-cards/bank-cards-page.component').then((m) => m.BankCardsPageComponent),
       },
       {
+        path: 'goals',
+        title: 'Hedeflerim',
+        loadComponent: () => import('./features/goals/goals-page.component').then((m) => m.GoalsPageComponent),
+      },
+      {
+        path: 'new-year-goals',
+        title: 'Yılbaşı hedefleri',
+        data: { newYear: true },
+        loadComponent: () => import('./features/goals/goals-page.component').then((m) => m.GoalsPageComponent),
+      },
+      {
         path: 'profile',
         title: 'Hesap ayarları',
         loadComponent: () => import('./features/profile/profile-page.component').then((m) => m.ProfilePageComponent),

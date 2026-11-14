@@ -33,7 +33,7 @@ export interface TransactionItem {
   createdAt: string;
 }
 
-export type AccountType = 'Demand' | 'Time' | 'ForeignCurrency';
+export type AccountType = 'Demand' | 'Time' | 'ForeignCurrency' | 'Savings';
 export type AccountStatus = 'Active' | 'Frozen' | 'Closed';
 
 export interface AccountItem {

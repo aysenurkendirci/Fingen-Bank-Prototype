@@ -44,6 +44,13 @@ export class DashboardLayoutComponent {
       ],
     },
     {
+      title: 'Birikim',
+      items: [
+        { path: '/dashboard/goals', label: 'Hedeflerim', icon: 'savings' },
+        { path: '/dashboard/new-year-goals', label: 'Yılbaşı hedefleri', icon: 'celebration' },
+      ],
+    },
+    {
       title: 'Planlama',
       items: [
         { path: '/dashboard/cash-flow', label: 'Nakit akışı', icon: 'timeline' },
