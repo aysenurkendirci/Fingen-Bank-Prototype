@@ -25,6 +25,9 @@
   .segmented { @apply inline-flex p-1 gap-1 rounded-control bg-muted; }
   .segmented > button { @apply inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-sm text-ink-soft hover:text-ink; }
   .segmented > button[aria-pressed='true'] { @apply bg-surface text-ink font-medium; }
+  // A choice shown as a colour sample with its name; the chosen one gets a ring in the ink colour.
+  .swatch { @apply inline-flex items-center gap-2 h-9 pl-2.5 pr-3.5 rounded-full border border-line bg-surface text-sm text-ink-soft hover:text-ink; }
+  .swatch[aria-pressed='true'] { @apply border-ink text-ink font-medium; }
   .badge { @apply inline-block text-xs font-medium px-2 py-0.5 rounded-full; }
 
   // Menu entries. The current page is marked by a short bar on its left edge, not by a filled pill.
