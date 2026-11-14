@@ -68,6 +68,12 @@ export interface Profile {
   lastLoginAt: string | null;
 }
 
+/** Mirrors PreferencesResponse; the values are the ones ThemeService knows. */
+export interface DisplayPreferences {
+  theme: 'system' | 'light' | 'dark';
+  accent: 'spruce' | 'ocean' | 'plum' | 'graphite';
+}
+
 export interface ContactDetails {
   email: string;
   phone: string;

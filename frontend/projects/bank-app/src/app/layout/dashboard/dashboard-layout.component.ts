@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 
 import { SessionService } from '../../core/auth/session.service';
 import { ThemeService } from '../../core/ui/theme.service';
+import { PreferencesStore } from '../../shared/preferences/preferences.store';
 import { BrandMarkComponent } from '../../shared/ui/brand-mark.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog.component';
 import { ToastHostComponent } from '../../shared/ui/toast-host.component';
@@ -30,6 +31,7 @@ export class DashboardLayoutComponent {
 
   protected readonly fullName = this.session.fullName;
   protected readonly theme = inject(ThemeService);
+  private readonly preferences = inject(PreferencesStore);
 
   protected readonly navGroups: readonly NavGroup[] = [
     {
@@ -53,6 +55,14 @@ export class DashboardLayoutComponent {
       ],
     },
   ];
+
+  constructor() {
+    this.preferences.load();
+  }
+
+  protected flipTheme(): void {
+    this.preferences.chooseTheme(this.theme.opposite());
+  }
 
   protected logout(): void {
     this.session.signOut().subscribe(() => this.router.navigateByUrl('/auth/login'));

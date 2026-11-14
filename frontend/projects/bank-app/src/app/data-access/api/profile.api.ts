@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AuthResponse } from '../models/auth.models';
-import { ContactDetails, PasswordChange, Profile } from '../models/banking.models';
+import { ContactDetails, DisplayPreferences, PasswordChange, Profile } from '../models/banking.models';
 import { BaseApi } from './base-api';
 
 /** The signed-in customer's own data. */
@@ -16,6 +16,15 @@ export class ProfileApi extends BaseApi {
 
   updateContact(details: ContactDetails): Observable<Profile> {
     return this.http.put<Profile>(this.url(), details);
+  }
+
+  /** How the customer wants the app to look, saved with their account. */
+  preferences(): Observable<DisplayPreferences> {
+    return this.http.get<DisplayPreferences>(this.url('/preferences'));
+  }
+
+  updatePreferences(preferences: DisplayPreferences): Observable<DisplayPreferences> {
+    return this.http.put<DisplayPreferences>(this.url('/preferences'), preferences);
   }
 
   /** Ends every other session; the answer is the new token for this one. */

@@ -7,8 +7,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <script>
-    // The saved theme choice, applied before the first paint. ThemeService takes over once the app runs.
-    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    // The saved theme and accent, applied before the first paint. ThemeService takes over once the app runs.
+    try {
+      var root = document.documentElement, t = localStorage.getItem('theme'), a = localStorage.getItem('accent');
+      if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
+      if (a) root.setAttribute('data-accent', a);
+    } catch (e) {}
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">

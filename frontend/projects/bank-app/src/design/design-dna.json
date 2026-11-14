@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "FinGen",
-    "description": "A retail bank for everyday money and the months ahead. Calm surfaces for long sessions, one spruce colour for actions, numbers set to be read."
+    "description": "A retail bank for everyday money and the months ahead. Calm surfaces for long sessions, one accent colour for actions that the customer can choose, numbers set to be read."
   },
   "design_system": {
     "color": {
@@ -12,8 +12,7 @@
         "line": "#d8e0dc",
         "control": "#b9c5c0",
         "ink": { "DEFAULT": "#1c2725", "soft": "#4a5754", "faint": "#667370" },
-        "brand": { "DEFAULT": "#1f5b52", "hover": "#184a43", "tint": "#e1ece8", "contrast": "#f6f8f7" },
-        "tile": { "DEFAULT": "#1f5b52", "alt": "#34433f", "ink": "#f3f7f5" },
+        "tile": { "alt": "#34433f", "ink": "#f3f7f5" },
         "positive": { "DEFAULT": "#2f7a4c", "tint": "#e3f0e7", "line": "#bcd9c5" },
         "danger": { "DEFAULT": "#b03a34", "tint": "#f7e6e4", "line": "#ebc2bd" },
         "warning": { "DEFAULT": "#93620f", "tint": "#f6ecd9", "line": "#e6cf9f" }
@@ -25,17 +24,70 @@
         "line": "#2b3734",
         "control": "#44524e",
         "ink": { "DEFAULT": "#dde6e3", "soft": "#a3b1ad", "faint": "#83918d" },
-        "brand": { "DEFAULT": "#7cc2b3", "hover": "#93cfc2", "tint": "#1d2f2b", "contrast": "#0f1a18" },
-        "tile": { "DEFAULT": "#1f4a43", "alt": "#2c3836", "ink": "#e6efec" },
+        "tile": { "alt": "#2c3836", "ink": "#e6efec" },
         "positive": { "DEFAULT": "#6cc28c", "tint": "#1a2e22", "line": "#2b4a36" },
         "danger": { "DEFAULT": "#f08a80", "tint": "#33201e", "line": "#5a312d" },
         "warning": { "DEFAULT": "#e0b25a", "tint": "#2f2717", "line": "#57461f" }
       },
       "contrast_strategy": "Soft rather than maximal: body ink is 14:1 on light and 13:1 on dark, never pure black on pure white. Secondary text stays above 4.5:1."
     },
+    "accents": {
+      "spruce": {
+        "label": "Çam",
+        "light": {
+          "brand": { "DEFAULT": "#1f5b52", "hover": "#184a43", "tint": "#e1ece8", "contrast": "#f6f8f7" },
+          "tile": { "DEFAULT": "#1f5b52" }
+        },
+        "dark": {
+          "brand": { "DEFAULT": "#7cc2b3", "hover": "#93cfc2", "tint": "#1d2f2b", "contrast": "#0f1a18" },
+          "tile": { "DEFAULT": "#1f4a43" }
+        }
+      },
+      "ocean": {
+        "label": "Okyanus",
+        "light": {
+          "brand": { "DEFAULT": "#1d4f7a", "hover": "#173f62", "tint": "#e0eaf3", "contrast": "#f6f8f7" },
+          "tile": { "DEFAULT": "#1d4f7a" }
+        },
+        "dark": {
+          "brand": { "DEFAULT": "#8ab8e0", "hover": "#a2c7e8", "tint": "#1b2a38", "contrast": "#0e1822" },
+          "tile": { "DEFAULT": "#1d3a54" }
+        }
+      },
+      "plum": {
+        "label": "Mürdüm",
+        "light": {
+          "brand": { "DEFAULT": "#5b3a6e", "hover": "#4a2f5a", "tint": "#ece4f0", "contrast": "#f6f8f7" },
+          "tile": { "DEFAULT": "#5b3a6e" }
+        },
+        "dark": {
+          "brand": { "DEFAULT": "#c4a3d6", "hover": "#d2b8e0", "tint": "#2a2131", "contrast": "#1a1220" },
+          "tile": { "DEFAULT": "#43304f" }
+        }
+      },
+      "graphite": {
+        "label": "Grafit",
+        "light": {
+          "brand": { "DEFAULT": "#2f3a45", "hover": "#252e37", "tint": "#e5e9ec", "contrast": "#f6f8f7" },
+          "tile": { "DEFAULT": "#2f3a45" }
+        },
+        "dark": {
+          "brand": { "DEFAULT": "#b4c0cb", "hover": "#c6d0d8", "tint": "#222a31", "contrast": "#12171c" },
+          "tile": { "DEFAULT": "#2c3742" }
+        }
+      }
+    },
     "chart": {
-      "light": { "series": ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"], "baseline": "#94a3b8", "critical": "#d03b3b" },
-      "dark": { "series": ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300"], "baseline": "#7d8b88", "critical": "#e66767" }
+      "light": {
+        "series": ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"],
+        "baseline": "#94a3b8",
+        "critical": "#d03b3b"
+      },
+      "dark": {
+        "series": ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300"],
+        "baseline": "#7d8b88",
+        "critical": "#e66767"
+      }
     },
     "typography": {
       "family": "Geist",
@@ -43,7 +95,11 @@
       "notes": "One family. Figures are tabular wherever money lines up. Headings tighten their tracking as they grow."
     },
     "shape": {
-      "radius": { "control": "8px", "panel": "12px", "tile": "16px" },
+      "radius": {
+        "control": "8px",
+        "panel": "12px",
+        "tile": "16px"
+      },
       "notes": "Radius grows with the size of the thing: fields and buttons, then sections, then the cards themselves. No shadows at rest."
     },
     "motion": {
@@ -60,7 +116,7 @@
     "mood": "Quiet and exact, like a well-kept passbook.",
     "principles": [
       "Money is the hero: amounts are the largest, steadiest type on a screen, with the kuruş set smaller.",
-      "One accent colour, used for what can be pressed.",
+      "One accent colour, used for what can be pressed. The customer picks which one; every choice is checked for contrast in both themes.",
       "Structure through spacing and hairlines, not boxes inside boxes.",
       "Motion only answers the person: a press, a page change, a confirmation."
     ]

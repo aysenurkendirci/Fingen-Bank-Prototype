@@ -31,7 +31,7 @@
           <span class="block text-xs text-ink-faint">Hesap ayarları</span>
         </span>
       </a>
-      <button type="button" class="nav-item w-full" (click)="theme.toggle()">
+      <button type="button" class="nav-item w-full" (click)="flipTheme()">
         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
         {{ theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm' }}
       </button>
@@ -46,7 +46,7 @@
     <div class="h-14 px-4 flex items-center justify-between">
       <app-brand-mark class="text-lg text-brand" />
       <div class="flex items-center -mr-2">
-        <button type="button" (click)="theme.toggle()" class="p-2 text-ink-soft" [attr.aria-label]="theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm'">
+        <button type="button" (click)="flipTheme()" class="p-2 text-ink-soft" [attr.aria-label]="theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm'">
           <span class="material-symbols-outlined text-[22px]" aria-hidden="true">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
         </button>
         <a routerLink="/dashboard/profile" class="p-2 text-ink-soft" aria-label="Hesap ayarları">

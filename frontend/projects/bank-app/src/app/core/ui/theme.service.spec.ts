@@ -61,4 +61,17 @@ describe('ThemeService', () => {
     TestBed.tick();
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
   });
+
+  it('marks the page with a chosen accent and leaves the default unmarked', () => {
+    const theme = create();
+
+    theme.setAccent('ocean');
+    TestBed.tick();
+    expect(document.documentElement.getAttribute('data-accent')).toBe('ocean');
+    expect(localStorage.getItem('accent')).toBe('ocean');
+
+    theme.setAccent('spruce');
+    TestBed.tick();
+    expect(document.documentElement.hasAttribute('data-accent')).toBe(false);
+  });
 });
