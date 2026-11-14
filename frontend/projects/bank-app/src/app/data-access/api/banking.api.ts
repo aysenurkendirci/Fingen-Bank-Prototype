@@ -27,6 +27,11 @@ export class AccountsApi extends BaseApi {
     return this.http.post<Account>(this.url(), { currencyCode });
   }
 
+  /** Only an empty account closes; the API explains any refusal. */
+  close(accountId: number): Observable<void> {
+    return this.http.post<void>(this.url(`/${accountId}/close`), null);
+  }
+
   statement(accountId: number, page: number, pageSize: number): Observable<Paged<StatementEntry>> {
     const params = new HttpParams().set('page', page).set('pageSize', pageSize);
     return this.http.get<Paged<StatementEntry>>(this.url(`/${accountId}/statement`), { params });

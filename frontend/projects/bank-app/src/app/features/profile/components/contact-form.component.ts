@@ -23,7 +23,7 @@ import { BaseForm } from '../../../shared/forms/base-form';
         <span class="field-label">Telefon</span>
         <input class="input" type="tel" formControlName="phone" autocomplete="tel" maxlength="20" />
         @if (form.controls.phone.touched && form.controls.phone.invalid) {
-          <span class="field-error">Telefon zorunludur.</span>
+          <span class="field-error">5xx xxx xx xx biçiminde bir cep telefonu girin.</span>
         }
       </label>
       <button type="submit" class="btn-primary" [disabled]="busy()">Kaydet</button>
@@ -35,7 +35,7 @@ export class ContactFormComponent extends BaseForm<ContactDetails> {
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', Validators.required],
+    phone: ['', [Validators.required, Validators.pattern(/^(\+90|0)?\s*5\d{2}\s*\d{3}\s*\d{2}\s*\d{2}$/)]],
   });
 
   constructor() {

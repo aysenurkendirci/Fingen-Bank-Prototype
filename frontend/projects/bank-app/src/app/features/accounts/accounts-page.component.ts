@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { BasePage } from '../../core/page/base-page';
+import { ConfirmService } from '../../core/ui/confirm.service';
 import { ToastService } from '../../core/ui/toast.service';
 import { AccountsApi } from '../../data-access/api/banking.api';
 import { MarketApi } from '../../data-access/api/market.api';
@@ -68,8 +69,11 @@ import { ExchangeRatesPanelComponent } from './components/exchange-rates-panel.c
                 <div class="flex items-center gap-5">
                   <p class="text-xl font-semibold tracking-[-0.01em]"><app-money display [amount]="account.balance" [currency]="account.currencyCode" /></p>
                   <a class="btn-link" [routerLink]="['/dashboard/accounts', account.id]">Hareketler</a>
-                  @if (account.status === 'Active') {
+                  @if (account.status === 'Active' && account.accountType !== 'Savings') {
                     <a class="btn-link" routerLink="/dashboard/transfer" [queryParams]="{ from: account.id }">Gönder</a>
+                    @if (account.balance === 0) {
+                      <button type="button" class="btn-link !text-danger" [disabled]="busy()" (click)="close(account)">Kapat</button>
+                    }
                   }
                 </div>
               </li>
@@ -89,6 +93,7 @@ export class AccountsPageComponent extends BasePage {
   private readonly api = inject(AccountsApi);
   private readonly toast = inject(ToastService);
   private readonly market = inject(MarketApi);
+  private readonly dialog = inject(ConfirmService);
 
   protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
   protected readonly statusLabels = ACCOUNT_STATUS_LABELS;
@@ -115,6 +120,25 @@ export class AccountsPageComponent extends BasePage {
       onDone: () => {
         this.opening.set(false);
         this.toast.show('Hesabınız açıldı.');
+        this.fetch();
+      },
+    });
+  }
+
+  /** Only an empty account can be closed; the last lira demand account stays, and the API says so if asked. */
+  protected async close(account: Account): Promise<void> {
+    const yes = await this.dialog.ask({
+      title: 'Hesap kapatılsın mı?',
+      message: `${account.iban.slice(-8)} ile biten hesabınız kapatılacak. Kapanan hesaba para gönderilemez.`,
+      confirmLabel: 'Hesabı kapat',
+      danger: true,
+    });
+    if (!yes) return;
+
+    this.act(this.api.close(account.id), {
+      fallback: 'Hesap kapatılamadı.',
+      onDone: () => {
+        this.toast.show('Hesabınız kapatıldı.');
         this.fetch();
       },
     });

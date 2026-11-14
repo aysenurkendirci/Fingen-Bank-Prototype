@@ -1,11 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { CardSettingsRequest } from '../../../data-access/models/banking.models';
 import { CardItem } from '../../../data-access/models/dashboard.models';
 import { BaseForm } from '../../../shared/forms/base-form';
 
 const LIMIT_RULES = [Validators.required, Validators.min(0), Validators.max(10_000_000)];
+
+/** A day cannot allow more than the whole month does; the API applies the same rule. */
+const dailyWithinMonthly = (group: AbstractControl): ValidationErrors | null =>
+  Number(group.get('dailyLimit')?.value) > Number(group.get('monthlyLimit')?.value) ? { dailyAboveMonthly: true } : null;
 
 /** Switches and limits of one card. Settings of a closed card stay visible but cannot be changed. */
 @Component({
@@ -34,9 +38,11 @@ const LIMIT_RULES = [Validators.required, Validators.min(0), Validators.max(10_0
           <input class="input tabular-nums" type="number" min="0" step="100" formControlName="monthlyLimit" />
         </label>
       </div>
-      @if (form.controls.dailyLimit.invalid || form.controls.monthlyLimit.invalid) {
-        @if (!locked()) {
+      @if (!locked()) {
+        @if (form.controls.dailyLimit.invalid || form.controls.monthlyLimit.invalid) {
           <p class="field-error">Limitler 0 ile 10.000.000 arasında olmalıdır.</p>
+        } @else if (form.hasError('dailyAboveMonthly')) {
+          <p class="field-error">Günlük limit aylık limitten büyük olamaz.</p>
         }
       }
 
@@ -57,12 +63,15 @@ export class CardSettingsComponent extends BaseForm<CardSettingsRequest> {
 
   protected readonly locked = computed(() => this.card().status !== 'Active');
 
-  protected readonly form = inject(FormBuilder).nonNullable.group({
-    contactless: [false],
-    onlineUse: [false],
-    dailyLimit: [0, LIMIT_RULES],
-    monthlyLimit: [0, LIMIT_RULES],
-  });
+  protected readonly form = inject(FormBuilder).nonNullable.group(
+    {
+      contactless: [false],
+      onlineUse: [false],
+      dailyLimit: [0, LIMIT_RULES],
+      monthlyLimit: [0, LIMIT_RULES],
+    },
+    { validators: dailyWithinMonthly },
+  );
 
   constructor() {
     super();
