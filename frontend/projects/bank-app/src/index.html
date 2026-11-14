@@ -6,14 +6,8 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <script>
-    // The saved theme and accent, applied before the first paint. ThemeService takes over once the app runs.
-    try {
-      var root = document.documentElement, t = localStorage.getItem('theme'), a = localStorage.getItem('accent');
-      if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
-      if (a) root.setAttribute('data-accent', a);
-    } catch (e) {}
-  </script>
+  <!-- A separate file rather than inline, so the Content-Security-Policy can forbid inline scripts. -->
+  <script src="theme-init.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

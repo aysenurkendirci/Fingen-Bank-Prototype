@@ -26,7 +26,7 @@ const sameAsNew = (group: AbstractControl): ValidationErrors | null =>
         <span class="field-label">Yeni şifre</span>
         <input class="input" type="password" formControlName="newPassword" autocomplete="new-password" />
         @if (form.controls.newPassword.touched && form.controls.newPassword.invalid) {
-          <span class="field-error">En az 8 karakter olmalıdır.</span>
+          <span class="field-error">En az 8 karakter, bir harf ve bir rakam olmalıdır.</span>
         }
       </label>
       <label class="field">
@@ -44,7 +44,7 @@ export class PasswordFormComponent extends BaseForm<PasswordChange> {
   protected readonly form = inject(FormBuilder).nonNullable.group(
     {
       currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128), Validators.pattern(/^(?=.*\p{L})(?=.*\d).+$/u)]],
       repeat: ['', Validators.required],
     },
     { validators: sameAsNew },

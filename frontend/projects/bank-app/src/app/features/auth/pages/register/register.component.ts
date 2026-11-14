@@ -29,7 +29,8 @@ export class RegisterComponent extends BasePage {
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    // Mirrors the API: at least 8 characters with a letter and a digit.
+    password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*\p{L})(?=.*\d).+$/u)]],
     membership: ['Personal' as Membership],
   });
 
