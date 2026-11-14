@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The FinGen mark: a balance line stepping up to a dot. Same drawing as the in-app logo. -->
+  <style>
+    .tile { fill: #1f5b52; }
+    .line { stroke: #f6f8f7; }
+    .dot { fill: #f6f8f7; }
+    @media (prefers-color-scheme: dark) {
+      .tile { fill: #7cc2b3; }
+      .line { stroke: #0f1a18; }
+      .dot { fill: #0f1a18; }
+    }
+  </style>
+  <rect class="tile" width="32" height="32" rx="9" />
+  <path class="line" d="M7.5 21.5h5.25v-4.5h5.25v-4.75h4.5" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+  <circle class="dot" cx="24.5" cy="12.25" r="2.3" />
+</svg>
