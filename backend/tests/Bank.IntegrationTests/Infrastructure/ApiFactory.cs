@@ -1,9 +1,11 @@
 using Bank.Database;
+using Bank.Infrastructure.MarketData;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Bank.IntegrationTests.Infrastructure;
@@ -48,7 +50,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Jwt:Key", "integration-tests-signing-key-0123456789abcdef");
         // The suite registers and logs in many users from one address; the limit itself is tested in SecurityTests.
         builder.UseSetting("RateLimiting:Auth:PermitLimit", "100000");
-        builder.ConfigureTestServices(services => services.AddSingleton<TimeProvider>(new FakeTimeProvider(Now)));
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddSingleton<TimeProvider>(new FakeTimeProvider(Now));
+            services.RemoveAll<IExchangeRateSource>();
+            services.AddSingleton<IExchangeRateSource, FakeExchangeRateSource>();
+        });
     }
 
     private static void DropDatabase()

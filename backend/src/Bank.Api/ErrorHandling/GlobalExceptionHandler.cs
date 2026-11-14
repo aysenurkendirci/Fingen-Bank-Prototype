@@ -36,6 +36,7 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
             ConflictException => (StatusCodes.Status409Conflict, "İşlem mevcut kayıtla çakışıyor"),
             IdempotencyKeyReusedException => (StatusCodes.Status422UnprocessableEntity, "Idempotency-Key yeniden kullanıldı"),
             AuthenticationFailedException => (StatusCodes.Status401Unauthorized, "Kimlik doğrulama başarısız"),
+            ServiceUnavailableException => (StatusCodes.Status503ServiceUnavailable, "Hizmet geçici olarak kullanılamıyor"),
             _ => (StatusCodes.Status500InternalServerError, "Beklenmeyen bir hata oluştu")
         };
 
