@@ -19,7 +19,7 @@
           </p>
         }
       } @else {
-        <form class="panel space-y-4" [formGroup]="form" (ngSubmit)="review()">
+        <form class="panel step-in space-y-4" [formGroup]="form" (ngSubmit)="review()">
           <label class="field">
             <span class="field-label">Gönderen hesap</span>
             <select class="input" formControlName="sourceAccountId">
@@ -74,7 +74,7 @@
     }
 
     @case ('review') {
-      <section class="panel">
+      <section class="panel step-in">
         <h2 class="section-title">Bilgileri kontrol edin</h2>
         <p class="text-sm text-ink-soft mt-1">Onayladığınızda para hesabınızdan çıkar.</p>
         @let details = request();
@@ -94,7 +94,7 @@
 
     @case ('receipt') {
       @if (receipt(); as receipt) {
-        <section class="panel">
+        <section class="panel step-in">
           <h2 class="section-title">Transfer tamamlandı</h2>
           <p class="text-3xl font-semibold tracking-[-0.02em] mt-2"><app-money display [concealable]="false" [amount]="receipt.amount" [currency]="receipt.currencyCode" /></p>
           <dl class="mt-4 divide-y divide-line text-sm">

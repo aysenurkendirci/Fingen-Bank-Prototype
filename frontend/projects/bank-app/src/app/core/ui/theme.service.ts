@@ -50,16 +50,22 @@ export class ThemeService {
   constructor() {
     this.media?.addEventListener('change', (event) => this.systemDark.set(event.matches));
 
+    let first = true;
     effect(() => {
-      const root = document.documentElement;
       const preference = this.preference();
       const accent = this.accent();
+      const apply = () => {
+        const root = document.documentElement;
+        if (preference === 'system') root.removeAttribute('data-theme');
+        else root.setAttribute('data-theme', preference);
+        if (accent === DEFAULT_ACCENT) root.removeAttribute('data-accent');
+        else root.setAttribute('data-accent', accent);
+      };
 
-      if (preference === 'system') root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', preference);
-
-      if (accent === DEFAULT_ACCENT) root.removeAttribute('data-accent');
-      else root.setAttribute('data-accent', accent);
+      // The first run only confirms what index.html already painted; later changes cross-fade.
+      if (first || !document.startViewTransition) apply();
+      else document.startViewTransition(apply);
+      first = false;
     });
   }
 

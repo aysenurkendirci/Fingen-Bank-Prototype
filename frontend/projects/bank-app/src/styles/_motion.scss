@@ -43,6 +43,46 @@
 dialog[open] { animation: rise var(--m-panel) var(--m-ease-enter); }
 dialog[open]::backdrop { animation: fade var(--m-panel) var(--m-ease); }
 
+// Panels, lists and cards arrive when they are put on the page, a beat apart inside a row or grid, so a screen
+// builds up instead of popping in. Short and without overshoot: a bank should feel steady, not bouncy.
+.panel,
+.rounded-panel.border,
+.rounded-tile {
+  animation: rise 380ms var(--m-ease-enter) both;
+}
+
+@for $i from 2 through 6 {
+  .panel:nth-child(#{$i}),
+  .rounded-panel.border:nth-child(#{$i}),
+  .rounded-tile:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 45}ms;
+  }
+}
+
+// Bars that show progress grow to their value instead of appearing at it.
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 700ms var(--m-ease-enter) 120ms both;
+}
+
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+}
+
+// One step of a flow (transfer: details, review, receipt) slides in from the side it comes from.
+.step-in {
+  animation: step-in 320ms var(--m-ease-enter) both;
+}
+
+@keyframes step-in {
+  from { opacity: 0; transform: translateX(12px); }
+}
+
+// Confirmations slide up from the corner they live in.
+app-toast-host p {
+  animation: rise 240ms var(--m-ease-enter) both;
+}
+
 // The home screen's opening: greeting, then the balance, once per visit. Children set --enter-step.
 .enter > * {
   animation: rise var(--m-enter) var(--m-ease-enter) both;
@@ -73,11 +113,32 @@ dialog[open]::backdrop { animation: fade var(--m-panel) var(--m-ease); }
   }
 }
 
-// Page changes cross-fade briefly instead of cutting.
+// Page changes: only the content area moves. The old page lifts away, the new one settles in from below, and the
+// menu, which did not change, stays put. The rest of the window (and a theme change) cross-fades.
+.route-view {
+  view-transition-name: route;
+}
+
+::view-transition-old(route) {
+  animation: route-out 180ms var(--m-ease) both;
+}
+
+::view-transition-new(route) {
+  animation: route-in 340ms var(--m-ease-enter) both;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: var(--m-panel);
+  animation-duration: 280ms;
   animation-timing-function: var(--m-ease);
+}
+
+@keyframes route-out {
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes route-in {
+  from { opacity: 0; transform: translateY(14px); }
 }
 
 // Everything is complete at rest; with reduced motion nothing moves.

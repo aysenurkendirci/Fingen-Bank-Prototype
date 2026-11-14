@@ -28,7 +28,7 @@ export type GoalAction = 'deposit' | 'withdraw' | 'auto-save' | 'edit' | 'close'
     <p class="text-sm text-ink-soft">Hedef {{ goal().targetAmount | currency: 'TRY' : 'symbol-narrow' : '1.0-0' }}, %{{ percent() }} tamamlandı</p>
 
     <div class="mt-3 h-2 rounded-full bg-muted overflow-hidden" role="progressbar" [attr.aria-valuenow]="percent()" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="goal().name + ' ilerlemesi'">
-      <div class="h-full rounded-full bg-brand transition-[width] duration-500 ease-enter" [style.width.%]="percent()"></div>
+      <div class="grow-x h-full rounded-full bg-brand transition-[width] duration-500 ease-enter" [style.width.%]="percent()"></div>
     </div>
 
     <dl class="mt-4 space-y-1 text-sm">
