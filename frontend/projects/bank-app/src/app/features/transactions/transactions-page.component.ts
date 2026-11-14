@@ -17,7 +17,7 @@ const PAGE_SIZE = 50;
   template: `
     <app-page-header
       title="İşlem geçmişi"
-      subtitle="Diğer bankalardan aldığınız ekstreleri yükleyin. Analizler bu geçmişten hesaplanır."
+      subtitle="Diğer bankalardan aldığınız ekstreleri yükleyin. Analizler bu geçmişten çıkar."
     />
 
     <app-statement-upload

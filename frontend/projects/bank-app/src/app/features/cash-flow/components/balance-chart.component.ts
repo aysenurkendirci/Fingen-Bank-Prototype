@@ -5,7 +5,7 @@ import { Projection } from '../../../data-access/models/finance.models';
 import { ChartComponent } from '../../../shared/chart/chart.component';
 import { injectChartPalette } from '../../../shared/chart/chart-palette';
 import { axisStyle, tooltipStyle, formatDateTick, formatTry, formatTryCompact } from '../../../shared/chart/chart-theme';
-import { runningBalance } from '../running-balance';
+import { runningBalance } from '../../../shared/finance/running-balance';
 
 const dayName = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 

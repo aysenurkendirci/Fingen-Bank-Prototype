@@ -1,6 +1,6 @@
 <app-page-header
   title="Düzenli gelir ve giderler"
-  subtitle="Maaş, kira, faturalar ve abonelikler. Nakit akışı projeksiyonu bunlardan hesaplanır."
+  subtitle="Maaş, kira, faturalar, abonelikler. Nakit akışı tahmini bu listeden beslenir."
 >
   <button type="button" class="btn-primary" (click)="editing.set(null)">
     <span class="material-symbols-outlined">add</span> Kalem ekle
@@ -32,7 +32,7 @@
 </div>
 
 @if (loaded() && visibleItems().length === 0) {
-  <app-empty-state>Bu görünümde kayıt yok.</app-empty-state>
+  <app-empty-state>Bu türde bir kayıt yok.</app-empty-state>
 }
 
 <app-recurring-item-list

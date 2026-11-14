@@ -16,36 +16,59 @@
       <a routerLink="/dashboard/transfer" class="btn-primary">Para gönder</a>
     </header>
 
-    <section class="panel mb-10 [--enter-step:1]">
-      <div class="flex items-center justify-between">
-        <p class="text-sm text-ink-soft">Toplam varlık (TL hesaplar)</p>
-        <button
-          type="button"
-          class="p-1 -m-1 text-ink-faint hover:text-ink"
-          [attr.aria-label]="privacy.hidden() ? 'Bakiyeleri göster' : 'Bakiyeleri gizle'"
-          [attr.aria-pressed]="privacy.hidden()"
-          (click)="privacy.toggle()"
-        >
-          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ privacy.hidden() ? 'visibility_off' : 'visibility' }}</span>
-        </button>
-      </div>
-      <p class="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] mt-2"><app-money display [amount]="data.totalWealth" /></p>
-      @if (estimate(); as estimate) {
-        <p class="mt-2 text-sm text-ink-soft">
-          Döviz hesaplarınızla birlikte yaklaşık <app-money class="font-medium text-ink" [amount]="estimate.total" />
-          <span class="text-ink-faint">({{ estimate.source }} alış kuru, {{ estimate.publishedOn | date: 'd MMMM' }})</span>
+    <section class="panel mb-10 [--enter-step:1] grid gap-6 md:grid-cols-[1fr_minmax(0,18rem)] md:items-end">
+      <div>
+        <div class="flex items-center gap-2">
+          <p class="text-sm text-ink-soft">TL hesaplarınızda bugün</p>
+          <button
+            type="button"
+            class="p-1 -m-1 text-ink-faint hover:text-ink"
+            [attr.aria-label]="privacy.hidden() ? 'Bakiyeleri göster' : 'Bakiyeleri gizle'"
+            [attr.aria-pressed]="privacy.hidden()"
+            (click)="privacy.toggle()"
+          >
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">{{ privacy.hidden() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+        <p class="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] mt-2"><app-money display [amount]="data.totalWealth" /></p>
+        <!-- The line keeps its height while rates load, so nothing below it moves when they arrive. -->
+        <p class="mt-2 min-h-5 text-sm text-ink-soft">
+          @if (estimate(); as estimate) {
+            Dövizle birlikte yaklaşık <app-money class="font-medium text-ink" [amount]="estimate.total" />
+            <span class="text-ink-faint">({{ estimate.source }} alış kuru, {{ estimate.publishedOn | date: 'd MMMM' }})</span>
+          }
         </p>
+      </div>
+
+      @if (!outlookFailed()) {
+        <figure class="h-24">
+          @if (outlookPoints(); as points) {
+            <app-balance-sparkline class="h-16" [points]="points" label="Önümüzdeki üç ayda bakiyenizin seyri" />
+            <figcaption class="mt-2 text-xs text-ink-faint">Önümüzdeki 3 ay, bildiğiniz gelir ve giderlerle</figcaption>
+          } @else {
+            <div class="h-16 rounded-control bg-muted animate-pulse"></div>
+          }
+        </figure>
       }
     </section>
   </div>
 
-  @if (outlook(); as projection) {
-    <section class="mb-8">
+  @if (!outlookFailed()) {
+    <section class="mb-10">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="section-title">Önümüzdeki 3 ay</h2>
-        <a routerLink="/dashboard/cash-flow" class="btn-link">Nakit akışı</a>
+        <h2 class="section-title">Yaklaşan üç ay</h2>
+        <a routerLink="/dashboard/cash-flow" class="btn-link">Ayrıntılı nakit akışı</a>
       </div>
-      <app-projection-summary [projection]="projection" />
+      @if (outlook(); as projection) {
+        <app-projection-summary [projection]="projection" />
+      } @else {
+        <!-- Same height as the three tiles it stands in for. -->
+        <div class="grid gap-4 sm:grid-cols-3">
+          @for (tile of [1, 2, 3]; track tile) {
+            <div class="h-[7.5rem] rounded-panel bg-line/60 animate-pulse"></div>
+          }
+        </div>
+      }
     </section>
   }
 

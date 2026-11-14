@@ -1,4 +1,4 @@
-<app-page-header title="Nakit akışı" subtitle="Bilinen gelir, gider, abonelik ve kart ekstrelerinizden yarından itibaren hesaplanır.">
+<app-page-header title="Nakit akışı" subtitle="Bildiğiniz gelir ve giderleri yarından başlayarak gün gün takvime dizer, bakiyenizin nerede daralacağını önceden gösterir.">
   <div class="flex gap-2" role="group" aria-label="Projeksiyon süresi">
     @for (h of horizons; track h) {
       <button type="button" [ngClass]="months() === h ? 'btn-primary' : 'btn-secondary'" [attr.aria-pressed]="months() === h"

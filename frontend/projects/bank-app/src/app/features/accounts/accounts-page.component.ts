@@ -11,6 +11,7 @@ import { ExchangeRates } from '../../data-access/models/market.models';
 import { ACCOUNT_STATUS_LABELS, ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
 import { IbanCopyComponent } from '../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../shared/finance/money.component';
+import { hideClosedSavings } from '../../shared/finance/visible-accounts';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
@@ -21,7 +22,7 @@ import { ExchangeRatesPanelComponent } from './components/exchange-rates-panel.c
 @Component({
   imports: [FormsModule, RouterLink, IbanCopyComponent, MoneyComponent, EmptyStateComponent, NoticeComponent, PageHeaderComponent, SkeletonComponent, ExchangeRatesPanelComponent],
   template: `
-    <app-page-header title="Hesaplarım" subtitle="Bakiyeleriniz ve hesap hareketleriniz.">
+    <app-page-header title="Hesaplarım" subtitle="Her hesabın bakiyesi, IBAN'ı ve hareketleri. IBAN'a dokunun, kopyalansın.">
       <button type="button" class="btn-secondary" (click)="opening.set(!opening())">Hesap aç</button>
       <a routerLink="/dashboard/transfer" class="btn-primary">Para gönder</a>
     </app-page-header>
@@ -50,7 +51,7 @@ import { ExchangeRatesPanelComponent } from './components/exchange-rates-panel.c
         @if (loading() && accounts().length === 0) {
           <app-skeleton />
         } @else if (accounts().length === 0 && !error()) {
-          <app-empty-state>Henüz hesabınız yok. "Hesap aç" ile ilk hesabınızı oluşturabilirsiniz.</app-empty-state>
+          <app-empty-state>Henüz bir hesabınız yok. "Hesap aç"a basın, IBAN'ınız birkaç saniyede hazır.</app-empty-state>
         } @else {
           <ul class="bg-surface rounded-panel border border-line divide-y divide-line">
             @for (account of accounts(); track account.id) {
@@ -120,6 +121,6 @@ export class AccountsPageComponent extends BasePage {
   }
 
   private fetch(): void {
-    this.load(this.api.list(), (accounts) => this.accounts.set(accounts), 'Hesaplar yüklenemedi.');
+    this.load(this.api.list(), (accounts) => this.accounts.set(hideClosedSavings(accounts)), 'Hesaplar yüklenemedi.');
   }
 }

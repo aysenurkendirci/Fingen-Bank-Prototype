@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { AccountItem } from '../../../data-access/models/dashboard.models';
 import { ACCOUNT_STATUS_LABELS, ACCOUNT_TYPE_DISPLAY } from '../../../shared/finance/account-display';
 import { IbanCopyComponent } from '../../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../../shared/finance/money.component';
+import { hideClosedSavings } from '../../../shared/finance/visible-accounts';
 
 /** The customer's accounts on the home screen. Each one leads to its statement. */
 @Component({
@@ -18,11 +19,11 @@ import { MoneyComponent } from '../../../shared/finance/money.component';
       <a routerLink="/dashboard/accounts" class="btn-link">Tümü</a>
     </div>
     <div class="bg-surface rounded-panel border border-line">
-      @if (accounts().length === 0) {
+      @if (shown().length === 0) {
         <p class="p-5 text-sm text-ink-soft">Henüz hesabınız yok.</p>
       }
       <ul class="divide-y divide-line">
-        @for (account of accounts(); track account.accountId) {
+        @for (account of shown(); track account.accountId) {
           <li class="px-4 py-3">
             <div class="flex items-baseline justify-between gap-3">
               <a class="text-sm font-medium text-ink hover:text-brand" [routerLink]="['/dashboard/accounts', account.accountId]">
@@ -42,6 +43,8 @@ import { MoneyComponent } from '../../../shared/finance/money.component';
 })
 export class AccountListComponent {
   readonly accounts = input.required<readonly AccountItem[]>();
+
+  protected readonly shown = computed(() => hideClosedSavings(this.accounts()));
 
   protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
   protected readonly statusLabels = ACCOUNT_STATUS_LABELS;

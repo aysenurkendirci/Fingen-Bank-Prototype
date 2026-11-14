@@ -1,5 +1,8 @@
 // Element defaults. Colours are CSS variables from design-dna.json, so everything here works in both themes.
 
+// The page keeps the scrollbar's space even when content is short, so nothing jumps sideways when data arrives.
+html { scrollbar-gutter: stable; }
+
 body {
   @apply bg-canvas text-ink font-sans;
   margin: 0;

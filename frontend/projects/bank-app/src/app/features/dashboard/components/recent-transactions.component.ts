@@ -10,7 +10,7 @@ import { TransactionItem } from '../../../data-access/models/dashboard.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    <h2 class="section-title mb-3">Son işlemler</h2>
+    <h2 class="section-title mb-3">Son hareketler</h2>
     <div class="bg-surface rounded-panel border border-line">
       @if (transactions().length === 0) {
         <p class="p-5 text-sm text-ink-soft">Henüz işlem yok.</p>

@@ -17,7 +17,7 @@ import { CardSettingsComponent } from './components/card-settings.component';
 @Component({
   imports: [BankCardTileComponent, CardSettingsComponent, EmptyStateComponent, NoticeComponent, PageHeaderComponent, SkeletonComponent],
   template: `
-    <app-page-header title="Banka kartlarım" subtitle="Kartlarınızın kullanım ayarları ve limitleri." />
+    <app-page-header title="Banka kartlarım" subtitle="Temassız ödemeyi, internetten alışverişi ve limitleri siz belirlersiniz. Kartınızı kaybettiyseniz buradan hemen kapatın." />
 
     @if (error(); as message) {
       <app-notice class="mb-4" [message]="message" />
@@ -26,7 +26,7 @@ import { CardSettingsComponent } from './components/card-settings.component';
     @if (loading() && cards().length === 0) {
       <app-skeleton />
     } @else if (cards().length === 0 && !error()) {
-      <app-empty-state>Size tanımlı bir kart bulunmuyor.</app-empty-state>
+      <app-empty-state>Size tanımlı bir banka kartı yok.</app-empty-state>
     } @else {
       <div class="space-y-4">
         @for (card of cards(); track card.cardId) {

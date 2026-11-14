@@ -1,5 +1,5 @@
 @if (newYear()) {
-  <app-page-header title="Yılbaşı hedefleri" subtitle="Yeni yıla girerken koyduğunuz hedefler ve onlar için biriken para.">
+  <app-page-header title="Yılbaşı hedefleri" subtitle="Yeni yıla dair hedefleriniz ve onlar için kenara koyduğunuz para.">
     <button type="button" class="btn-primary" (click)="startCreating()">Hedef ekle</button>
   </app-page-header>
 
@@ -21,7 +21,7 @@
     </section>
   }
 } @else {
-  <app-page-header title="Hedeflerim" subtitle="Her hedefin kendi kumbarası var. Elle ya da maaş gelince kendiliğinden dolar.">
+  <app-page-header title="Hedeflerim" subtitle="Her hedefin kendi kumbarası var. İster elle doldurun, ister maaş yatınca kendiliğinden dolsun.">
     <button type="button" class="btn-primary" (click)="startCreating()">Hedef ekle</button>
   </app-page-header>
 }

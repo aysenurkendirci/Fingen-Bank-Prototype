@@ -11,11 +11,11 @@ import { BalanceLineComponent } from './balance-line.component';
   template: `
     <div class="min-h-screen lg:grid lg:grid-cols-[5fr_6fr]">
       <aside class="hidden lg:flex flex-col justify-between bg-tile text-tile-ink p-12">
-        <app-brand-mark class="text-xl" />
+        <app-brand-mark inverse class="text-xl" />
         <div class="max-w-md">
           <app-balance-line class="mb-10 text-tile-ink/80" />
-          <p class="text-3xl leading-tight font-semibold tracking-[-0.02em]">Hesaplarınız ve önümüzdeki aylarınız tek yerde.</p>
-          <p class="mt-4 text-tile-ink/70">Paranızı yönetin, kart ve taksitlerinizin bakiyenize etkisini önceden görün.</p>
+          <p class="text-3xl leading-tight font-semibold tracking-[-0.02em]">Ay sonunu bugünden görün.</p>
+          <p class="mt-4 text-tile-ink/70">Maaş, kira, kart ekstresi, taksit. Hepsi takvime oturur; bakiyenizin ne zaman daralacağını önceden bilirsiniz.</p>
         </div>
         <span class="text-sm text-tile-ink/50">Bu bir portföy projesidir, gerçek bir banka değildir.</span>
       </aside>

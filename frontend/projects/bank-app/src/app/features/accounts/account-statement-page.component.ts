@@ -42,7 +42,7 @@ const PAGE_SIZE = 20;
     @if (loading() && entries().length === 0) {
       <app-skeleton class="mt-4" [rows]="5" />
     } @else if (entries().length === 0 && !error()) {
-      <app-empty-state>Bu hesapta henüz hareket yok.</app-empty-state>
+      <app-empty-state>Bu hesapta henüz hareket yok. İlk transferle birlikte burada görünecek.</app-empty-state>
     } @else {
       <ul class="bg-surface rounded-panel border border-line divide-y divide-line">
         @for (entry of entries(); track entry.entryId) {
