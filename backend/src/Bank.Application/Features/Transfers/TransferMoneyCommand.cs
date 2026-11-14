@@ -6,6 +6,7 @@ using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
 using Bank.Application.Common.Behaviors;
 using Bank.Application.Common.Exceptions;
+using Bank.Application.Features.Savings;
 using Bank.Contracts.Events;
 using Bank.Contracts.Payments;
 using Bank.Domain.Accounts;
@@ -47,14 +48,23 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
     private readonly ITransferRepository _transfers;
     private readonly IOutbox _outbox;
     private readonly ICurrentUser _currentUser;
+    private readonly ISavingsGoalRepository _goals;
+    private readonly IPublisher _publisher;
     private readonly ILogger<TransferMoneyCommandHandler> _logger;
 
     public TransferMoneyCommandHandler(
-        ITransferRepository transfers, IOutbox outbox, ICurrentUser currentUser, ILogger<TransferMoneyCommandHandler> logger)
+        ITransferRepository transfers,
+        IOutbox outbox,
+        ICurrentUser currentUser,
+        ISavingsGoalRepository goals,
+        IPublisher publisher,
+        ILogger<TransferMoneyCommandHandler> logger)
     {
         _transfers = transfers;
         _outbox = outbox;
         _currentUser = currentUser;
+        _goals = goals;
+        _publisher = publisher;
         _logger = logger;
     }
 
@@ -76,6 +86,11 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         }
 
         var sourceId = request.SourceAccountId!.Value;
+
+        // Money put aside for a goal goes back through the goal, to the customer's own account, never straight out.
+        if (await _goals.IsSavingsAccountAsync(sourceId, ct))
+            throw new DomainException("Kumbara hesabından doğrudan para gönderilemez. Hedefler ekranından kendi hesabınıza aktarın.");
+
         var targetId = await _transfers.FindAccountIdAsync(Iban.Parse(request.TargetIban), ct)
                        ?? throw new DomainException("Bu IBAN'a ait bir hesap bulunamadı.");
 
@@ -93,6 +108,9 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         // Same transaction as the transfer: the event exists if and only if the money moved.
         await _outbox.AddAsync(
             new TransferCompleted(stored.TransferId, source.Id, target.Id, amount.Amount, amount.Currency.Code, stored.CreatedAt), ct);
+
+        // Inside the same transaction: auto-save rules on the receiving account take their share now.
+        await _publisher.Publish(new IncomingTransferPosted(stored.TransferId, target.Id, amount.Amount), ct);
 
         _logger.LogInformation(
             "Transfer {TransferId}: {Amount} from account {SourceAccountId} to account {TargetAccountId}",
