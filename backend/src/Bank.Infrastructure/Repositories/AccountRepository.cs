@@ -9,8 +9,14 @@ namespace Bank.Infrastructure.Repositories;
 public sealed class AccountRepository : IAccountRepository
 {
     private readonly SqlConnectionFactory _connections;
+    // Closing an account is a command and joins its unit of work; the reads open their own connection.
+    private readonly DbSession _session;
 
-    public AccountRepository(SqlConnectionFactory connections) => _connections = connections;
+    public AccountRepository(SqlConnectionFactory connections, DbSession session)
+    {
+        _connections = connections;
+        _session = session;
+    }
 
     public async Task<decimal> GetAvailableBalanceAsync(long userId, string currencyCode, CancellationToken ct = default)
     {
@@ -60,6 +66,50 @@ public sealed class AccountRepository : IAccountRepository
             sql,
             new { UserId = userId, AccountType = accountType, CurrencyCode = currencyCode, Iban = iban.Value },
             cancellationToken: ct));
+    }
+
+    public async Task<CloseAccountOutcome> CloseAsync(long userId, long accountId, CancellationToken ct = default)
+    {
+        // One batch under an update lock on the customer's accounts, so no transfer can land between the checks and
+        // the close. An auto-save rule watching the account is dropped with it: nothing will arrive there any more.
+        const string sql = """
+            DECLARE @Type VARCHAR(20), @Currency CHAR(3), @Status VARCHAR(10), @Balance DECIMAL(19, 4);
+
+            SELECT @Type = AccountType, @Currency = CurrencyCode, @Status = Status, @Balance = Balance
+            FROM dbo.Accounts WITH (UPDLOCK, ROWLOCK)
+            WHERE AccountId = @AccountId AND UserId = @UserId;
+
+            IF @Type IS NULL SELECT 1;
+            ELSE IF @Status <> 'Active' SELECT 2;
+            ELSE IF @Type = 'Savings' SELECT 4;
+            ELSE IF @Balance <> 0 SELECT 3;
+            ELSE IF @Type = 'Demand' AND @Currency = 'TRY' AND NOT EXISTS (
+                SELECT 1 FROM dbo.Accounts WITH (UPDLOCK)
+                WHERE UserId = @UserId AND AccountId <> @AccountId AND AccountType = 'Demand' AND CurrencyCode = 'TRY' AND Status = 'Active')
+                SELECT 5;
+            ELSE
+            BEGIN
+                UPDATE dbo.Accounts SET Status = 'Closed' WHERE AccountId = @AccountId;
+                UPDATE savings.Goals
+                SET AutoSaveSourceAccountId = NULL, AutoSaveMode = NULL, AutoSaveValue = NULL, AutoSaveMinIncoming = NULL
+                WHERE AutoSaveSourceAccountId = @AccountId;
+                SELECT 0;
+            END
+            """;
+
+        var connection = await _session.GetConnectionAsync(ct);
+        var outcome = await connection.ExecuteScalarAsync<int>(
+            new CommandDefinition(sql, new { AccountId = accountId, UserId = userId }, _session.Transaction, cancellationToken: ct));
+
+        return outcome switch
+        {
+            0 => CloseAccountOutcome.Closed,
+            1 => CloseAccountOutcome.NotFound,
+            2 => CloseAccountOutcome.NotActive,
+            3 => CloseAccountOutcome.HasBalance,
+            4 => CloseAccountOutcome.IsSavings,
+            _ => CloseAccountOutcome.LastDemandAccount,
+        };
     }
 
     public async Task<bool> BelongsToAsync(long userId, long accountId, CancellationToken ct = default)

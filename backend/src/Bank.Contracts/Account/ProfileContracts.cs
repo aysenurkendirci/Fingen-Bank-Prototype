@@ -22,7 +22,7 @@ public sealed record UpdateProfileRequest(
     string Email,
 
     [Required(ErrorMessage = "Telefon zorunludur.")]
-    [Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
+    [RegularExpression(@"^(\+90|0)?\s*5\d{2}\s*\d{3}\s*\d{2}\s*\d{2}$", ErrorMessage = "Telefon 5xx xxx xx xx biçiminde bir cep telefonu olmalıdır.")]
     [StringLength(20)]
     string Phone
 );

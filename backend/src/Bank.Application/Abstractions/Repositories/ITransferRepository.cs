@@ -20,6 +20,12 @@ public interface ITransferRepository
     /// <summary>Loads and locks the accounts, always in ascending id order so two opposite transfers cannot deadlock.</summary>
     Task<IReadOnlyList<Account>> LockAccountsAsync(IReadOnlyCollection<long> accountIds, CancellationToken ct = default);
 
+    /// <summary>
+    /// What the user sent to other customers today in one currency. "Today" is the Istanbul business day by the
+    /// database clock, the same clock that stamps every transfer.
+    /// </summary>
+    Task<decimal> SumSentToOthersTodayAsync(long userId, string currencyCode, CancellationToken ct = default);
+
     Task<StoredTransfer> AddAsync(NewTransfer transfer, CancellationToken ct = default);
 
     /// <summary>A transfer sent by the user.</summary>

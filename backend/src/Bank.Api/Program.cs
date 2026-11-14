@@ -58,6 +58,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddAuthRateLimiting(builder.Configuration);
 builder.Services.AddMoneyRateLimiting(builder.Configuration);
+builder.Services.Configure<Bank.Application.Common.BankingRules>(builder.Configuration.GetSection(Bank.Application.Common.BankingRules.Section));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();

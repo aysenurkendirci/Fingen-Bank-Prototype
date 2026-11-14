@@ -4,6 +4,7 @@ using System.Text;
 using Bank.Application.Abstractions.Messaging;
 using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
+using Bank.Application.Common;
 using Bank.Application.Common.Behaviors;
 using Bank.Application.Common.Exceptions;
 using Bank.Application.Features.Savings;
@@ -15,6 +16,7 @@ using Bank.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Bank.Application.Features.Transfers;
 
@@ -50,6 +52,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
     private readonly ICurrentUser _currentUser;
     private readonly ISavingsGoalRepository _goals;
     private readonly IPublisher _publisher;
+    private readonly BankingRules _rules;
     private readonly ILogger<TransferMoneyCommandHandler> _logger;
 
     public TransferMoneyCommandHandler(
@@ -58,6 +61,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         ICurrentUser currentUser,
         ISavingsGoalRepository goals,
         IPublisher publisher,
+        IOptions<BankingRules> rules,
         ILogger<TransferMoneyCommandHandler> logger)
     {
         _transfers = transfers;
@@ -65,6 +69,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         _currentUser = currentUser;
         _goals = goals;
         _publisher = publisher;
+        _rules = rules.Value;
         _logger = logger;
     }
 
@@ -100,6 +105,14 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         var target = accounts.Single(a => a.Id == targetId);
 
         var amount = new Money(request.Amount, source.Currency);
+
+        // Money for someone else counts against the internet banking limits; the source account is locked above,
+        // so two transfers from it cannot both slip under the daily limit.
+        if (target.UserId != userId)
+        {
+            var sentToday = await _transfers.SumSentToOthersTodayAsync(userId, amount.Currency.Code, ct);
+            TransferLimits.Ensure(amount, sentToday, _rules.LimitFor(amount.Currency.Code));
+        }
         var postings = FundsTransfer.Execute(source, target, amount, request.RecipientName);
 
         var stored = await _transfers.AddAsync(

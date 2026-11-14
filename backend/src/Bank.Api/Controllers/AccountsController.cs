@@ -31,6 +31,15 @@ public sealed class AccountsController : ControllerBase
         return Created($"/api/accounts/{opened.Id}/statement", opened);
     }
 
+    /// <summary>Closes an empty account. The last lira demand account and goals' savings accounts stay open.</summary>
+    [EnableRateLimiting(MoneyRateLimiting.Policy)]
+    [HttpPost("{id:long}/close")]
+    public async Task<IActionResult> Close(long id, CancellationToken ct)
+    {
+        await _sender.Send(new CloseAccountCommand(id), ct);
+        return NoContent();
+    }
+
     /// <summary>The account's movements as recorded in the ledger, newest first.</summary>
     [HttpGet("{id:long}/statement")]
     public async Task<ActionResult<PagedResponse<StatementEntryResponse>>> Statement(

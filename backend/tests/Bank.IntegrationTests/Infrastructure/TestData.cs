@@ -30,6 +30,19 @@ public static class TestData
         return ((long)(await command.ExecuteScalarAsync())!, iban);
     }
 
+    /// <summary>Sets a balance directly, e.g. to empty an account a test seeded with money.</summary>
+    public static async Task SetBalanceAsync(long accountId, decimal balance)
+    {
+        await using var connection = new SqlConnection(ApiFactory.ConnectionString);
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = "UPDATE dbo.Accounts SET Balance = @Balance WHERE AccountId = @AccountId";
+        command.Parameters.AddWithValue("@AccountId", accountId);
+        command.Parameters.AddWithValue("@Balance", balance);
+        await command.ExecuteNonQueryAsync();
+    }
+
     /// <summary>Cards are issued by the bank, not through this API, so they are seeded too.</summary>
     public static async Task<long> AddCardAsync(long userId, long accountId, string status = "Active")
     {

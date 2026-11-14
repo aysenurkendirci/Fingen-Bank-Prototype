@@ -14,6 +14,9 @@ public interface IAccountRepository
 
     Task<AccountRow> OpenAsync(long userId, string accountType, string currencyCode, Iban iban, CancellationToken ct = default);
 
+    /// <summary>Closes the account if every rule allows it; the checks and the update share one lock.</summary>
+    Task<CloseAccountOutcome> CloseAsync(long userId, long accountId, CancellationToken ct = default);
+
     Task<bool> BelongsToAsync(long userId, long accountId, CancellationToken ct = default);
 
     /// <summary>Ledger lines of one account, newest first.</summary>
@@ -42,4 +45,14 @@ public sealed class StatementEntryRow
     public string Description { get; init; } = string.Empty;
     public string CounterpartyIban { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
+}
+
+public enum CloseAccountOutcome
+{
+    Closed,
+    NotFound,
+    NotActive,
+    HasBalance,
+    IsSavings,
+    LastDemandAccount,
 }

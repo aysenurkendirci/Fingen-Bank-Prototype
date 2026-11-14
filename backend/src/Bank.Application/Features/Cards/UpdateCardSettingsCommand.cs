@@ -3,12 +3,25 @@ using Bank.Application.Abstractions.Security;
 using Bank.Application.Common.Exceptions;
 using Bank.Contracts.Cards;
 using Bank.Domain.Cards;
+using FluentValidation;
 using MediatR;
 
 namespace Bank.Application.Features.Cards;
 
 /// <summary>Contactless and online use on or off, and the daily and monthly spending limits.</summary>
 public sealed record UpdateCardSettingsCommand(long CardId, CardSettingsRequest Settings) : IRequest<CardSettingsResponse>;
+
+public sealed class UpdateCardSettingsCommandValidator : AbstractValidator<UpdateCardSettingsCommand>
+{
+    public UpdateCardSettingsCommandValidator()
+    {
+        // A day cannot allow more than the whole month does.
+        RuleFor(c => c.Settings.DailyLimit)
+            .LessThanOrEqualTo(c => c.Settings.MonthlyLimit)
+            .WithMessage("Günlük limit aylık limitten büyük olamaz.")
+            .OverridePropertyName("dailyLimit");
+    }
+}
 
 public sealed class UpdateCardSettingsCommandHandler : IRequestHandler<UpdateCardSettingsCommand, CardSettingsResponse>
 {

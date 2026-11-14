@@ -145,6 +145,31 @@ public sealed class TransferRepository : ITransferRepository
                ?? throw new InvalidOperationException($"Transfer {transferId} was not found right after being written.");
     }
 
+    public async Task<decimal> SumSentToOthersTodayAsync(long userId, string currencyCode, CancellationToken ct = default)
+    {
+        // Only money that left for another customer; moves between the user's own accounts are not limited. The day
+        // is turned into a UTC range once, so the CreatedAt index can be used.
+        const string sql = """
+            DECLARE @StartLocal DATETIME2 = CAST(CAST(SYSUTCDATETIME() AT TIME ZONE 'UTC' AT TIME ZONE 'Turkey Standard Time' AS DATE) AS DATETIME2);
+            DECLARE @FromUtc DATETIME2 = CAST(@StartLocal AT TIME ZONE 'Turkey Standard Time' AT TIME ZONE 'UTC' AS DATETIME2);
+            DECLARE @ToUtc DATETIME2 = DATEADD(DAY, 1, @FromUtc);
+
+            SELECT COALESCE(SUM(t.Amount), 0)
+            FROM payments.Transfers t
+            JOIN dbo.Accounts target ON target.AccountId = t.TargetAccountId
+            WHERE t.UserId = @UserId AND t.CurrencyCode = @CurrencyCode
+              AND t.CreatedAt >= @FromUtc AND t.CreatedAt < @ToUtc
+              AND target.UserId <> @UserId
+            """;
+
+        var connection = await _session.GetConnectionAsync(ct);
+        return await connection.ExecuteScalarAsync<decimal>(new CommandDefinition(
+            sql,
+            new { UserId = userId, CurrencyCode = currencyCode },
+            _session.Transaction,
+            cancellationToken: ct));
+    }
+
     public async Task<StoredTransfer?> GetAsync(long userId, long transferId, CancellationToken ct = default)
     {
         var sql = string.Format(TransferSelect, string.Empty) + """
