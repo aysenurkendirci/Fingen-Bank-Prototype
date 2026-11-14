@@ -145,9 +145,20 @@ public sealed class ScenarioComparerTests
     [Fact]
     public void PurchaseInThePast_IsRejected()
     {
-        var scenario = new PurchaseScenario(CardId, "Laptop", From.AddDays(-1), [Option(3)]);
+        // From is tomorrow, so two days before it is yesterday.
+        var scenario = new PurchaseScenario(CardId, "Laptop", From.AddDays(-2), [Option(3)]);
 
         Assert.Throws<DomainException>(() => ScenarioComparer.Compare(TightBudget(), scenario));
+    }
+
+    [Fact]
+    public void PurchaseToday_IsCompared()
+    {
+        var scenario = new PurchaseScenario(CardId, "Laptop", From.AddDays(-1), [Option(3)]);
+
+        var comparison = ScenarioComparer.Compare(TightBudget(), scenario);
+
+        Assert.Single(comparison.Options);
     }
 
     [Fact]

@@ -86,7 +86,8 @@ export class ProfilePageComponent extends BasePage {
         link.href = url;
         link.download = 'kisisel-verilerim.json';
         link.click();
-        URL.revokeObjectURL(url);
+        // Revoking at once can cancel the download before the browser has read the file.
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       },
     });
   }

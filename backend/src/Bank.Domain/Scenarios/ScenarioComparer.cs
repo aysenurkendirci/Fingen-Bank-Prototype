@@ -29,7 +29,10 @@ public static class ScenarioComparer
             throw new DomainException($"1 ile {MaxOptions} arasında seçenek karşılaştırılabilir.");
         if (options.Distinct().Count() != options.Count)
             throw new DomainException("Aynı seçenek birden fazla kez verilmiş.");
-        if (scenario.PurchaseDate < current.From)
+        // The projection starts tomorrow because today's movements are already in the balance, but a purchase
+        // made today is still ahead of its installments, so today counts as not in the past.
+        var today = current.From.AddDays(-1);
+        if (scenario.PurchaseDate < today)
             throw new DomainException("Alışveriş tarihi geçmişte olamaz.");
 
         var card = current.Cards.SingleOrDefault(c => c.Id == scenario.CreditCardId)
