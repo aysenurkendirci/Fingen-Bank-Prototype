@@ -1,8 +1,10 @@
+using Bank.Api.Security;
 using Bank.Application.Features.Transfers;
 using Bank.Contracts.Payments;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
@@ -23,6 +25,7 @@ public sealed class TransfersController : ControllerBase
     /// transfer (marked with <c>Idempotent-Replayed: true</c>) instead of sending the money again; the same key
     /// with a different body is refused with 422.
     /// </remarks>
+    [EnableRateLimiting(MoneyRateLimiting.Policy)]
     [HttpPost]
     public async Task<ActionResult<TransferResponse>> Send(
         [FromBody] TransferRequest request,

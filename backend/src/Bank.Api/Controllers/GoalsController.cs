@@ -1,8 +1,10 @@
+using Bank.Api.Security;
 using Bank.Application.Features.Savings;
 using Bank.Contracts.Savings;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
@@ -20,6 +22,7 @@ public sealed class GoalsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<GoalResponse>>> List(CancellationToken ct)
         => Ok(await _sender.Send(new ListGoalsQuery(), ct));
 
+    [EnableRateLimiting(MoneyRateLimiting.Policy)]
     [HttpPost]
     public async Task<ActionResult<GoalResponse>> Create([FromBody] GoalRequest request, CancellationToken ct)
     {
@@ -32,12 +35,14 @@ public sealed class GoalsController : ControllerBase
         => Ok(await _sender.Send(new UpdateGoalCommand(id, request), ct));
 
     /// <summary>Puts money into the goal. Needs an <c>Idempotency-Key</c>, so a retried request moves the money once.</summary>
+    [EnableRateLimiting(MoneyRateLimiting.Policy)]
     [HttpPost("{id:long}/deposits")]
     public async Task<ActionResult<GoalResponse>> Deposit(
         long id, [FromBody] GoalMoneyRequest request, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, CancellationToken ct)
         => Ok(await _sender.Send(new DepositToGoalCommand(id, request, idempotencyKey), ct));
 
     /// <summary>Takes money out of the goal into one of the customer's own accounts.</summary>
+    [EnableRateLimiting(MoneyRateLimiting.Policy)]
     [HttpPost("{id:long}/withdrawals")]
     public async Task<ActionResult<GoalResponse>> Withdraw(
         long id, [FromBody] GoalMoneyRequest request, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, CancellationToken ct)

@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Bank.Contracts.Auth;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Bank.IntegrationTests.Infrastructure;
 
@@ -11,14 +12,14 @@ public static class TestUsers
 
     private static int _sequence;
 
-    public static async Task<HttpClient> CreateAuthenticatedClientAsync(this ApiFactory factory)
+    public static async Task<HttpClient> CreateAuthenticatedClientAsync(this WebApplicationFactory<Program> factory)
         => (await factory.CreateUserAsync()).Client;
 
-    public static Task<(HttpClient Client, long UserId)> CreateUserAsync(this ApiFactory factory)
+    public static Task<(HttpClient Client, long UserId)> CreateUserAsync(this WebApplicationFactory<Program> factory)
         => factory.CreateUserAsync(NewRegistration());
 
     /// <summary>For tests that need to know what was registered, e.g. to look for it in the database later.</summary>
-    public static async Task<(HttpClient Client, long UserId)> CreateUserAsync(this ApiFactory factory, RegisterRequest registration)
+    public static async Task<(HttpClient Client, long UserId)> CreateUserAsync(this WebApplicationFactory<Program> factory, RegisterRequest registration)
     {
         var client = factory.CreateClient();
 
@@ -31,7 +32,7 @@ public static class TestUsers
     }
 
     /// <summary>A second, independent session for a user who already exists, as if from another device.</summary>
-    public static async Task<HttpClient> SignInAsync(this ApiFactory factory, string tcNo, string password)
+    public static async Task<HttpClient> SignInAsync(this WebApplicationFactory<Program> factory, string tcNo, string password)
     {
         var client = factory.CreateClient();
 

@@ -1,9 +1,11 @@
+using Bank.Api.Security;
 using Bank.Application.Features.Accounts;
 using Bank.Contracts.Finance;
 using Bank.Contracts.Payments;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
@@ -21,6 +23,7 @@ public sealed class AccountsController : ControllerBase
         => Ok(await _sender.Send(new ListAccountsQuery(), ct));
 
     /// <summary>Opens an empty account with a newly generated IBAN.</summary>
+    [EnableRateLimiting(MoneyRateLimiting.Policy)]
     [HttpPost]
     public async Task<ActionResult<AccountResponse>> Open([FromBody] OpenAccountRequest request, CancellationToken ct)
     {

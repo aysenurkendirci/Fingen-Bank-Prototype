@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Bank.Contracts.Auth;
+using Bank.Contracts.Savings;
 using Bank.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,43 @@ public sealed class SecurityTests
         Assert.Equal(HttpStatusCode.TooManyRequests, blocked.StatusCode);
         Assert.True(blocked.Headers.Contains("Retry-After"));
         Assert.Equal("Çok fazla deneme", problem!.Title);
+    }
+
+    [Fact]
+    public async Task MoneyMovements_AreLimitedPerCustomer()
+    {
+        using var throttled = _factory.WithWebHostBuilder(b => b.UseSetting("RateLimiting:Money:PermitLimit", "2"));
+        var (client, _) = await throttled.CreateUserAsync();
+
+        var statuses = new List<HttpStatusCode>();
+        for (var i = 0; i < 3; i++)
+            statuses.Add((await client.PostAsJsonAsync("/api/goals", new GoalRequest($"Hedef {i}", 1_000m, null, null))).StatusCode);
+
+        Assert.Equal([HttpStatusCode.Created, HttpStatusCode.Created, HttpStatusCode.TooManyRequests], statuses);
+    }
+
+    [Fact]
+    public async Task AnotherOrigin_IsNotAllowedToCallTheApi()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Options, "/api/accounts");
+        request.Headers.Add("Origin", "https://evil.example");
+        request.Headers.Add("Access-Control-Request-Method", "GET");
+
+        var response = await _factory.CreateClient().SendAsync(request);
+
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
+    [Theory]
+    [InlineData("sadeceharf")]
+    [InlineData("12345678")]
+    public async Task APasswordWithoutLettersAndDigits_IsRefused(string password)
+    {
+        var registration = TestUsers.NewRegistration() with { Password = password };
+
+        var response = await _factory.CreateClient().PostAsJsonAsync("/api/auth/register", registration);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

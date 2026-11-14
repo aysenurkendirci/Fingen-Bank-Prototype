@@ -28,6 +28,7 @@ public sealed record RegisterRequest(
 
     [Required(ErrorMessage = "Şifre zorunludur.")]
     [StringLength(128, MinimumLength = 8, ErrorMessage = "Şifre en az 8 karakter olmalıdır.")]
+    [RegularExpression(@"^(?=.*\p{L})(?=.*\d).+$", ErrorMessage = "Şifre en az bir harf ve bir rakam içermelidir.")]
     string Password,
 
     [Required(ErrorMessage = "Üyelik tipi zorunludur.")]

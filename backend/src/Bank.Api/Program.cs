@@ -17,6 +17,9 @@ using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Every JSON body here is small. The statement import raises its own limit for the file it accepts.
+builder.WebHost.ConfigureKestrel(kestrel => kestrel.Limits.MaxRequestBodySize = 1024 * 1024);
+
 // Structured logs: in production every line is one JSON object (with CorrelationId, UserId and so on as fields)
 // that a log store can index; in development they stay readable in the console.
 builder.Host.UseSerilog((context, services, logger) =>
@@ -54,21 +57,28 @@ builder.Services.AddProblemDetails(options =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddAuthRateLimiting(builder.Configuration);
+builder.Services.AddMoneyRateLimiting(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
+// The web app reaches the API on its own origin (nginx, or the dev server's proxy), so no other origin needs
+// access. An origin is allowed only when configured, e.g. for running the app from a separate dev host.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins(allowedOrigins)
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .WithHeaders("Authorization", "Content-Type", "Idempotency-Key", "X-Requested-By", "X-Correlation-Id");
     });
 });
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing");
+// HS256 needs a key at least as long as its output; a short one can be brute-forced offline from any token.
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Jwt:Key must be at least 32 bytes long.");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is missing");
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is missing");
 
@@ -97,6 +107,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            // Only the algorithm the tokens are signed with; anything else (including "none") is refused.
+            ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -163,8 +175,9 @@ if (app.Environment.IsDevelopment())
 
 // Order matters: CORS must answer preflight requests before authentication rejects them.
 app.UseCors("AllowAngular");
-app.UseRateLimiter();
 app.UseAuthentication();
+// After authentication, so per-customer limits can see who is asking.
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
