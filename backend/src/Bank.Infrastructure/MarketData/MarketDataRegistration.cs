@@ -32,12 +32,14 @@ public static class MarketDataRegistration
         return services;
     }
 
-    // Short timeouts: rates sit next to the customer's balance and must never keep the page waiting long.
+    // TCMB sometimes takes close to ten seconds to answer, so an attempt gets that long. The page never waits for
+    // this: rates load on their own request, and a cached or stale snapshot answers in the meantime.
     private static void Resilience(HttpStandardResilienceOptions options)
     {
-        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(4);
-        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
-        options.Retry.MaxRetryAttempts = 2;
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(25);
+        options.Retry.MaxRetryAttempts = 1;
+        // Must be at least twice the attempt timeout.
         options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
     }
 }

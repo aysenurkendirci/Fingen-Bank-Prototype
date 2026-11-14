@@ -14,7 +14,7 @@ Döviz hesaplarının lira karşılığını göstermek ve kur hesaplayıcı sun
 - Kaynaklar (`IExchangeRateSource`) kayıt sırasıyla denenir. Bir banka API'si eklendiğinde TCMB'nin önüne konur. Anahtarı olmayan kurulumda TCMB tek başına cevap verir, böylece projeyi açan herkes gerçek kur görür.
 - Kurlar 10 dakika önbellekte tutulur. Önbellek boşken aynı anda gelen istekler tek bir dış istek bekler.
 - Bütün kaynaklar düşerse son başarılı kurlar "eski" işaretiyle sunulur, ekranda bu açıkça yazar. Hiç kur yoksa API 503 döner. Sayfa yalnızca kur bölümünü gizler, bakiyeler gösterilmeye devam eder.
-- HTTP çağrıları `Microsoft.Extensions.Http.Resilience` ile sarılır: deneme başına 4 saniye, toplamda 10 saniye zaman aşımı, 2 yeniden deneme ve devre kesici.
+- HTTP çağrıları `Microsoft.Extensions.Http.Resilience` ile sarılır: deneme başına 10 saniye (TCMB zaman zaman bu kadar yavaş), toplamda 25 saniye zaman aşımı, 1 yeniden deneme ve devre kesici. Kurlar sayfadan ayrı yüklendiği için bu bekleme kimseyi bekletmez.
 - Dış yanıt güvenilmez veri sayılır. XML, DTD kapalı ve çözümleyici olmadan okunur (XXE ve entity patlamasına karşı). Yanıt boyutu sınırlıdır. Kur değerleri sayı, sıfırdan büyük ve geçerli para birimi kodu olmak zorundadır, olmayan satır atlanır.
 - Lira karşılığı, müşterinin dövizi bozdurunca alacağı kurla (alış kuru) hesaplanır ve "yaklaşık" diye gösterilir. Kuru olmayan bir döviz varsa toplam hiç gösterilmez, eksik bir toplam yanıltır.
 
