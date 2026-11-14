@@ -30,6 +30,12 @@
         </button>
       </div>
       <p class="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] mt-2"><app-money display [amount]="data.totalWealth" /></p>
+      @if (estimate(); as estimate) {
+        <p class="mt-2 text-sm text-ink-soft">
+          Döviz hesaplarınızla birlikte yaklaşık <app-money class="font-medium text-ink" [amount]="estimate.total" />
+          <span class="text-ink-faint">({{ estimate.source }} alış kuru, {{ estimate.publishedOn | date: 'd MMMM' }})</span>
+        </p>
+      }
     </section>
   </div>
 

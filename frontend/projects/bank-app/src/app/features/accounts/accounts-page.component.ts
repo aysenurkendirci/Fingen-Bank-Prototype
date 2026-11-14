@@ -5,7 +5,9 @@ import { RouterLink } from '@angular/router';
 import { BasePage } from '../../core/page/base-page';
 import { ToastService } from '../../core/ui/toast.service';
 import { AccountsApi } from '../../data-access/api/banking.api';
+import { MarketApi } from '../../data-access/api/market.api';
 import { Account, AccountCurrency } from '../../data-access/models/banking.models';
+import { ExchangeRates } from '../../data-access/models/market.models';
 import { ACCOUNT_STATUS_LABELS, ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
 import { IbanCopyComponent } from '../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../shared/finance/money.component';
@@ -13,10 +15,11 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { SkeletonComponent } from '../../shared/ui/skeleton.component';
+import { ExchangeRatesPanelComponent } from './components/exchange-rates-panel.component';
 
 /** The customer's accounts, with the way into each statement and into opening a new account. */
 @Component({
-  imports: [FormsModule, RouterLink, IbanCopyComponent, MoneyComponent, EmptyStateComponent, NoticeComponent, PageHeaderComponent, SkeletonComponent],
+  imports: [FormsModule, RouterLink, IbanCopyComponent, MoneyComponent, EmptyStateComponent, NoticeComponent, PageHeaderComponent, SkeletonComponent, ExchangeRatesPanelComponent],
   template: `
     <app-page-header title="Hesaplarım" subtitle="Bakiyeleriniz ve hesap hareketleriniz.">
       <button type="button" class="btn-secondary" (click)="opening.set(!opening())">Hesap aç</button>
@@ -42,39 +45,49 @@ import { SkeletonComponent } from '../../shared/ui/skeleton.component';
       </form>
     }
 
-    @if (loading() && accounts().length === 0) {
-      <app-skeleton />
-    } @else if (accounts().length === 0 && !error()) {
-      <app-empty-state>Henüz hesabınız yok. "Hesap aç" ile ilk hesabınızı oluşturabilirsiniz.</app-empty-state>
-    } @else {
-      <ul class="bg-surface rounded-panel border border-line divide-y divide-line">
-        @for (account of accounts(); track account.id) {
-          <li class="px-4 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-ink">
-                {{ typeDisplay[account.accountType].label }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span>
-                @if (account.status !== 'Active') {
-                  <span class="badge bg-canvas text-ink-soft ml-1">{{ statusLabels[account.status] }}</span>
-                }
-              </p>
-              <app-iban-copy class="block mt-1" [iban]="account.iban" />
-            </div>
-            <div class="flex items-center gap-5">
-              <p class="text-xl font-semibold tracking-[-0.01em]"><app-money display [amount]="account.balance" [currency]="account.currencyCode" /></p>
-              <a class="btn-link" [routerLink]="['/dashboard/accounts', account.id]">Hareketler</a>
-              @if (account.status === 'Active') {
-                <a class="btn-link" routerLink="/dashboard/transfer" [queryParams]="{ from: account.id }">Gönder</a>
-              }
-            </div>
-          </li>
+    <div class="grid gap-6 lg:grid-cols-[1fr_20rem] items-start">
+      <div class="min-w-0">
+        @if (loading() && accounts().length === 0) {
+          <app-skeleton />
+        } @else if (accounts().length === 0 && !error()) {
+          <app-empty-state>Henüz hesabınız yok. "Hesap aç" ile ilk hesabınızı oluşturabilirsiniz.</app-empty-state>
+        } @else {
+          <ul class="bg-surface rounded-panel border border-line divide-y divide-line">
+            @for (account of accounts(); track account.id) {
+              <li class="px-4 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-ink">
+                    {{ typeDisplay[account.accountType].label }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span>
+                    @if (account.status !== 'Active') {
+                      <span class="badge bg-canvas text-ink-soft ml-1">{{ statusLabels[account.status] }}</span>
+                    }
+                  </p>
+                  <app-iban-copy class="block mt-1" [iban]="account.iban" />
+                </div>
+                <div class="flex items-center gap-5">
+                  <p class="text-xl font-semibold tracking-[-0.01em]"><app-money display [amount]="account.balance" [currency]="account.currencyCode" /></p>
+                  <a class="btn-link" [routerLink]="['/dashboard/accounts', account.id]">Hareketler</a>
+                  @if (account.status === 'Active') {
+                    <a class="btn-link" routerLink="/dashboard/transfer" [queryParams]="{ from: account.id }">Gönder</a>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
         }
-      </ul>
-    }
+      </div>
+
+      <!-- Rates arrive on their own request; if they fail the accounts are still shown. -->
+      @if (rates(); as rates) {
+        <app-exchange-rates-panel [rates]="rates" />
+      }
+    </div>
   `,
 })
 export class AccountsPageComponent extends BasePage {
   private readonly api = inject(AccountsApi);
   private readonly toast = inject(ToastService);
+  private readonly market = inject(MarketApi);
 
   protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
   protected readonly statusLabels = ACCOUNT_STATUS_LABELS;
@@ -86,11 +99,13 @@ export class AccountsPageComponent extends BasePage {
 
   protected readonly accounts = signal<readonly Account[]>([]);
   protected readonly opening = signal(false);
+  protected readonly rates = signal<ExchangeRates | null>(null);
   protected currency: AccountCurrency = 'TRY';
 
   constructor() {
     super();
     this.fetch();
+    this.market.exchangeRates().subscribe({ next: (rates) => this.rates.set(rates), error: () => undefined });
   }
 
   protected open(): void {

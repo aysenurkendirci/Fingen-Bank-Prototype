@@ -1,13 +1,16 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { BasePage } from '../../core/page/base-page';
 import { BalancePrivacyService } from '../../core/ui/balance-privacy.service';
 import { DashboardApi } from '../../data-access/api/dashboard.api';
 import { PlanningApi } from '../../data-access/api/finance.api';
+import { MarketApi } from '../../data-access/api/market.api';
 import { DashboardResponse } from '../../data-access/models/dashboard.models';
 import { Projection } from '../../data-access/models/finance.models';
+import { ExchangeRates } from '../../data-access/models/market.models';
+import { totalInLira } from '../../shared/finance/currency-conversion';
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { BankCardTileComponent } from '../../shared/finance/bank-card-tile.component';
 import { MoneyComponent } from '../../shared/finance/money.component';
@@ -42,6 +45,7 @@ function greetingFor(hour: number): string {
 export class DashboardComponent extends BasePage {
   private readonly api = inject(DashboardApi);
   private readonly planning = inject(PlanningApi);
+  private readonly market = inject(MarketApi);
 
   protected readonly privacy = inject(BalancePrivacyService);
   protected readonly today = new Date();
@@ -52,8 +56,21 @@ export class DashboardComponent extends BasePage {
   /** The next three months at a glance; loaded on its own so a failure here never hides the accounts. */
   protected readonly outlook = signal<Projection | null>(null);
 
+  protected readonly rates = signal<ExchangeRates | null>(null);
+
+  /** Every active account in lira at today's buying rate, shown only when there is foreign currency to add. */
+  protected readonly estimate = computed(() => {
+    const data = this.data();
+    const rates = this.rates();
+    const active = data?.accounts.filter((a) => a.status === 'Active') ?? [];
+    if (!rates || !active.some((a) => a.currencyCode !== 'TRY')) return null;
+    const total = totalInLira(active, rates.rates);
+    return total === null ? null : { total, source: rates.source, publishedOn: rates.publishedOn };
+  });
+
   constructor() {
     super();
+    this.market.exchangeRates().subscribe({ next: (rates) => this.rates.set(rates), error: () => undefined });
     this.planning.projection(3).subscribe({ next: (projection) => this.outlook.set(projection) });
     this.load(this.api.getDashboard(), (response) => this.data.set(response), 'Panel verileri yüklenemedi.');
   }
