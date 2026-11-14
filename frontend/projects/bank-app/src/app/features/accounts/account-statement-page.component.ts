@@ -44,7 +44,7 @@ const PAGE_SIZE = 20;
     } @else if (entries().length === 0 && !error()) {
       <app-empty-state>Bu hesapta henüz hareket yok.</app-empty-state>
     } @else {
-      <ul class="bg-surface rounded-xl border border-line divide-y divide-line">
+      <ul class="bg-surface rounded-panel border border-line divide-y divide-line">
         @for (entry of entries(); track entry.entryId) {
           <li class="flex items-center justify-between gap-4 px-4 py-3">
             <div class="min-w-0">

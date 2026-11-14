@@ -17,7 +17,7 @@ import { MoneyComponent } from '../../../shared/finance/money.component';
       <h2 class="section-title">Hesaplarım</h2>
       <a routerLink="/dashboard/accounts" class="btn-link">Tümü</a>
     </div>
-    <div class="bg-surface rounded-xl border border-line">
+    <div class="bg-surface rounded-panel border border-line">
       @if (accounts().length === 0) {
         <p class="p-5 text-sm text-ink-soft">Henüz hesabınız yok.</p>
       }

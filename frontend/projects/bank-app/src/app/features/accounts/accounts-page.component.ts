@@ -47,7 +47,7 @@ import { SkeletonComponent } from '../../shared/ui/skeleton.component';
     } @else if (accounts().length === 0 && !error()) {
       <app-empty-state>Henüz hesabınız yok. "Hesap aç" ile ilk hesabınızı oluşturabilirsiniz.</app-empty-state>
     } @else {
-      <ul class="bg-surface rounded-xl border border-line divide-y divide-line">
+      <ul class="bg-surface rounded-panel border border-line divide-y divide-line">
         @for (account of accounts(); track account.id) {
           <li class="px-4 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
             <div class="min-w-0">

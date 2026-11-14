@@ -7,7 +7,7 @@ import { ConfirmService } from '../../core/ui/confirm.service';
   selector: 'app-confirm-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <dialog #dialog class="m-auto w-full max-w-sm rounded-xl p-5 bg-surface text-ink backdrop:bg-ink/40" (close)="confirm.answer(false)">
+    <dialog #dialog class="m-auto w-full max-w-sm rounded-panel p-5 bg-surface text-ink backdrop:bg-ink/40" (close)="confirm.answer(false)">
       @if (confirm.request(); as request) {
         <h2 class="section-title">{{ request.title }}</h2>
         <p class="mt-2 text-sm text-ink-soft">{{ request.message }}</p>

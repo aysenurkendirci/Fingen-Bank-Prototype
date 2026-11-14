@@ -1,0 +1,68 @@
+// The only things that move. Each one answers something the person did, except the single entrance on the home
+// screen. Durations and curves are --m-* variables from design-dna.json. Only transform, opacity and colours
+// animate, so nothing reflows.
+
+.btn,
+.input,
+.switch,
+.switch::after,
+.segmented > button,
+.row-link,
+.btn-link {
+  transition-property: color, background-color, border-color, background-size, transform, box-shadow;
+  transition-duration: var(--m-hover-out);
+  transition-timing-function: var(--m-ease);
+}
+
+// Buttons step up a pixel under a mouse and sink when pressed, so every press visibly lands.
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    transition-duration: var(--m-hover-in);
+  }
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: var(--m-press);
+}
+
+// Text links draw their underline from the left instead of switching it on.
+.btn-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+
+  &:hover:not(:disabled) {
+    background-size: 100% 1px;
+    transition-duration: var(--m-hover-in);
+  }
+}
+
+// Dialogs and confirmations arrive; they do not blink into place.
+dialog[open] { animation: rise var(--m-panel) var(--m-ease-enter); }
+dialog[open]::backdrop { animation: fade var(--m-panel) var(--m-ease); }
+
+// The home screen's opening: greeting, then the balance, once per visit. Children set --enter-step.
+.enter > * {
+  animation: rise var(--m-enter) var(--m-ease-enter) both;
+  animation-delay: calc(var(--enter-step, 0) * 80ms);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+// Everything is complete at rest; with reduced motion nothing moves.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

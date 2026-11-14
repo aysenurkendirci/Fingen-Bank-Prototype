@@ -1,0 +1,26 @@
+// Element defaults. Colours are CSS variables from design-dna.json, so everything here works in both themes.
+
+body {
+  @apply bg-canvas text-ink font-sans;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+// Headings carry the hierarchy through size and tracking, not weight: tracking tightens as size grows,
+// and lines are balanced so a title never ends on one orphaned word.
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+// One focus ring for every control, shown for the keyboard and never for a mouse click.
+:focus-visible {
+  outline: 2px solid rgb(var(--c-brand));
+  outline-offset: 2px;
+}
+
+::selection { background: rgb(var(--c-brand) / 0.2); }
+
+// Horizontal card and menu strips scroll by touch or trackpad without a visible scrollbar.
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

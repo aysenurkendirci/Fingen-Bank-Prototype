@@ -8,7 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   template: `
     <div class="space-y-3 animate-pulse">
       @for (row of bars(); track row) {
-        <div class="h-16 rounded-xl bg-line"></div>
+        <div class="h-16 rounded-panel bg-line"></div>
       }
     </div>
   `,

@@ -1,48 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-  @apply bg-canvas text-ink font-sans;
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-}
-
-// Headings carry the hierarchy through size and tracking, not weight: tracking tightens as size grows,
-// and lines are balanced so a title never ends on one orphaned word.
-h1, h2, h3 { text-wrap: balance; }
-p { text-wrap: pretty; }
-
-// Horizontal card and menu strips scroll by touch or trackpad without a visible scrollbar.
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-// Shared building blocks, so every page uses the same panels, buttons and form fields.
-@layer components {
-  .panel { @apply bg-surface rounded-xl border border-line p-5; }
-  .page-title { @apply text-[1.75rem] leading-tight font-semibold tracking-[-0.02em] text-ink; }
-  .page-subtitle { @apply text-sm text-ink-soft mt-1; }
-  .section-title { @apply text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink; }
-
-  .btn { @apply inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-primary { @apply btn bg-brand text-brand-contrast hover:bg-brand-hover; }
-  .btn-secondary { @apply btn bg-surface border border-line text-ink hover:bg-canvas; }
-  .btn-danger { @apply btn bg-danger-tint text-danger hover:bg-danger-line; }
-  .btn-link { @apply text-sm font-medium text-brand hover:underline disabled:opacity-50; }
-
-  .field { @apply flex flex-col gap-1.5; }
-  .field-label { @apply text-sm font-medium text-ink; }
-  .input { @apply h-10 px-3 rounded-lg border border-control bg-surface text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20; }
-  .field-error { @apply text-xs text-danger; }
-  .switch { @apply appearance-none relative shrink-0 w-9 h-5 rounded-full bg-control cursor-pointer transition-colors checked:bg-brand disabled:opacity-50 disabled:cursor-not-allowed after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:rounded-full after:bg-surface after:transition-transform checked:after:translate-x-4; }
-
-  .notice-error { @apply p-3 rounded-lg bg-danger-tint text-danger border border-danger-line text-sm; }
-  .notice-success { @apply p-3 rounded-lg bg-positive-tint text-positive border border-positive-line text-sm; }
-  .notice-info { @apply p-3 rounded-lg bg-brand-tint text-brand border border-line text-sm; }
-  .segmented { @apply inline-flex p-1 gap-1 rounded-lg bg-muted; }
-  .segmented > button { @apply inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-sm text-ink-soft transition-colors hover:text-ink; }
-  .segmented > button[aria-pressed='true'] { @apply bg-surface text-ink font-medium; }
-  .badge { @apply inline-block text-xs font-medium px-2 py-0.5 rounded-full; }
-}
+// Tailwind first, then element defaults, the shared building blocks, and the motion layer that acts on them.
+@use 'styles/tailwind';
+@use 'styles/base';
+@use 'styles/components';
+@use 'styles/motion';

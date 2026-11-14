@@ -21,7 +21,7 @@ const METHOD_LABELS: Record<string, string> = {
   template: `
     <ul class="grid gap-4 sm:grid-cols-3 mb-6">
       @for (month of months(); track month.label) {
-        <li class="rounded-lg bg-canvas p-4">
+        <li class="rounded-control bg-canvas p-4">
           <p class="field-label">{{ month.label }}</p>
           <p class="text-xl font-semibold text-ink mt-1">
             {{ month.lower | currency: 'TRY' : 'symbol-narrow' : '1.0-0' }} – {{ month.upper | currency: 'TRY' : 'symbol-narrow' : '1.0-0' }}
