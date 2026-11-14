@@ -1,32 +1,72 @@
 # FinGen
 
-Retail banking backend with a personal finance planner on top. Accounts, IBANs, cards and transfers on one side; a day-by-day
-cash-flow projection and installment comparison on the other. A portfolio project, not a live service.
+A retail bank with a personal finance planner built in. Customers hold accounts and cards, send money by IBAN and save towards
+goals; the planner shows the months ahead day by day, so a short month is visible before it arrives. A portfolio project, not a
+live service.
 
-Savings goals each get a savings account of their own and can fill themselves: when a salary arrives, a share of it moves to the
-goal in the same transaction. New year's resolutions are goals with a year. Exchange rates come from TCMB's public daily rates
-through a provider interface that a bank API can be placed in front of. The web app has light and dark themes and accent colours,
-saved with the customer's account.
+The planner only shows the customer's own obligations. It never recommends a product or a decision.
 
-The planner only shows the user's own obligations. It does not recommend anything.
+## What it does
+
+Banking
+- Accounts in TRY, USD and EUR with generated IBANs, statements read from a double-entry ledger, closing an empty account.
+- Transfers by IBAN with a review step and a receipt. Each transfer carries an Idempotency-Key, so a retry never sends the money
+  twice.
+- Debit and credit cards: contactless and online use, daily and monthly limits, a temporary block.
+
+Savings
+- Goals with their own savings account. Money goes in and out through the ledger like any other transfer.
+- Auto-save: when at least a set amount arrives on an account (a salary), a percentage or a fixed amount moves to the goal in the
+  same transaction.
+- New year's resolutions as goals for a given year, shown in their own area.
+
+Planning and insight
+- Cash-flow projection from known income, expenses, subscriptions, card statements and installments.
+- Installment scenarios compared side by side before a purchase.
+- Statement import from other banks and analytics on the history: category trends, recurring payments, unusual spending.
+- Exchange rates from TCMB's public daily rates, a converter, and foreign currency balances estimated in lira.
+
+Customer
+- Profile, contact details, password change, data export and account erasure under KVKK.
+- Light, dark or system theme and an accent colour, saved with the account.
+
+## Banking rules
+
+| Area | Rule |
+|---|---|
+| Transfers | Same currency only. The recipient's name must match the IBAN holder. The sender's balance must cover the amount. |
+| Limits | Money sent to other customers is capped per transfer and per business day, per currency (TRY 250,000 and 750,000 by default). Moves between a customer's own accounts and goals are not limited. |
+| Accounts | A frozen or closed account neither sends nor receives. At most 5 open accounts per currency. Only an empty account closes, and the last lira demand account stays open. |
+| Savings | A goal's savings account only moves money to the owner's own accounts. A goal closes once its savings account is empty. Auto-save never goes past the target and never blocks the payment that triggered it. |
+| Cards | The daily limit cannot exceed the monthly limit. A temporary block can be lifted; cancellation is final, and a cancelled card can no longer be changed. |
+| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 8 characters with a letter and a digit. |
+| Ledger | Every transfer is two postings that balance. Balances never go negative, enforced by the database as a last line of defence. |
+
+Limits are read from the `Banking` section of `appsettings.json`. The reasoning is in [ADR-0013](docs/adr/0013-banking-rules.md).
+
+## Security
+
+Short-lived access tokens kept in memory, rotating refresh cookies with reuse detection, rate limits on sign-in and on money
+movements, a strict Content-Security-Policy, and secret scanning, CodeQL and Dependabot in CI. The threat model is in
+[SECURITY.md](SECURITY.md).
 
 ## Stack
 
-.NET 10, ASP.NET Core, MediatR, FluentValidation, Dapper, SQL Server (DbUp migrations), RabbitMQ, Serilog, Angular 21, Tailwind,
-ECharts. xUnit and Vitest for tests, GitHub Actions for CI.
+.NET 10, ASP.NET Core, MediatR, FluentValidation, Dapper, SQL Server (DbUp migrations), RabbitMQ, Serilog, Angular 21,
+Tailwind, ECharts. xUnit and Vitest for tests, GitHub Actions for CI.
 
 ## Layout
 
 ```
 backend/src/
-  Bank.Domain/          business rules
+  Bank.Domain/          business rules: accounts, transfers, limits, cards, projection, scenarios
   Bank.Application/     commands and queries (Features/), pipeline behaviours
-  Bank.Infrastructure/  repositories, outbox, RabbitMQ, security
-  Bank.Api/             controllers and middleware
+  Bank.Infrastructure/  repositories, outbox, RabbitMQ, market data, security
+  Bank.Api/             controllers, middleware, rate limits
   Bank.Contracts/       DTOs and events
   Bank.Database/        DbUp migrator and SQL scripts
 backend/tests/          unit and integration tests
-frontend/               Angular app
+frontend/               Angular app; design tokens in projects/bank-app/src/design
 docs/                   decisions (adr/), notes, analytics evaluation
 ```
 
@@ -56,7 +96,7 @@ npm install
 npm start                                   # http://localhost:4200
 ```
 
-After signing up, *İşlem geçmişi → 12 aylık demo verisi oluştur* fills the account with sample data.
+After signing up, İşlem geçmişi > 12 aylık demo verisi oluştur fills the account with sample data.
 
 ## Test
 
@@ -66,11 +106,13 @@ cd frontend && npx ng test --watch=false
 ```
 
 Integration tests run against a real database, `BankDb_IntegrationTests`, rebuilt from the migrations on every run. Set
-`INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set.
+`INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services such as
+TCMB are replaced by fakes, so the suite never needs the internet.
 
 ## Docs
 
 - [Decisions](docs/adr/)
+- [Security](SECURITY.md)
 - [Notes](docs/ENGINEERING_LOG.md): problems that took a while to solve
 - [TODO](docs/TODO.md)
 - [Analytics evaluation](docs/analytics/EVALUATION.md)
