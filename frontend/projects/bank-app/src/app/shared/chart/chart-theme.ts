@@ -1,4 +1,6 @@
-import tokens from '../../../design/tokens.json';
+import dna from '../../../design/design-dna.json';
+
+const tokens = { color: dna.design_system.color.light, chart: dna.design_system.chart.light };
 
 // Chart colours by role, read from the same file Tailwind uses. Series slots follow the validated categorical
 // order. Status red is reserved for "below zero" and always appears with an icon and text, never alone.
@@ -12,7 +14,7 @@ export const CHART = {
   textSecondary: tokens.color.ink.faint,
   grid: tokens.color.line,
   surface: tokens.color.surface,
-  font: "'Inter', system-ui, sans-serif",
+  font: `'${dna.design_system.typography.family}', ${dna.design_system.typography.fallback}`,
 } as const;
 
 const tryFormatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 });

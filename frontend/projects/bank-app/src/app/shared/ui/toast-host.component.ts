@@ -9,7 +9,7 @@ import { ToastService } from '../../core/ui/toast.service';
   host: { class: 'fixed bottom-4 right-4 left-4 sm:left-auto z-20 space-y-2 print:hidden', 'aria-live': 'polite' },
   template: `
     @for (toast of service.toasts(); track toast.id) {
-      <p class="rounded-lg bg-brand text-white text-sm px-4 py-3">{{ toast.message }}</p>
+      <p class="rounded-lg bg-ink text-canvas text-sm px-4 py-3">{{ toast.message }}</p>
     }
   `,
 })

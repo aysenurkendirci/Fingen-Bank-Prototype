@@ -14,19 +14,19 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
   imports: [MoneyComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'w-72 h-40 shrink-0 rounded-xl p-4 text-white flex flex-col justify-between',
-    '[class.bg-brand]': '!card().isVirtual',
-    '[class.bg-brand-muted]': 'card().isVirtual',
+    class: 'w-72 h-40 shrink-0 rounded-tile p-4 text-tile-ink flex flex-col justify-between',
+    '[class.bg-tile]': '!card().isVirtual',
+    '[class.bg-tile-alt]': 'card().isVirtual',
     '[class.opacity-60]': 'card().status !== "Active"',
   },
   template: `
     <div class="flex justify-between text-sm">
       <span class="font-medium">{{ card().cardType === 'Credit' ? 'Kredi kartı' : 'Banka kartı' }}</span>
-      <span class="text-white/70">{{ statusLabel() ?? (card().isVirtual ? 'Sanal' : 'Fiziksel') }}</span>
+      <span class="text-tile-ink/70">{{ statusLabel() ?? (card().isVirtual ? 'Sanal' : 'Fiziksel') }}</span>
     </div>
-    <p class="tabular-nums text-white/90">{{ card().cardNoMasked }}</p>
+    <p class="tabular-nums text-tile-ink/90">{{ card().cardNoMasked }}</p>
     <div>
-      <p class="text-xs text-white/70">Bakiye</p>
+      <p class="text-xs text-tile-ink/70">Bakiye</p>
       <p class="font-semibold tabular-nums"><app-money [amount]="card().balance" /></p>
     </div>
   `,

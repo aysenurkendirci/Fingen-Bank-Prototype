@@ -22,7 +22,7 @@ Tekrar eden işler taban sınıflara alındı: API istemcileri için `BaseApi`, 
 
 Sayfa veriyi çeker ve değişiklikleri yürütür. Alt bileşenler yalnızca input alır ve output verir.
 
-Renklerin tek kaynağı `src/design/tokens.json`. Tailwind ve grafik teması aynı dosyayı okur.
+Renk, köşe yarıçapı ve hareket süreleri tek bir tasarım profilinde durur: `src/design/design-dna.json`. `theme.cjs` bundan açık ve koyu tema için CSS değişkenleri üretir, Tailwind ve grafikler aynı dosyayı okur.
 
 ## Sonuçlar
 

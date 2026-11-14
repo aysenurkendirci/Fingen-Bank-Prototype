@@ -25,7 +25,7 @@ import { MoneyComponent } from '../../../shared/finance/money.component';
         @for (account of accounts(); track account.accountId) {
           <li class="px-4 py-3">
             <div class="flex items-baseline justify-between gap-3">
-              <a class="text-sm font-medium text-ink hover:text-accent" [routerLink]="['/dashboard/accounts', account.accountId]">
+              <a class="text-sm font-medium text-ink hover:text-brand" [routerLink]="['/dashboard/accounts', account.accountId]">
                 {{ typeDisplay[account.accountType].label }}
                 @if (account.status !== 'Active') {
                   <span class="badge bg-canvas text-ink-soft ml-1">{{ statusLabels[account.status] }}</span>
