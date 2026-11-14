@@ -58,7 +58,7 @@ public sealed class ProfileTests
         var registration = TestUsers.NewRegistration();
         var (client, _) = await _factory.CreateUserAsync(registration);
 
-        var response = await client.PutAsJsonAsync("/api/me/password", new ChangePasswordRequest("not-the-password", "NewP@ssw0rd"));
+        var response = await client.PutAsJsonAsync("/api/me/password", new ChangePasswordRequest("not-the-password", "NewP@ssw0rd2026"));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await LoginAsync(registration.TcNo, TestUsers.Password)).StatusCode);
@@ -81,13 +81,13 @@ public sealed class ProfileTests
         var (client, _) = await _factory.CreateUserAsync(registration);
         var otherDevice = RefreshCookie(await LoginAsync(registration.TcNo, TestUsers.Password));
 
-        var change = await client.PutAsJsonAsync("/api/me/password", new ChangePasswordRequest(TestUsers.Password, "NewP@ssw0rd"));
+        var change = await client.PutAsJsonAsync("/api/me/password", new ChangePasswordRequest(TestUsers.Password, "NewP@ssw0rd2026"));
 
         Assert.Equal(HttpStatusCode.OK, change.StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(otherDevice)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await RefreshAsync(RefreshCookie(change))).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await LoginAsync(registration.TcNo, TestUsers.Password)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await LoginAsync(registration.TcNo, "NewP@ssw0rd")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await LoginAsync(registration.TcNo, "NewP@ssw0rd2026")).StatusCode);
     }
 
     private Task<HttpResponseMessage> LoginAsync(string tcNo, string password)

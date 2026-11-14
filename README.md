@@ -39,7 +39,7 @@ Customer
 | Accounts | A frozen or closed account neither sends nor receives. At most 5 open accounts per currency. Only an empty account closes, and the last lira demand account stays open. |
 | Savings | A goal's savings account only moves money to the owner's own accounts. A goal closes once its savings account is empty. Auto-save never goes past the target and never blocks the payment that triggered it. |
 | Cards | The daily limit cannot exceed the monthly limit. A temporary block can be lifted; cancellation is final, and a cancelled card can no longer be changed. |
-| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 8 characters with a letter and a digit. |
+| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 12 characters with a letter and a digit. |
 | Ledger | Every transfer is two postings that balance. Balances never go negative, enforced by the database as a last line of defence. |
 
 Limits are read from the `Banking` section of `appsettings.json`. The reasoning is in [ADR-0013](docs/adr/0013-banking-rules.md).

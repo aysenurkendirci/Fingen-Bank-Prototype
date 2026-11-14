@@ -30,8 +30,8 @@ export class RegisterComponent extends BasePage {
     email: ['', [Validators.required, Validators.email]],
     // A Turkish mobile number, the channel a bank sends codes to.
     phone: ['', [Validators.required, Validators.pattern(/^(\+90|0)?\s*5\d{2}\s*\d{3}\s*\d{2}\s*\d{2}$/)]],
-    // Mirrors the API: at least 8 characters with a letter and a digit.
-    password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*\p{L})(?=.*\d).+$/u)]],
+    // Mirrors the API: at least 12 characters with a letter and a digit (ASVS 2.1.1).
+    password: ['', [Validators.required, Validators.minLength(12), Validators.pattern(/^(?=.*\p{L})(?=.*\d).+$/u)]],
     membership: ['Personal' as Membership],
   });
 

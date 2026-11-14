@@ -33,7 +33,7 @@ public sealed record ChangePasswordRequest(
     string CurrentPassword,
 
     [Required(ErrorMessage = "Yeni şifre zorunludur.")]
-    [StringLength(128, MinimumLength = 8, ErrorMessage = "Şifre en az 8 karakter olmalıdır.")]
+    [StringLength(128, MinimumLength = 12, ErrorMessage = "Şifre en az 12 karakter olmalıdır.")]
     [RegularExpression(@"^(?=.*\p{L})(?=.*\d).+$", ErrorMessage = "Şifre en az bir harf ve bir rakam içermelidir.")]
     string NewPassword
 );

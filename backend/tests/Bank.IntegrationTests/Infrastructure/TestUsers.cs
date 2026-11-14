@@ -8,7 +8,7 @@ namespace Bank.IntegrationTests.Infrastructure;
 /// <summary>Registers fresh users so every test owns its data and tests never depend on each other.</summary>
 public static class TestUsers
 {
-    public const string Password = "P@ssw0rd!";
+    public const string Password = "P@ssw0rd!2026";
 
     private static int _sequence;
 

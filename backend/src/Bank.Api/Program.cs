@@ -18,7 +18,12 @@ using Serilog.Formatting.Compact;
 var builder = WebApplication.CreateBuilder(args);
 
 // Every JSON body here is small. The statement import raises its own limit for the file it accepts.
-builder.WebHost.ConfigureKestrel(kestrel => kestrel.Limits.MaxRequestBodySize = 1024 * 1024);
+// No Server header either: which web server answers is nothing a client needs to know (ASVS 14.3.3).
+builder.WebHost.ConfigureKestrel(kestrel =>
+{
+    kestrel.Limits.MaxRequestBodySize = 1024 * 1024;
+    kestrel.AddServerHeader = false;
+});
 
 // Structured logs: in production every line is one JSON object (with CorrelationId, UserId and so on as fields)
 // that a log store can index; in development they stay readable in the console.

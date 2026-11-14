@@ -16,7 +16,7 @@ export interface Customer {
 export const field = (page: Page, name: string) => page.locator(`[formcontrolname=${name}]`);
 
 /** Signs up through the form and lands on the sign-in page with the identity number filled in. */
-export async function signUp(page: Page, password = 'Deneme1234!'): Promise<Customer> {
+export async function signUp(page: Page, password = 'Deneme1234!x'): Promise<Customer> {
   const tcNo = newTcNo();
   await page.goto('/auth/register');
   await field(page, 'firstName').fill('Deniz');

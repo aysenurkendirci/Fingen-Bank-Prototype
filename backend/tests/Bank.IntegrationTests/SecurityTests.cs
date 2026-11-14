@@ -50,6 +50,14 @@ public sealed class SecurityTests
     }
 
     [Fact]
+    public async Task Responses_DoNotNameTheWebServer()
+    {
+        var response = await _factory.CreateClient().GetAsync("/health/live");
+
+        Assert.False(response.Headers.Contains("Server"));
+    }
+
+    [Fact]
     public async Task AnotherOrigin_IsNotAllowedToCallTheApi()
     {
         var request = new HttpRequestMessage(HttpMethod.Options, "/api/accounts");

@@ -33,6 +33,8 @@ test.describe('accounts and transfers', () => {
     await page.getByRole('button', { name: 'Kapat' }).first().click();
     await confirmDialog(page, 'Hesabı kapat');
     await expect(toast(page)).toHaveText('Hesabınız kapatıldı.');
+    // Wait for the reloaded list: the closed account no longer offers a close button.
+    await expect(page.getByRole('button', { name: 'Kapat' })).toHaveCount(1);
 
     await page.getByRole('button', { name: 'Kapat' }).first().click();
     await confirmDialog(page, 'Hesabı kapat');

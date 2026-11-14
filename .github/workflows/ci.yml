@@ -104,7 +104,7 @@ jobs:
             [ "$status" = "401" ] && break
             sleep 5
           done
-          curl -fsS -X POST http://localhost:8080/api/auth/register -H "Content-Type: application/json"             -d '{"tcNo":"10000000146","firstName":"Ci","lastName":"Kontrol","email":"ci@example.com","phone":"5550000000","password":"Ci_Kontrol1","membership":"Personal"}'             | grep -q '"token"'
+          curl -fsS -X POST http://localhost:8080/api/auth/register -H "Content-Type: application/json"             -d '{"tcNo":"10000000146","firstName":"Ci","lastName":"Kontrol","email":"ci@example.com","phone":"5550000000","password":"Ci_Kontrol_2026","membership":"Personal"}'             | grep -q '"token"'
 
       - name: Logs
         if: failure()
