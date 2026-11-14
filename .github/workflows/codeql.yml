@@ -21,7 +21,7 @@ jobs:
       matrix:
         language: [csharp, javascript-typescript]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # No build needed: CodeQL reads the source directly for both languages.
       - uses: github/codeql-action/init@v3

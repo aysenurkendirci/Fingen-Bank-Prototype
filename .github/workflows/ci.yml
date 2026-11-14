@@ -10,7 +10,7 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -58,7 +58,7 @@ jobs:
         working-directory: backend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -87,7 +87,7 @@ jobs:
       JWT_KEY: "ci-only-signing-key-that-is-long-enough-123"
       RABBITMQ_PASSWORD: "ci-only"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Start the system
         run: docker compose up --build --detach
@@ -136,7 +136,7 @@ jobs:
       ConnectionStrings__BankDb: "Server=localhost,1433;Database=BankDb_E2E;User Id=sa;Password=Ci_Only_Passw0rd!;TrustServerCertificate=True"
       Jwt__Key: "ci-only-signing-key-that-is-long-enough-123"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -187,7 +187,7 @@ jobs:
         working-directory: frontend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
