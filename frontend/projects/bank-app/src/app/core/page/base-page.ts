@@ -17,12 +17,14 @@ export interface ActOptions<T> {
 /**
  * Base of every page (container) component: the loading, saving and error state each of them needs.
  *
- * Pages own this state and pass plain values down; display components never call an API. Requests are
- * cancelled when the user leaves the page, so a late response cannot touch a destroyed component.
+ * Pages own this state and pass plain values down; display components never call an API. Reads are cancelled
+ * when the user leaves the page; changes run to the end, and a late result never touches a destroyed component.
  */
 @Directive()
 export abstract class BasePage {
   private readonly destroyRef = inject(DestroyRef);
+  private destroyed = false;
+  private readonly markDestroyed = this.destroyRef.onDestroy(() => (this.destroyed = true));
 
   /** True while the page's data is being fetched. */
   protected readonly loading = signal(false);
@@ -47,17 +49,23 @@ export abstract class BasePage {
     });
   }
 
-  /** Runs a change the user asked for. */
+  /**
+   * Runs a change the user asked for. Unlike a read, a change is never cancelled when the user leaves the page:
+   * aborting a transfer or an account opening half way would leave them unsure whether it happened. The request
+   * finishes either way; only its result is no longer shown once the page is gone.
+   */
   protected act<T>(action: Observable<T>, options: ActOptions<T> = {}): void {
     this.busy.set(true);
     this.error.set(null);
 
-    action.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    action.subscribe({
       next: (result) => {
+        if (this.destroyed) return;
         this.busy.set(false);
         options.onDone?.(result);
       },
       error: (err: unknown) => {
+        if (this.destroyed) return;
         this.busy.set(false);
         this.error.set(problemMessage(err, options.fallback));
         options.onError?.(err);
