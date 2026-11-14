@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 
 import { SessionService } from '../../core/auth/session.service';
 import { ThemeService } from '../../core/ui/theme.service';
+import { BrandMarkComponent } from '../../shared/ui/brand-mark.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog.component';
 import { ToastHostComponent } from '../../shared/ui/toast-host.component';
 
@@ -20,7 +21,7 @@ interface NavGroup {
 /** The frame of the signed-in app: the menu, the user's corner, and the dialog and toast outlets. */
 @Component({
   selector: 'app-dashboard-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ConfirmDialogComponent, ToastHostComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, BrandMarkComponent, ConfirmDialogComponent, ToastHostComponent],
   templateUrl: './dashboard-layout.component.html',
 })
 export class DashboardLayoutComponent {

@@ -5,7 +5,7 @@
 #
 # Web app: http://localhost:8080   RabbitMQ console: http://localhost:15672
 
-name: neobank
+name: fingen
 
 services:
   sqlserver:

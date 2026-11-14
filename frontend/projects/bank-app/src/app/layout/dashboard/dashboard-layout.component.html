@@ -1,7 +1,7 @@
 <div class="min-h-screen lg:flex">
   <aside class="hidden lg:flex flex-col w-60 shrink-0 h-screen sticky top-0 border-r border-line print:!hidden">
     <div class="h-16 px-5 flex items-center">
-      <span class="text-lg font-semibold tracking-[-0.02em] text-brand">NeoBank</span>
+      <app-brand-mark class="text-lg text-brand" />
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-6" aria-label="Ana menü">
@@ -44,7 +44,7 @@
 
   <header class="lg:hidden sticky top-0 z-10 bg-canvas scroll-edge print:hidden">
     <div class="h-14 px-4 flex items-center justify-between">
-      <span class="text-lg font-semibold tracking-[-0.02em] text-brand">NeoBank</span>
+      <app-brand-mark class="text-lg text-brand" />
       <div class="flex items-center -mr-2">
         <button type="button" (click)="theme.toggle()" class="p-2 text-ink-soft" [attr.aria-label]="theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm'">
           <span class="material-symbols-outlined text-[22px]" aria-hidden="true">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>

@@ -1,4 +1,4 @@
-# NeoBank
+# FinGen
 
 Retail banking backend with a personal finance planner on top. Accounts, IBANs, cards and transfers on one side; a day-by-day
 cash-flow projection and installment comparison on the other. A portfolio project, not a live service.
