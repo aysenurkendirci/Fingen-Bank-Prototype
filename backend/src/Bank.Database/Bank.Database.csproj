@@ -20,7 +20,8 @@
   <ItemGroup>
     <!-- Scripts ship inside the assembly so the migrator always runs the exact set it was built with. -->
     <EmbeddedResource Include="Migrations\*.sql" />
-    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Not "appsettings.json": the API references this project, and two files with that name would collide in its publish output. -->
+    <None Update="migrator.settings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
