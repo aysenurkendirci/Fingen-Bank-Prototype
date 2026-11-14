@@ -27,6 +27,10 @@
   .segmented > button[aria-pressed='true'] { @apply bg-surface text-ink font-medium; }
   .badge { @apply inline-block text-xs font-medium px-2 py-0.5 rounded-full; }
 
+  // Menu entries. The current page is marked by a short bar on its left edge, not by a filled pill.
+  .nav-item { @apply relative flex items-center gap-2.5 h-9 px-3 rounded-control text-sm text-ink-soft hover:bg-muted hover:text-ink; }
+  .nav-item--active { @apply bg-surface text-ink font-medium before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-brand; }
+
   // A list row that leads somewhere: the whole row is the target and answers the pointer.
   .row-link { @apply block hover:bg-muted; }
 }

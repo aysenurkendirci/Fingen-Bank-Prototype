@@ -7,6 +7,7 @@
 .switch,
 .switch::after,
 .segmented > button,
+.nav-item,
 .row-link,
 .btn-link {
   transition-property: color, background-color, border-color, background-size, transform, box-shadow;
@@ -55,6 +56,29 @@ dialog[open]::backdrop { animation: fade var(--m-panel) var(--m-ease); }
   from { opacity: 0; }
 }
 
+// The mobile top bar gains its hairline only once content scrolls under it. Browsers without scroll-driven
+// animations simply show the line all the time.
+.scroll-edge { border-bottom: 1px solid rgb(var(--c-line)); }
+
+@supports (animation-timeline: scroll()) {
+  .scroll-edge {
+    animation: edge linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 24px;
+  }
+
+  @keyframes edge {
+    from { border-bottom-color: transparent; }
+  }
+}
+
+// Page changes cross-fade briefly instead of cutting.
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--m-panel);
+  animation-timing-function: var(--m-ease);
+}
+
 // Everything is complete at rest; with reduced motion nothing moves.
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -64,5 +88,11 @@ dialog[open]::backdrop { animation: fade var(--m-panel) var(--m-ease); }
     animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

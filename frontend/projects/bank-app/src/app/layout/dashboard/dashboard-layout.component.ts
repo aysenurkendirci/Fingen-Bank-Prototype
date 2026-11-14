@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { SessionService } from '../../core/auth/session.service';
+import { ThemeService } from '../../core/ui/theme.service';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog.component';
 import { ToastHostComponent } from '../../shared/ui/toast-host.component';
 
@@ -27,6 +28,7 @@ export class DashboardLayoutComponent {
   private readonly router = inject(Router);
 
   protected readonly fullName = this.session.fullName;
+  protected readonly theme = inject(ThemeService);
 
   protected readonly navGroups: readonly NavGroup[] = [
     {

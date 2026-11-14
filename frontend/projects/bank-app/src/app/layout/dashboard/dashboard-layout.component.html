@@ -1,19 +1,20 @@
 <div class="min-h-screen lg:flex">
-  <aside class="hidden lg:flex flex-col w-60 shrink-0 h-screen sticky top-0 bg-surface border-r border-line print:!hidden">
-    <div class="h-16 px-5 flex items-center border-b border-line">
-      <span class="text-lg font-semibold tracking-tight text-brand">NeoBank</span>
+  <aside class="hidden lg:flex flex-col w-60 shrink-0 h-screen sticky top-0 border-r border-line print:!hidden">
+    <div class="h-16 px-5 flex items-center">
+      <span class="text-lg font-semibold tracking-[-0.02em] text-brand">NeoBank</span>
     </div>
 
-    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6" aria-label="Ana menü">
+    <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-6" aria-label="Ana menü">
       @for (group of navGroups; track group.title) {
         <div>
-          <p class="px-2 mb-1 text-xs font-medium text-ink-faint">{{ group.title }}</p>
+          <p class="px-3 mb-1 text-xs text-ink-faint">{{ group.title }}</p>
           @for (item of group.items; track item.path) {
             <a
               [routerLink]="item.path"
-              routerLinkActive="bg-brand-tint !text-brand font-medium"
+              routerLinkActive="nav-item--active"
+              ariaCurrentWhenActive="page"
               [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
-              class="flex items-center gap-2.5 h-9 px-2 rounded-md text-sm text-ink-soft hover:bg-canvas transition-colors"
+              class="nav-item"
             >
               <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ item.icon }}</span>
               {{ item.label }}
@@ -24,29 +25,30 @@
     </nav>
 
     <div class="border-t border-line px-3 py-3 space-y-0.5">
-      <a
-        routerLink="/dashboard/profile"
-        routerLinkActive="bg-brand-tint"
-        class="block px-2 py-1.5 rounded-md hover:bg-canvas transition-colors"
-      >
-        <span class="block text-sm font-medium text-ink truncate">{{ fullName() }}</span>
-        <span class="block text-xs text-ink-faint">Hesap ayarları</span>
+      <a routerLink="/dashboard/profile" routerLinkActive="nav-item--active" class="nav-item !h-auto py-2">
+        <span class="min-w-0">
+          <span class="block text-sm font-medium text-ink truncate">{{ fullName() }}</span>
+          <span class="block text-xs text-ink-faint">Hesap ayarları</span>
+        </span>
       </a>
-      <button
-        type="button"
-        (click)="logout()"
-        class="w-full flex items-center gap-2.5 h-9 px-2 rounded-md text-sm text-ink-soft hover:bg-canvas"
-      >
+      <button type="button" class="nav-item w-full" (click)="theme.toggle()">
+        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+        {{ theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm' }}
+      </button>
+      <button type="button" class="nav-item w-full" (click)="logout()">
         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
         Çıkış
       </button>
     </div>
   </aside>
 
-  <header class="lg:hidden sticky top-0 z-10 bg-surface border-b border-line print:hidden">
+  <header class="lg:hidden sticky top-0 z-10 bg-canvas scroll-edge print:hidden">
     <div class="h-14 px-4 flex items-center justify-between">
-      <span class="text-lg font-semibold tracking-tight text-brand">NeoBank</span>
-      <div class="flex items-center gap-1 -mr-2">
+      <span class="text-lg font-semibold tracking-[-0.02em] text-brand">NeoBank</span>
+      <div class="flex items-center -mr-2">
+        <button type="button" (click)="theme.toggle()" class="p-2 text-ink-soft" [attr.aria-label]="theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm'">
+          <span class="material-symbols-outlined text-[22px]" aria-hidden="true">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+        </button>
         <a routerLink="/dashboard/profile" class="p-2 text-ink-soft" aria-label="Hesap ayarları">
           <span class="material-symbols-outlined text-[22px]" aria-hidden="true">person</span>
         </a>
@@ -60,9 +62,10 @@
         @for (item of group.items; track item.path) {
           <a
             [routerLink]="item.path"
-            routerLinkActive="bg-brand-tint !text-brand font-medium"
+            routerLinkActive="bg-surface !text-ink font-medium"
+            ariaCurrentWhenActive="page"
             [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
-            class="px-3 py-1.5 rounded-md text-sm text-ink-soft whitespace-nowrap"
+            class="px-3 py-1.5 rounded-control text-sm text-ink-soft whitespace-nowrap"
           >
             {{ item.label }}
           </a>
@@ -71,7 +74,7 @@
     </nav>
   </header>
 
-  <main class="flex-1 min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+  <main class="flex-1 min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
     <div class="max-w-6xl mx-auto">
       <router-outlet />
     </div>

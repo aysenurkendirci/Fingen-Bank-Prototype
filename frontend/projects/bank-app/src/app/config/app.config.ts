@@ -2,7 +2,7 @@ import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import localeTr from '@angular/common/locales/tr';
 import { ApplicationConfig, DEFAULT_CURRENCY_CODE, LOCALE_ID, inject, provideAppInitializer } from '@angular/core';
-import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
+import { TitleStrategy, provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
 
 import { routes } from '../app.routes';
 import { authInterceptor } from '../core/auth/auth-interceptor';
@@ -16,7 +16,7 @@ registerLocaleData(localeTr);
 // that changes made in HTTP callbacks are rendered without zone.js.
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(routes, withComponentInputBinding(), withViewTransitions({ skipInitialTransition: true })),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     { provide: TitleStrategy, useClass: PageTitleStrategy },
     provideAppInitializer(() => inject(SessionService).restore()),
