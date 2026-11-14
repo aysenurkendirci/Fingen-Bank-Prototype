@@ -3,7 +3,8 @@ import { EChartsCoreOption } from 'echarts/core';
 
 import { Projection } from '../../../data-access/models/finance.models';
 import { ChartComponent } from '../../../shared/chart/chart.component';
-import { CHART, baseAxisStyle, baseTooltip, formatDateTick, formatTry, formatTryCompact } from '../../../shared/chart/chart-theme';
+import { injectChartPalette } from '../../../shared/chart/chart-palette';
+import { axisStyle, tooltipStyle, formatDateTick, formatTry, formatTryCompact } from '../../../shared/chart/chart-theme';
 import { runningBalance } from '../running-balance';
 
 const dayName = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -17,6 +18,8 @@ const dayName = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long'
   template: `<app-chart class="h-72" [option]="option()" [label]="summary()" />`,
 })
 export class BalanceChartComponent {
+  private readonly palette = injectChartPalette();
+
   readonly projection = input.required<Projection>();
 
   private readonly points = computed(() => {
@@ -29,34 +32,39 @@ export class BalanceChartComponent {
     return `Gün gün tahmini bakiye. En düşük bakiye ${formatTry(lowest.balance)}, ${dayName.format(new Date(lowest.date + 'T00:00'))}.`;
   });
 
-  protected readonly option = computed<EChartsCoreOption>(() => ({
-    textStyle: { fontFamily: CHART.font },
-    grid: { left: 8, right: 16, top: 24, bottom: 8, containLabel: true },
-    tooltip: {
-      ...baseTooltip,
-      trigger: 'axis',
-      axisPointer: { type: 'line', lineStyle: { color: CHART.textSecondary } },
-      valueFormatter: (value: number) => formatTry(value),
-    },
-    xAxis: { ...baseAxisStyle, type: 'time', axisLabel: { ...baseAxisStyle.axisLabel, formatter: formatDateTick }, splitLine: { show: false } },
-    yAxis: { ...baseAxisStyle, type: 'value', axisLabel: { ...baseAxisStyle.axisLabel, formatter: formatTryCompact } },
-    series: [
-      {
-        name: 'Bakiye',
-        type: 'line',
-        step: 'end',
-        symbol: 'none',
-        lineStyle: { width: 2, color: CHART.series1 },
-        areaStyle: { color: CHART.series1, opacity: 0.1 },
-        data: this.points().map((point) => [point.date, point.balance]),
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: CHART.critical, width: 1, type: 'solid' },
-          label: { formatter: '0 ₺', color: CHART.textSecondary, position: 'insideStartTop' },
-          data: [{ yAxis: 0 }],
-        },
+  protected readonly option = computed<EChartsCoreOption>(() => {
+    const c = this.palette();
+    const axis = axisStyle(c);
+    const tooltip = tooltipStyle(c);
+    return {
+      textStyle: { fontFamily: c.font },
+      grid: { left: 8, right: 16, top: 24, bottom: 8, containLabel: true },
+      tooltip: {
+        ...tooltip,
+        trigger: 'axis',
+        axisPointer: { type: 'line', lineStyle: { color: c.textSecondary } },
+        valueFormatter: (value: number) => formatTry(value),
       },
-    ],
-  }));
+      xAxis: { ...axis, type: 'time', axisLabel: { ...axis.axisLabel, formatter: formatDateTick }, splitLine: { show: false } },
+      yAxis: { ...axis, type: 'value', axisLabel: { ...axis.axisLabel, formatter: formatTryCompact } },
+      series: [
+        {
+          name: 'Bakiye',
+          type: 'line',
+          step: 'end',
+          symbol: 'none',
+          lineStyle: { width: 2, color: c.series[0] },
+          areaStyle: { color: c.series[0], opacity: 0.1 },
+          data: this.points().map((point) => [point.date, point.balance]),
+          markLine: {
+            symbol: 'none',
+            silent: true,
+            lineStyle: { color: c.critical, width: 1, type: 'solid' },
+            label: { formatter: '0 ₺', color: c.textSecondary, position: 'insideStartTop' },
+            data: [{ yAxis: 0 }],
+          },
+        },
+      ],
+    };
+  });
 }

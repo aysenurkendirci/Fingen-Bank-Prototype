@@ -12,12 +12,13 @@ import { ContactDetails, PasswordChange, Profile } from '../../data-access/model
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { SkeletonComponent } from '../../shared/ui/skeleton.component';
+import { ThemeSwitchComponent } from '../../shared/ui/theme-switch.component';
 import { ContactFormComponent } from './components/contact-form.component';
 import { PasswordFormComponent } from './components/password-form.component';
 
 /** The customer's own record and the KVKK rights over it: seeing it, taking a copy and having it erased. */
 @Component({
-  imports: [DatePipe, FormsModule, NoticeComponent, PageHeaderComponent, SkeletonComponent, ContactFormComponent, PasswordFormComponent],
+  imports: [DatePipe, FormsModule, NoticeComponent, PageHeaderComponent, SkeletonComponent, ThemeSwitchComponent, ContactFormComponent, PasswordFormComponent],
   templateUrl: './profile-page.component.html',
 })
 export class ProfilePageComponent extends BasePage {

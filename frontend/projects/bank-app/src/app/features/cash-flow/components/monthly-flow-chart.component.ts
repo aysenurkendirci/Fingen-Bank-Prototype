@@ -4,7 +4,8 @@ import { EChartsCoreOption } from 'echarts/core';
 import { formatMonth } from '../../../core/util/dates';
 import { ProjectionMonth } from '../../../data-access/models/finance.models';
 import { ChartComponent } from '../../../shared/chart/chart.component';
-import { CHART, baseAxisStyle, baseTooltip, formatTry, formatTryCompact } from '../../../shared/chart/chart-theme';
+import { injectChartPalette } from '../../../shared/chart/chart-palette';
+import { axisStyle, tooltipStyle, formatTry, formatTryCompact } from '../../../shared/chart/chart-theme';
 
 /** Monthly income against all outflows: two series on one axis, both in TRY. */
 @Component({
@@ -15,9 +16,15 @@ import { CHART, baseAxisStyle, baseTooltip, formatTry, formatTryCompact } from '
   template: `<app-chart class="h-64" [option]="option()" label="Aylık gelir ve toplam çıkış karşılaştırması. Ayrıntılar aylık özet tablosunda." />`,
 })
 export class MonthlyFlowChartComponent {
+  private readonly palette = injectChartPalette();
+
   readonly months = input.required<readonly ProjectionMonth[]>();
 
   protected readonly option = computed<EChartsCoreOption>(() => {
+    const c = this.palette();
+    const axis = axisStyle(c);
+    const tooltip = tooltipStyle(c);
+
     const months = this.months();
     const bar = (name: string, color: string, values: number[]) => ({
       name,
@@ -29,15 +36,15 @@ export class MonthlyFlowChartComponent {
     });
 
     return {
-      textStyle: { fontFamily: CHART.font },
-      legend: { top: 0, left: 0, icon: 'roundRect', itemWidth: 12, itemHeight: 12, textStyle: { color: CHART.textSecondary } },
+      textStyle: { fontFamily: c.font },
+      legend: { top: 0, left: 0, icon: 'roundRect', itemWidth: 12, itemHeight: 12, textStyle: { color: c.textSecondary } },
       grid: { left: 8, right: 8, top: 36, bottom: 8, containLabel: true },
-      tooltip: { ...baseTooltip, trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v: number) => formatTry(v) },
-      xAxis: { ...baseAxisStyle, type: 'category', data: months.map((m) => formatMonth(m)), splitLine: { show: false } },
-      yAxis: { ...baseAxisStyle, type: 'value', axisLabel: { ...baseAxisStyle.axisLabel, formatter: formatTryCompact } },
+      tooltip: { ...tooltip, trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v: number) => formatTry(v) },
+      xAxis: { ...axis, type: 'category', data: months.map((m) => formatMonth(m)), splitLine: { show: false } },
+      yAxis: { ...axis, type: 'value', axisLabel: { ...axis.axisLabel, formatter: formatTryCompact } },
       series: [
-        bar('Gelir', CHART.series1, months.map((m) => m.income)),
-        bar('Çıkış', CHART.series2, months.map((m) => m.outflows)),
+        bar('Gelir', c.series[0], months.map((m) => m.income)),
+        bar('Çıkış', c.series[1], months.map((m) => m.outflows)),
       ],
     };
   });

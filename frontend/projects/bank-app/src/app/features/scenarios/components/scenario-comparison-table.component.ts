@@ -1,7 +1,8 @@
 import { CurrencyPipe, DatePipe, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-import { ComparisonRow } from '../comparison-rows';
+import { injectChartPalette } from '../../../shared/chart/chart-palette';
+import { ComparisonRow, rowColour } from '../comparison-rows';
 
 /** One row per option plus the no-purchase baseline; also the accessible view of the scenario chart. */
 @Component({
@@ -28,7 +29,7 @@ import { ComparisonRow } from '../comparison-rows';
           <tr class="border-t border-line font-medium text-ink-soft">
             <td class="py-3">
               <span class="inline-flex items-center gap-2">
-                <span class="w-3 h-3 rounded" [style.background]="row.colour" aria-hidden="true"></span>
+                <span class="w-3 h-3 rounded" [style.background]="colour(row)" aria-hidden="true"></span>
                 {{ row.label }}
               </span>
             </td>
@@ -60,5 +61,11 @@ import { ComparisonRow } from '../comparison-rows';
   `,
 })
 export class ScenarioComparisonTableComponent {
+  private readonly palette = injectChartPalette();
+
+  protected colour(row: ComparisonRow): string {
+    return rowColour(row, this.palette());
+  }
+
   readonly rows = input.required<readonly ComparisonRow[]>();
 }

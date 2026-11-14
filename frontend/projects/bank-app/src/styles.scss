@@ -41,5 +41,8 @@ p { text-wrap: pretty; }
   .notice-error { @apply p-3 rounded-lg bg-danger-tint text-danger border border-danger-line text-sm; }
   .notice-success { @apply p-3 rounded-lg bg-positive-tint text-positive border border-positive-line text-sm; }
   .notice-info { @apply p-3 rounded-lg bg-brand-tint text-brand border border-line text-sm; }
+  .segmented { @apply inline-flex p-1 gap-1 rounded-lg bg-muted; }
+  .segmented > button { @apply inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-sm text-ink-soft transition-colors hover:text-ink; }
+  .segmented > button[aria-pressed='true'] { @apply bg-surface text-ink font-medium; }
   .badge { @apply inline-block text-xs font-medium px-2 py-0.5 rounded-full; }
 }

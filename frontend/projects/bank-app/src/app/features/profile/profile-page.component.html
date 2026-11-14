@@ -37,6 +37,12 @@
       </section>
 
       <section class="panel">
+        <h2 class="section-title">Görünüm</h2>
+        <p class="text-sm text-ink-soft mt-1 mb-4">Sistem seçiliyken cihazınızın açık ya da koyu ayarını izler.</p>
+        <app-theme-switch />
+      </section>
+
+      <section class="panel">
         <h2 class="section-title">Verilerim</h2>
         <p class="text-sm text-ink-soft mt-1 mb-4">Hakkınızda saklanan bütün bilgileri bir dosya olarak indirin (KVKK).</p>
         <button type="button" class="btn-secondary" [disabled]="busy()" (click)="downloadData()">Verilerimi indir</button>
