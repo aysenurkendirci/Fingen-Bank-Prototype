@@ -3,6 +3,11 @@
 Retail banking backend with a personal finance planner on top. Accounts, IBANs, cards and transfers on one side; a day-by-day
 cash-flow projection and installment comparison on the other. A portfolio project, not a live service.
 
+Savings goals each get a savings account of their own and can fill themselves: when a salary arrives, a share of it moves to the
+goal in the same transaction. New year's resolutions are goals with a year. Exchange rates come from TCMB's public daily rates
+through a provider interface that a bank API can be placed in front of. The web app has light and dark themes and accent colours,
+saved with the customer's account.
+
 The planner only shows the user's own obligations. It does not recommend anything.
 
 ## Stack
@@ -40,7 +45,7 @@ Without Docker you need the .NET 10 SDK, Node 22 and a local SQL Server:
 
 ```bash
 cd backend
-dotnet run --project src/Bank.Database      # creates BankDb, applies migrations
+dotnet run --project src/Bank.Database      # creates BankDb, applies migrations (the API does not run them itself)
 
 cd src/Bank.Api
 dotnet user-secrets set "Jwt:Key" "<at least 32 random characters>"
