@@ -57,6 +57,239 @@ movements, a strict Content-Security-Policy, and secret scanning, CodeQL and Dep
 .NET 10, ASP.NET Core, MediatR, FluentValidation, Dapper, SQL Server (DbUp migrations), RabbitMQ, Serilog, Angular 21,
 Tailwind, ECharts. xUnit, Vitest and Playwright for tests, GitHub Actions for CI.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    browser["Angular app<br/>signals, standalone components"]
+    nginx["nginx<br/>static files, CSP, /api proxy"]
+    api["Bank.Api<br/>controllers, JWT, rate limits"]
+    pipeline["MediatR pipeline<br/>logging, validation, transaction"]
+    handlers["Bank.Application<br/>commands and queries"]
+    domain["Bank.Domain<br/>money, IBAN, limits, ledger rules"]
+    infra["Bank.Infrastructure<br/>Dapper repositories, outbox"]
+    sql[("SQL Server")]
+    rabbit[["RabbitMQ"]]
+    tcmb(["TCMB daily rates"])
+
+    browser --> nginx --> api --> pipeline --> handlers
+    handlers --> domain
+    handlers --> infra --> sql
+    infra -- "outbox publisher" --> rabbit
+    infra -- "cached, with retry and timeout" --> tcmb
+```
+
+The backend follows Clean Architecture. Dependencies point inwards: `Bank.Domain` knows nothing else, `Bank.Application`
+knows the domain and declares the interfaces it needs (repositories, current user, clock), `Bank.Infrastructure` implements
+them, and `Bank.Api` wires everything together. `Bank.Contracts` holds the request, response and event shapes, so the API
+surface can be read in one place.
+
+Every request goes through MediatR as a command or a query. Three behaviours wrap each handler:
+
+1. Logging, with the correlation id of the request.
+2. Validation with FluentValidation. A failure becomes a 400 before the handler runs.
+3. A transaction for commands that move money or change several tables. The handler, the ledger postings, the outbox event
+   and the notifications commit together or not at all.
+
+A transfer, as an example of how the pieces meet:
+
+```mermaid
+sequenceDiagram
+    participant C as Customer
+    participant A as API
+    participant H as TransferMoneyCommand
+    participant D as SQL Server
+    C->>A: POST /api/transfers with an Idempotency-Key
+    A->>H: validated command, transaction opened
+    H->>D: look up the key, return the stored result if it was seen before
+    H->>D: lock both accounts (UPDLOCK)
+    H->>H: limits, currency, holder name, two postings
+    H->>D: transfer, ledger entries, balances
+    H->>D: outbox event, notifications, auto-save
+    A-->>C: 201 with the receipt
+    Note over D: after the commit the outbox publisher sends the event to RabbitMQ
+```
+
+The frontend is split into layers that may only import downwards, checked in CI by `scripts/check-layers.mjs`:
+
+| Layer | Holds | May use |
+|---|---|---|
+| core | session, HTTP interceptors, theme, base page | nothing else |
+| data-access | API clients and models | core |
+| shared | UI pieces, money display, stores | core, data-access |
+| features | one folder per screen | core, data-access, shared |
+| layout | the signed-in frame and the sign-in frame | core, data-access, shared |
+
+Pages own the loading and saving state. The components below them only show and collect. The access token stays in memory,
+the refresh token in an HttpOnly cookie.
+
+## Database
+
+SQL Server, changed only through numbered DbUp scripts in `backend/src/Bank.Database/Migrations`. In development the API applies
+them on start; anywhere else it refuses to start on a database that is behind the build. Tables are grouped by schema:
+
+| Schema | Tables | What for |
+|---|---|---|
+| dbo | Users, Accounts, Cards, Transactions, RefreshTokens, UserPreferences, Notifications | the customer, accounts and cards, sessions |
+| payments | Transfers, LedgerEntries | money movement, double-entry |
+| savings | Goals, AutoSaveRuns | goals with their own savings account |
+| finance | CreditCards, RecurringCashFlows, InstallmentPlans, ImportBatches, Transactions | the planner's inputs; cards, plans and cash flows are system-versioned |
+| messaging | OutboxMessages | events waiting to be published |
+| compliance | ErasedIdentities | who was erased under KVKK, and when |
+
+```mermaid
+erDiagram
+    Users ||--o{ Accounts : holds
+    Users ||--o{ Cards : holds
+    Accounts ||--o{ Cards : "card of"
+    Users ||--o{ Transfers : sends
+    Accounts ||--o{ Transfers : "source or target"
+    Transfers ||--|{ LedgerEntries : "posted as"
+    Accounts ||--o{ LedgerEntries : "posted to"
+    Accounts ||--o{ Transactions : statement
+    Users ||--o{ Goals : saves
+    Accounts ||--o| Goals : "savings account of"
+    Goals ||--o{ AutoSaveRuns : "fed by"
+    Transfers ||--o{ AutoSaveRuns : triggers
+    Users ||--o{ RefreshTokens : "signed in with"
+    Users ||--o| UserPreferences : prefers
+    Users ||--o{ Notifications : "is told"
+    Users ||--o{ CreditCards : plans
+    CreditCards ||--o{ InstallmentPlans : "paid with"
+    CreditCards ||--o{ RecurringCashFlows : "charged to"
+    Users ||--o{ ImportBatches : imports
+    ImportBatches ||--o{ HistoryTransactions : contains
+    Users ||--o| ErasedIdentities : "erased as"
+
+    Users {
+        bigint UserId PK
+        char TcNo UK
+        nvarchar FirstName
+        nvarchar LastName
+        nvarchar Email UK
+        varchar PasswordHash
+    }
+    Accounts {
+        bigint AccountId PK
+        bigint UserId FK
+        varchar AccountType "Demand, Time, ForeignCurrency, Savings"
+        char CurrencyCode
+        char Iban UK
+        decimal Balance "never below zero"
+        varchar Status
+    }
+    Cards {
+        bigint CardId PK
+        bigint AccountId FK
+        char CardLastFour
+        varchar Status
+        decimal DailyLimit
+        decimal MonthlyLimit
+    }
+    Transfers {
+        bigint TransferId PK
+        bigint UserId FK
+        varchar IdempotencyKey "unique per user"
+        binary RequestHash
+        bigint SourceAccountId FK
+        bigint TargetAccountId FK
+        decimal Amount
+    }
+    LedgerEntries {
+        bigint EntryId PK
+        bigint TransferId FK
+        bigint AccountId FK
+        varchar Side "one debit and one credit"
+        decimal Amount
+        decimal BalanceAfter
+    }
+    Transactions {
+        bigint TransactionId PK
+        bigint AccountId FK
+        decimal Amount
+        varchar Direction
+    }
+    Goals {
+        bigint GoalId PK
+        bigint UserId FK
+        bigint AccountId FK "own savings account"
+        decimal TargetAmount
+        smallint NewYearOf
+        bigint AutoSaveSourceAccountId FK
+    }
+    AutoSaveRuns {
+        bigint GoalId PK
+        bigint TriggerTransferId PK
+        bigint TransferId FK
+    }
+    RefreshTokens {
+        bigint TokenId PK
+        binary TokenHash UK
+        datetime ExpiresAt
+        bigint ReplacedByTokenId FK
+    }
+    UserPreferences {
+        bigint UserId PK
+        varchar Theme
+        varchar Accent
+    }
+    Notifications {
+        bigint NotificationId PK
+        bigint UserId FK
+        varchar Kind
+        nvarchar Title
+        datetime ReadAt
+    }
+    CreditCards {
+        bigint CreditCardId PK
+        bigint UserId FK
+        decimal LimitAmount
+        tinyint StatementDay
+    }
+    InstallmentPlans {
+        bigint InstallmentPlanId PK
+        bigint CreditCardId FK
+        decimal TotalAmount
+        tinyint InstallmentCount
+    }
+    RecurringCashFlows {
+        bigint RecurringCashFlowId PK
+        bigint CreditCardId FK
+        varchar Kind
+        decimal Amount
+        varchar Frequency
+    }
+    ImportBatches {
+        uniqueidentifier ImportBatchId PK
+        bigint UserId FK
+        varchar Source
+    }
+    HistoryTransactions {
+        bigint TransactionId PK
+        uniqueidentifier ImportBatchId FK
+        binary Fingerprint "duplicate check"
+        decimal Amount
+    }
+    ErasedIdentities {
+        bigint UserId PK
+        char TcNo
+        datetime ErasedAt
+    }
+```
+
+`HistoryTransactions` is `finance.Transactions`, the history imported from other banks. `Transactions` is the bank's own
+account statement in `dbo`. `messaging.OutboxMessages` has no foreign keys on purpose, because events carry ids and amounts
+only.
+
+Some choices worth knowing:
+
+- Money is `DECIMAL(19,4)`, never floating point. A check constraint keeps balances from going negative even if the code had
+  a bug, and a transfer is always exactly one debit and one credit (`UQ_LedgerEntries_TransferSide`).
+- The idempotency key is unique per customer, so a retried transfer finds the first one instead of sending money twice.
+- The planner's tables are temporal (system-versioned), so every change to a card or a plan keeps its earlier version.
+- Erasure is one stored procedure, `compliance.EraseUser`. It deletes the person's own data with its history, closes the
+  accounts and anonymises the user row. The ledger stays, because the other side of each transfer still needs it.
+
 ## Layout
 
 ```
@@ -87,7 +320,7 @@ Without Docker you need the .NET 10 SDK, Node 22 and a local SQL Server:
 
 ```bash
 cd backend
-dotnet run --project src/Bank.Database      # creates BankDb, applies migrations (the API does not run them itself)
+dotnet run --project src/Bank.Database      # creates BankDb and applies the migrations
 
 cd src/Bank.Api
 dotnet user-secrets set "Jwt:Key" "<at least 32 random characters>"
