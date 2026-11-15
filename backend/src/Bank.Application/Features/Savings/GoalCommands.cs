@@ -187,7 +187,8 @@ public sealed class GoalCommandHandlers :
 
     private const string GoalNotFound = "Hedef bulunamadı.";
 
-    private static GoalDetails Details(GoalRequest g) => new(g.Name.Trim(), g.TargetAmount, g.TargetDate, g.NewYearOf);
+    private static GoalDetails Details(GoalRequest g)
+        => new(g.Name.Trim(), g.TargetAmount, g.TargetDate, g.NewYearOf, g.Category, string.IsNullOrWhiteSpace(g.Details) ? null : g.Details.Trim());
 
     private async Task<GoalRow> GoalAsync(long goalId, CancellationToken ct)
         => await _goals.GetAsync(UserId, goalId, ct) ?? throw new NotFoundException(GoalNotFound);

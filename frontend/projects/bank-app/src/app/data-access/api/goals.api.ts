@@ -39,6 +39,20 @@ export class GoalsApi extends BaseApi {
     return this.http.delete<Goal>(this.url(`/${id}/auto-save`));
   }
 
+  photo(id: number): Observable<Blob> {
+    return this.http.get(this.url(`/${id}/photo`), { responseType: 'blob' });
+  }
+
+  setPhoto(id: number, photo: Blob): Observable<void> {
+    const form = new FormData();
+    form.append('photo', photo, 'photo');
+    return this.http.put<void>(this.url(`/${id}/photo`), form);
+  }
+
+  deletePhoto(id: number): Observable<void> {
+    return this.http.delete<void>(this.url(`/${id}/photo`));
+  }
+
   close(id: number): Observable<void> {
     return this.http.delete<void>(this.url(`/${id}`));
   }

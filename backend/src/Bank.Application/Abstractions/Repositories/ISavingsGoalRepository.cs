@@ -32,11 +32,24 @@ public interface ISavingsGoalRepository
 
     Task CompleteAutoSaveAsync(long goalId, long triggerTransferId, long transferId, CancellationToken ct = default);
 
+    /// <returns>False when the goal is not the user's or is closed.</returns>
+    Task<bool> SavePhotoAsync(long userId, long goalId, GoalPhoto photo, CancellationToken ct = default);
+
+    Task<GoalPhoto?> GetPhotoAsync(long userId, long goalId, CancellationToken ct = default);
+
+    /// <returns>False when the goal is not the user's or is closed.</returns>
+    Task<bool> DeletePhotoAsync(long userId, long goalId, CancellationToken ct = default);
+
+    /// <summary>Every photo of the user's open goals, for the data export.</summary>
+    Task<IReadOnlyList<(long GoalId, GoalPhoto Photo)>> ListPhotosAsync(long userId, CancellationToken ct = default);
+
     /// <summary>Whether the account is a goal's savings account; those only move money between the owner's own accounts.</summary>
     Task<bool> IsSavingsAccountAsync(long accountId, CancellationToken ct = default);
 }
 
-public sealed record GoalDetails(string Name, decimal TargetAmount, DateOnly? TargetDate, int? NewYearOf);
+public sealed record GoalDetails(string Name, decimal TargetAmount, DateOnly? TargetDate, int? NewYearOf, string? Category, string? Details);
+
+public sealed record GoalPhoto(string ContentType, byte[] Content, DateTime UploadedAt);
 
 public sealed record AutoSaveRule(long SourceAccountId, string Mode, decimal Value, decimal MinIncoming)
 {
@@ -66,6 +79,9 @@ public sealed class GoalRow
     public string? AutoSaveMode { get; init; }
     public decimal? AutoSaveValue { get; init; }
     public decimal? AutoSaveMinIncoming { get; init; }
+    public string? Category { get; init; }
+    public string? Details { get; init; }
+    public DateTime? PhotoUpdatedAt { get; init; }
 }
 
 public sealed class AutoSaveTarget

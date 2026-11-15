@@ -1,6 +1,6 @@
 @if (newYear()) {
-  <app-page-header title="Yılbaşı hedefleri" subtitle="Yeni yıla dair hedefleriniz ve onlar için kenara koyduğunuz para.">
-    <button type="button" class="btn-primary" (click)="startCreating()">Hedef ekle</button>
+  <app-page-header title="İstek listem" subtitle="Bu yıl ya da önümüzdeki yıllarda sahip olmak istedikleriniz. Her dileğin kendi kumbarası var.">
+    <button type="button" class="btn-primary" (click)="startCreating()">Dilek ekle</button>
   </app-page-header>
 
   <div class="mb-6 flex flex-wrap items-center gap-2" role="tablist" aria-label="Yıl">
@@ -14,7 +14,7 @@
   @if (yearSummary(); as summary) {
     <section class="panel mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-sm text-ink-soft">{{ selectedYear() }} için {{ summary.count }} hedef</p>
+        <p class="text-sm text-ink-soft">{{ selectedYear() }} listesinde {{ summary.count }} dilek</p>
         <p class="text-3xl font-semibold tracking-[-0.02em] mt-1"><app-money display [amount]="summary.saved" /></p>
         <p class="text-sm text-ink-soft">Toplam hedef {{ summary.target | currency: 'TRY' : 'symbol-narrow' : '1.0-0' }}, %{{ summary.percent }} tamamlandı</p>
       </div>
@@ -39,7 +39,7 @@
 } @else if (visibleGoals().length === 0 && !error() && !creating()) {
   <app-empty-state>
     @if (newYear()) {
-      {{ selectedYear() }} için henüz bir hedefiniz yok. Yeni yılda neye ulaşmak istediğinizi "Hedef ekle" ile yazın.
+      {{ selectedYear() }} listeniz henüz boş. Araba, ev, bir seyahat: istediğinizi "Dilek ekle" ile yazın, isterseniz fotoğrafını da ekleyin.
     } @else {
       Henüz bir hedefiniz yok. Araba, tatil ya da ev peşinatı gibi bir hedef ekleyip birikime başlayın.
     }
@@ -48,7 +48,7 @@
   <div class="grid gap-4 lg:grid-cols-2 items-start">
     @for (goal of visibleGoals(); track goal.id) {
       <div class="space-y-3">
-        <app-goal-card [goal]="goal" (act)="open(goal, $event)" />
+        <app-goal-card [goal]="goal" [photoUrl]="photos.urls()[goal.id] ?? null" (act)="open(goal, $event)" />
 
         @if (panel(); as p) {
           @if (p.goalId === goal.id) {
@@ -63,7 +63,7 @@
                 <app-auto-save-form class="panel" [goal]="goal" [accounts]="accounts()" [busy]="busy()" (save)="saveRule(goal, $event)" (remove)="removeRule(goal)" (cancel)="panel.set(null)" />
               }
               @case ('edit') {
-                <app-goal-form [goal]="goal" [busy]="busy()" (save)="update(goal, $event)" (cancel)="panel.set(null)" />
+                <app-goal-form [goal]="goal" [photoUrl]="photos.urls()[goal.id] ?? null" [busy]="busy()" (save)="update(goal, $event)" (cancel)="panel.set(null)" />
               }
             }
           }

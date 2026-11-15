@@ -1,5 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, booleanAttribute, computed, inject, input, signal } from '@angular/core';
+import { Component, booleanAttribute, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { Observable, map, of, switchMap } from 'rxjs';
 
 import { BasePage } from '../../core/page/base-page';
 import { ConfirmService } from '../../core/ui/confirm.service';
@@ -7,7 +8,7 @@ import { ToastService } from '../../core/ui/toast.service';
 import { AccountsApi } from '../../data-access/api/banking.api';
 import { GoalsApi } from '../../data-access/api/goals.api';
 import { Account } from '../../data-access/models/banking.models';
-import { AutoSaveRequest, Goal, GoalMoneyRequest, GoalRequest } from '../../data-access/models/savings.models';
+import { AutoSaveRequest, Goal, GoalMoneyRequest } from '../../data-access/models/savings.models';
 import { IdempotentAttempt } from '../../shared/finance/idempotent-attempt';
 import { MoneyComponent } from '../../shared/finance/money.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
@@ -16,8 +17,9 @@ import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { SkeletonComponent } from '../../shared/ui/skeleton.component';
 import { AutoSaveFormComponent } from './components/auto-save-form.component';
 import { GoalAction, GoalCardComponent } from './components/goal-card.component';
-import { GoalFormComponent } from './components/goal-form.component';
+import { GoalFormComponent, GoalFormResult } from './components/goal-form.component';
 import { GoalMoneyFormComponent } from './components/goal-money-form.component';
+import { GoalPhotos } from './goal-photos';
 
 type Panel = { goalId: number; kind: Exclude<GoalAction, 'close'> };
 
@@ -27,7 +29,7 @@ function upcomingNewYear(today = new Date()): number {
 }
 
 /**
- * Container for savings goals. Used twice: all goals, and the new year area with the resolutions of one year.
+ * Container for savings goals. Used twice: all goals, and the wish list with the wishes of one year.
  * Every change goes through here; the cards and forms below only show and collect.
  */
 @Component({
@@ -53,6 +55,7 @@ export class GoalsPageComponent extends BasePage {
   private readonly accountsApi = inject(AccountsApi);
   private readonly dialog = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  protected readonly photos = new GoalPhotos();
   private readonly moves = new IdempotentAttempt<{ goalId: number; direction: string; money: GoalMoneyRequest }>();
 
   protected readonly goals = signal<readonly Goal[]>([]);
@@ -84,6 +87,10 @@ export class GoalsPageComponent extends BasePage {
     super();
     this.load(this.api.list(), (goals) => this.goals.set(goals), 'Hedefler yüklenemedi.');
     this.loadAccounts();
+    effect(() => {
+      const goals = this.goals();
+      untracked(() => this.photos.sync(goals));
+    });
   }
 
   protected startCreating(): void {
@@ -115,20 +122,39 @@ export class GoalsPageComponent extends BasePage {
     });
   }
 
-  protected create(request: GoalRequest): void {
-    this.act(this.api.create(request), {
-      fallback: 'Hedef oluşturulamadı.',
-      onDone: (goal) => {
-        this.goals.update((goals) => [...goals, goal]);
-        this.creating.set(false);
-        if (goal.newYearOf) this.selectedYear.set(goal.newYearOf);
-        this.toast.show('Hedefiniz ve kumbarası oluşturuldu.');
+  protected create(result: GoalFormResult): void {
+    this.act(
+      this.api.create(result.goal).pipe(switchMap((goal) => this.withPhoto(goal, result.photo))),
+      {
+        fallback: 'Hedef oluşturulamadı.',
+        onDone: (goal) => {
+          this.goals.update((goals) => [...goals, goal]);
+          this.creating.set(false);
+          if (goal.newYearOf) this.selectedYear.set(goal.newYearOf);
+          this.toast.show(goal.newYearOf ? 'Dileğiniz listenize eklendi, kumbarası açıldı.' : 'Hedefiniz ve kumbarası oluşturuldu.');
+        },
       },
-    });
+    );
   }
 
-  protected update(goal: Goal, request: GoalRequest): void {
-    this.act(this.api.update(goal.id, request), { fallback: 'Hedef kaydedilemedi.', onDone: (updated) => this.replace(updated, 'Hedef güncellendi.') });
+  protected update(goal: Goal, result: GoalFormResult): void {
+    this.act(
+      this.api.update(goal.id, result.goal).pipe(switchMap((updated) => this.withPhoto(updated, result.photo))),
+      { fallback: 'Hedef kaydedilemedi.', onDone: (updated) => this.replace(updated, 'Hedef güncellendi.') },
+    );
+  }
+
+  /**
+   * Saves or removes the photo after the goal itself, then reads the goal again so the card knows the new photo.
+   * Without a photo change the goal is returned as it is.
+   */
+  private withPhoto(goal: Goal, photo: Blob | null | undefined): Observable<Goal> {
+    if (photo === undefined) return of(goal);
+    const change = photo ? this.api.setPhoto(goal.id, photo) : this.api.deletePhoto(goal.id);
+    return change.pipe(
+      switchMap(() => this.api.list()),
+      map((goals) => goals.find((g) => g.id === goal.id) ?? goal),
+    );
   }
 
   /** A retry after a failure reuses its key, so the money moves once however often the button is pressed. */

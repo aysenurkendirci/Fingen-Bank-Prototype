@@ -75,6 +75,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         var preferences = await _preferences.GetAsync(userId, ct);
         var goals = await _goals.ListAsync(userId, ct);
         var notifications = await _notifications.ListAsync(userId, int.MaxValue, ct);
+        var photos = await _goals.ListPhotosAsync(userId, ct);
         var today = BusinessDate.Today(_time);
 
         // Exports leave the system, so each one is recorded.
@@ -93,6 +94,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
                 .Select(t => new HistoryTransactionResponse(t.Id, t.Date, t.Description, t.Amount, t.CurrencyCode, t.Category))
                 .ToList(),
             goals.Select(g => GoalMapping.ToResponse(g, today)).ToList(),
-            notifications.Select(NotificationMapping.ToResponse).ToList());
+            notifications.Select(NotificationMapping.ToResponse).ToList(),
+            photos.Select(p => new GoalPhotoExport(p.GoalId, p.Photo.ContentType, Convert.ToBase64String(p.Photo.Content), p.Photo.UploadedAt)).ToList());
     }
 }

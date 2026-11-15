@@ -56,6 +56,40 @@ public sealed class GoalsController : ControllerBase
     public async Task<ActionResult<GoalResponse>> ClearAutoSave(long id, CancellationToken ct)
         => Ok(await _sender.Send(new SetAutoSaveCommand(id, null), ct));
 
+    /// <summary>Puts a photo of the wish on the goal (JPEG, PNG or WebP, at most 2 MB), replacing any earlier one.</summary>
+    [HttpPut("{id:long}/photo")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(GoalPhotoRules.MaxBytes + 64 * 1024)]
+    public async Task<IActionResult> SetPhoto(long id, IFormFile photo, CancellationToken ct)
+    {
+        if (photo.Length > GoalPhotoRules.MaxBytes)
+            return Problem(statusCode: StatusCodes.Status413PayloadTooLarge, title: "Fotoğraf çok büyük",
+                           detail: "Fotoğraf en fazla 2 MB olabilir.");
+
+        using var buffer = new MemoryStream((int)photo.Length);
+        await photo.CopyToAsync(buffer, ct);
+        await _sender.Send(new SetGoalPhotoCommand(id, buffer.ToArray()), ct);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// The goal's photo, with the type found in its bytes. Like every API response it carries nosniff and a
+    /// Content-Security-Policy of <c>default-src 'none'</c>, so even a crafted file could never run as a page.
+    /// </summary>
+    [HttpGet("{id:long}/photo")]
+    public async Task<IActionResult> Photo(long id, CancellationToken ct)
+    {
+        var photo = await _sender.Send(new GetGoalPhotoQuery(id), ct);
+        return File(photo.Content, photo.ContentType);
+    }
+
+    [HttpDelete("{id:long}/photo")]
+    public async Task<IActionResult> DeletePhoto(long id, CancellationToken ct)
+    {
+        await _sender.Send(new DeleteGoalPhotoCommand(id), ct);
+        return NoContent();
+    }
+
     /// <summary>Closes an empty goal and its savings account.</summary>
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> Close(long id, CancellationToken ct)

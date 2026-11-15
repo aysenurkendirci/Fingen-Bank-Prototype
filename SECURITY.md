@@ -27,6 +27,7 @@ STRIDE başlıklarına göre, neye karşı ne yapıldığı:
 - Bütün SQL sorguları parametreli (Dapper), dinamik SQL yalnızca silme prosedüründe ve sabit metinle.
 - Şifreler ASP.NET Identity'nin hash'iyle saklanır, en az 12 karakter, bir harf ve bir rakam istenir.
 - Dışarıdan gelen XML (TCMB kurları) DTD kapalı ve çözümleyicisiz okunur, boyutu sınırlıdır.
+- Hedef fotoğrafları uygulamada yeniden çizilerek küçültülür, böylece konum gibi EXIF bilgileri sunucuya hiç gitmez. Sunucu türü dosya adına değil ilk baytlarına bakarak belirler (yalnızca JPEG, PNG, WebP), en fazla 2 MB kabul eder ve fotoğrafı `nosniff` ve `default-src 'none'` ile döner.
 
 ## OWASP ASVS
 

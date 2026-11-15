@@ -4,19 +4,37 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { Goal } from '../../../data-access/models/savings.models';
 import { IbanCopyComponent } from '../../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../../shared/finance/money.component';
+import { categoryOf, horizonYears } from '../goal-categories';
 
 export type GoalAction = 'deposit' | 'withdraw' | 'auto-save' | 'edit' | 'close';
 
-/** One goal: how far along it is, what it still needs and whether it fills itself. Actions go up to the page. */
+/**
+ * One goal, or one wish on the list: its photo or the icon of its kind, what exactly is wanted, how far along it is,
+ * what it still needs and whether it fills itself. Actions go up to the page.
+ */
 @Component({
   selector: 'app-goal-card',
   imports: [CurrencyPipe, DatePipe, IbanCopyComponent, MoneyComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'panel block' },
+  host: { class: 'panel block overflow-hidden' },
   template: `
+    @if (photoUrl(); as src) {
+      <img [src]="src" [alt]="goal().name" class="-mx-5 -mt-5 mb-4 block w-[calc(100%+2.5rem)] max-w-none aspect-[16/9] object-cover" />
+    } @else if (category(); as kind) {
+      <div class="-mx-5 -mt-5 mb-4 aspect-[16/9] max-h-32 w-[calc(100%+2.5rem)] bg-brand-tint grid place-items-center" aria-hidden="true">
+        <span class="material-symbols-outlined text-[40px] text-brand">{{ kind.icon }}</span>
+      </div>
+    }
+
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0">
+        @if (category(); as kind) {
+          <p class="text-xs text-ink-faint mb-0.5">{{ kind.label }}</p>
+        }
         <h3 class="section-title">{{ goal().name }}</h3>
+        @if (goal().details; as details) {
+          <p class="text-sm text-ink-soft mt-1 whitespace-pre-line break-words">{{ details }}</p>
+        }
         <app-iban-copy class="block mt-0.5" [iban]="goal().iban" />
       </div>
       @if (reached()) {
@@ -32,7 +50,9 @@ export type GoalAction = 'deposit' | 'withdraw' | 'auto-save' | 'edit' | 'close'
     </div>
 
     <dl class="mt-4 space-y-1 text-sm">
-      @if (goal().targetDate; as date) {
+      @if (horizon(); as years) {
+        <div class="flex justify-between gap-4"><dt class="text-ink-soft">Süre</dt><dd>{{ years }} yıllık hedef, {{ goal().targetDate | date: 'y' }} sonuna kadar</dd></div>
+      } @else if (goal().targetDate; as date) {
         <div class="flex justify-between gap-4"><dt class="text-ink-soft">Hedef tarihi</dt><dd>{{ date | date: 'd MMMM y' }}</dd></div>
       }
       @if (goal().monthlyNeeded; as monthly) {
@@ -68,7 +88,12 @@ export type GoalAction = 'deposit' | 'withdraw' | 'auto-save' | 'edit' | 'close'
 })
 export class GoalCardComponent {
   readonly goal = input.required<Goal>();
+  /** Loaded by the page; null while loading or without a photo. */
+  readonly photoUrl = input<string | null>(null);
   readonly act = output<GoalAction>();
+
+  protected readonly category = computed(() => categoryOf(this.goal().category));
+  protected readonly horizon = computed(() => horizonYears(this.goal()));
 
   protected readonly percent = computed(() => {
     const { savedAmount, targetAmount } = this.goal();

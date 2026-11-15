@@ -26,6 +26,15 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken ct)
     {
+        // The client went away (a closed tab, a page left half way). SQL Server reports that as an error of its own
+        // rather than a cancellation, which is not a fault worth an error log, and nobody is left to read a reply.
+        if (context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogDebug("Request {Method} {Path} ended because the client went away", context.Request.Method, context.Request.Path);
+            context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
+            return true;
+        }
+
         var (status, title) = exception switch
         {
             ValidationException => (StatusCodes.Status400BadRequest, "Geçersiz istek"),
