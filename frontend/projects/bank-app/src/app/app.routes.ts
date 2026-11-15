@@ -51,6 +51,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/bank-cards/bank-cards-page.component').then((m) => m.BankCardsPageComponent),
       },
       {
+        path: 'splits',
+        title: 'Harcama bölme',
+        loadComponent: () => import('./features/splits/splits-page.component').then((m) => m.SplitsPageComponent),
+      },
+      {
         path: 'notifications',
         title: 'Bildirimler',
         loadComponent: () =>

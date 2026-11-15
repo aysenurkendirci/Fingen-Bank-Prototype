@@ -13,6 +13,8 @@ Banking
 - Transfers by IBAN with a review step and a receipt. Each transfer carries an Idempotency-Key, so a retry never sends the money
   twice.
 - Debit and credit cards: contactless and online use, daily and monthly limits, a temporary block.
+- Splitting an expense with friends. A friend who banks here is asked in the app and pays their share with a transfer;
+  a friend outside is marked paid by hand.
 
 Savings
 - Goals with their own savings account. Money goes in and out through the ledger like any other transfer.
@@ -42,6 +44,7 @@ Customer
 | Savings | A goal's savings account only moves money to the owner's own accounts. A goal closes once its savings account is empty. Auto-save never goes past the target and never blocks the payment that triggered it. |
 | Cards | The daily limit cannot exceed the monthly limit. A temporary block can be lifted; cancellation is final, and a cancelled card can no longer be changed. |
 | Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 12 characters with a letter and a digit. |
+| Splits | Shares cannot add up to more than the expense. A friend's name must match the IBAN holder. A share is settled only by the friend's own transfer to the payer's account for exactly the share, and one transfer settles one share. |
 | Notifications | Written in the same transaction as the change, so a refused transfer leaves none. Moves between a customer's own accounts are not announced. Read ones are removed after 90 days, unread ones stay. |
 | Ledger | Every transfer is two postings that balance. Balances never go negative, enforced by the database as a last line of defence. |
 
@@ -133,9 +136,10 @@ them on start; anywhere else it refuses to start on a database that is behind th
 |---|---|---|
 | dbo | Users, Accounts, Cards, Transactions, RefreshTokens, UserPreferences, Notifications | the customer, accounts and cards, sessions |
 | payments | Transfers, LedgerEntries | money movement, double-entry |
-| savings | Goals, AutoSaveRuns | goals with their own savings account |
+| savings | Goals, AutoSaveRuns, GoalPhotos | goals and wishes with their own savings account, and their photos |
 | finance | CreditCards, RecurringCashFlows, InstallmentPlans, ImportBatches, Transactions | the planner's inputs; cards, plans and cash flows are system-versioned |
 | messaging | OutboxMessages | events waiting to be published |
+| splits | Splits, Shares | expenses split with friends and who owes what |
 | compliance | ErasedIdentities | who was erased under KVKK, and when |
 
 ```mermaid
@@ -152,6 +156,7 @@ erDiagram
     Accounts ||--o| Goals : "savings account of"
     Goals ||--o{ AutoSaveRuns : "fed by"
     Transfers ||--o{ AutoSaveRuns : triggers
+    Goals ||--o| GoalPhotos : "pictured by"
     Users ||--o{ RefreshTokens : "signed in with"
     Users ||--o| UserPreferences : prefers
     Users ||--o{ Notifications : "is told"
@@ -161,6 +166,11 @@ erDiagram
     Users ||--o{ ImportBatches : imports
     ImportBatches ||--o{ HistoryTransactions : contains
     Users ||--o| ErasedIdentities : "erased as"
+    Users ||--o{ Splits : "paid and split"
+    Splits ||--|{ Shares : "asks for"
+    Users ||--o{ Shares : owes
+    Transfers ||--o| Shares : settles
+    Accounts ||--o{ Splits : "receives for"
 
     Users {
         bigint UserId PK
@@ -218,6 +228,11 @@ erDiagram
         smallint NewYearOf
         bigint AutoSaveSourceAccountId FK
     }
+    GoalPhotos {
+        bigint GoalId PK
+        varchar ContentType "jpeg, png or webp"
+        varbinary Content "at most 2 MB"
+    }
     AutoSaveRuns {
         bigint GoalId PK
         bigint TriggerTransferId PK
@@ -270,6 +285,22 @@ erDiagram
         uniqueidentifier ImportBatchId FK
         binary Fingerprint "duplicate check"
         decimal Amount
+    }
+    Splits {
+        bigint SplitId PK
+        bigint OwnerUserId FK
+        bigint ReceivingAccountId FK
+        nvarchar Title
+        decimal TotalAmount
+        date SpentOn
+    }
+    Shares {
+        bigint ShareId PK
+        bigint SplitId FK
+        bigint DebtorUserId FK "null for a friend outside the bank"
+        decimal Amount
+        varchar Status
+        bigint TransferId FK "unique, settles the share"
     }
     ErasedIdentities {
         bigint UserId PK

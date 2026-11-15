@@ -1,7 +1,7 @@
 namespace Bank.Contracts.Notifications;
 
 /// <summary>One message in the customer's notification centre.</summary>
-/// <param name="Kind"><c>money-in</c>, <c>money-out</c>, <c>savings</c>, <c>goal</c> or <c>security</c>.</param>
+/// <param name="Kind"><c>money-in</c>, <c>money-out</c>, <c>savings</c>, <c>goal</c>, <c>security</c> or <c>split</c>.</param>
 /// <param name="ReadAt">Null while the customer has not seen it.</param>
 public sealed record NotificationResponse(
     long NotificationId,

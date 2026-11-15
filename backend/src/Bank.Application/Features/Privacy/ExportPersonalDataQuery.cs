@@ -7,6 +7,7 @@ using Bank.Application.Features.Notifications;
 using Bank.Application.Features.Preferences;
 using Bank.Application.Features.RecurringCashFlows;
 using Bank.Application.Features.Savings;
+using Bank.Application.Features.Splits;
 using Bank.Contracts.Account;
 using Bank.Contracts.Finance;
 using MediatR;
@@ -34,6 +35,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
     private readonly IUserPreferencesRepository _preferences;
     private readonly ISavingsGoalRepository _goals;
     private readonly INotificationRepository _notifications;
+    private readonly ISplitRepository _splits;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _time;
     private readonly ILogger<ExportPersonalDataQueryHandler> _logger;
@@ -47,6 +49,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         IUserPreferencesRepository preferences,
         ISavingsGoalRepository goals,
         INotificationRepository notifications,
+        ISplitRepository splits,
         ICurrentUser currentUser,
         TimeProvider time,
         ILogger<ExportPersonalDataQueryHandler> logger)
@@ -59,6 +62,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         _preferences = preferences;
         _goals = goals;
         _notifications = notifications;
+        _splits = splits;
         _currentUser = currentUser;
         _time = time;
         _logger = logger;
@@ -76,6 +80,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         var goals = await _goals.ListAsync(userId, ct);
         var notifications = await _notifications.ListAsync(userId, int.MaxValue, ct);
         var photos = await _goals.ListPhotosAsync(userId, ct);
+        var splits = await _splits.ListOwnedAsync(userId, ct);
         var today = BusinessDate.Today(_time);
 
         // Exports leave the system, so each one is recorded.
@@ -95,6 +100,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
                 .ToList(),
             goals.Select(g => GoalMapping.ToResponse(g, today)).ToList(),
             notifications.Select(NotificationMapping.ToResponse).ToList(),
-            photos.Select(p => new GoalPhotoExport(p.GoalId, p.Photo.ContentType, Convert.ToBase64String(p.Photo.Content), p.Photo.UploadedAt)).ToList());
+            photos.Select(p => new GoalPhotoExport(p.GoalId, p.Photo.ContentType, Convert.ToBase64String(p.Photo.Content), p.Photo.UploadedAt)).ToList(),
+            splits.Select(SplitMapping.ToResponse).ToList());
     }
 }
