@@ -3,6 +3,7 @@ using Bank.Application.Abstractions.Security;
 using Bank.Application.Common;
 using Bank.Application.Common.Exceptions;
 using Bank.Application.Features.Auth;
+using Bank.Application.Features.Notifications;
 using Bank.Contracts.Account;
 using Bank.Contracts.Auth;
 using FluentValidation;
@@ -74,6 +75,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     private readonly IPasswordHasher _hasher;
     private readonly ITokenGenerator _accessTokens;
     private readonly ICurrentUser _currentUser;
+    private readonly Notices _notices;
     private readonly TimeProvider _time;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
@@ -84,6 +86,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         IPasswordHasher hasher,
         ITokenGenerator accessTokens,
         ICurrentUser currentUser,
+        Notices notices,
         TimeProvider time,
         ILogger<ChangePasswordCommandHandler> logger)
     {
@@ -93,6 +96,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         _hasher = hasher;
         _accessTokens = accessTokens;
         _currentUser = currentUser;
+        _notices = notices;
         _time = time;
         _logger = logger;
     }
@@ -112,6 +116,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         await _refreshTokenStore.RevokeAllAsync(userId, _time.GetUtcNow().UtcDateTime, ct);
 
         _logger.LogInformation("User {UserId} changed their password", userId);
+        await _notices.PasswordChangedAsync(userId, ct);
 
         var profile = await _users.GetProfileAsync(userId, ct);
         return await AuthResponses.CreateAsync(userId, $"{profile.FirstName} {profile.LastName}", _accessTokens, _refreshTokens, ct);

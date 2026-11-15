@@ -3,6 +3,7 @@ using Bank.Application.Abstractions.Security;
 using Bank.Application.Common;
 using Bank.Application.Features.CreditCards;
 using Bank.Application.Features.InstallmentPlans;
+using Bank.Application.Features.Notifications;
 using Bank.Application.Features.Preferences;
 using Bank.Application.Features.RecurringCashFlows;
 using Bank.Application.Features.Savings;
@@ -32,6 +33,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
     private readonly ITransactionHistoryRepository _history;
     private readonly IUserPreferencesRepository _preferences;
     private readonly ISavingsGoalRepository _goals;
+    private readonly INotificationRepository _notifications;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _time;
     private readonly ILogger<ExportPersonalDataQueryHandler> _logger;
@@ -44,6 +46,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         ITransactionHistoryRepository history,
         IUserPreferencesRepository preferences,
         ISavingsGoalRepository goals,
+        INotificationRepository notifications,
         ICurrentUser currentUser,
         TimeProvider time,
         ILogger<ExportPersonalDataQueryHandler> logger)
@@ -55,6 +58,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         _history = history;
         _preferences = preferences;
         _goals = goals;
+        _notifications = notifications;
         _currentUser = currentUser;
         _time = time;
         _logger = logger;
@@ -70,6 +74,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
         var transactions = await _history.ListRangeAsync(userId, EarliestRecord, LatestRecord, ct);
         var preferences = await _preferences.GetAsync(userId, ct);
         var goals = await _goals.ListAsync(userId, ct);
+        var notifications = await _notifications.ListAsync(userId, int.MaxValue, ct);
         var today = BusinessDate.Today(_time);
 
         // Exports leave the system, so each one is recorded.
@@ -87,6 +92,7 @@ public sealed class ExportPersonalDataQueryHandler : IRequestHandler<ExportPerso
             transactions
                 .Select(t => new HistoryTransactionResponse(t.Id, t.Date, t.Description, t.Amount, t.CurrencyCode, t.Category))
                 .ToList(),
-            goals.Select(g => GoalMapping.ToResponse(g, today)).ToList());
+            goals.Select(g => GoalMapping.ToResponse(g, today)).ToList(),
+            notifications.Select(NotificationMapping.ToResponse).ToList());
     }
 }

@@ -1,4 +1,5 @@
 using Bank.Contracts.Finance;
+using Bank.Contracts.Notifications;
 using Bank.Contracts.Savings;
 
 namespace Bank.Contracts.Account;
@@ -14,7 +15,8 @@ public sealed record PersonalDataExport(
     IReadOnlyList<RecurringCashFlowResponse> RecurringCashFlows,
     IReadOnlyList<InstallmentPlanResponse> InstallmentPlans,
     IReadOnlyList<HistoryTransactionResponse> Transactions,
-    IReadOnlyList<GoalResponse> SavingsGoals
+    IReadOnlyList<GoalResponse> SavingsGoals,
+    IReadOnlyList<NotificationResponse> Notifications
 );
 
 public sealed record PersonalProfile(

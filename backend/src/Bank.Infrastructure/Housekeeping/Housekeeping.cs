@@ -19,15 +19,19 @@ public sealed class HousekeepingOptions
     /// <summary>Published events are kept this long, for tracing a delivery after the fact.</summary>
     public int PublishedEventRetentionDays { get; init; } = 7;
 
+    /// <summary>Notifications the customer has read are kept this long; unread ones are never removed.</summary>
+    public int ReadNotificationRetentionDays { get; init; } = 90;
+
     /// <summary>Rows removed per statement, so one run never holds long locks on a busy table.</summary>
     public int BatchSize { get; init; } = 1_000;
 }
 
-public sealed record HousekeepingResult(int RefreshTokens, int PublishedEvents);
+public sealed record HousekeepingResult(int RefreshTokens, int PublishedEvents, int ReadNotifications);
 
 /// <summary>
-/// Removes rows that have done their job: refresh tokens long past expiry and events the broker already received.
-/// Neither is personal history a customer looks at; left alone they only grow. Deletes run in small batches.
+/// Removes rows that have done their job: refresh tokens long past expiry, events the broker already received and
+/// notifications read long ago. None of them is history a customer relies on; left alone they only grow. Deletes
+/// run in small batches.
 /// </summary>
 public sealed class HousekeepingRunner
 {
@@ -59,9 +63,16 @@ public sealed class HousekeepingRunner
             SELECT @@ROWCOUNT;
             """;
 
+        const string notifications = """
+            DELETE TOP (@Batch) FROM dbo.Notifications WHERE ReadAt < @Cutoff;
+            SELECT @@ROWCOUNT;
+            """;
+
         var removedTokens = await DeleteInBatchesAsync(connection, tokens, nowUtc.AddDays(-_options.RefreshTokenRetentionDays), ct);
         var removedEvents = await DeleteInBatchesAsync(connection, events, nowUtc.AddDays(-_options.PublishedEventRetentionDays), ct);
-        return new HousekeepingResult(removedTokens, removedEvents);
+        var removedNotifications = await DeleteInBatchesAsync(
+            connection, notifications, nowUtc.AddDays(-_options.ReadNotificationRetentionDays), ct);
+        return new HousekeepingResult(removedTokens, removedEvents, removedNotifications);
     }
 
     private async Task<int> DeleteInBatchesAsync(System.Data.Common.DbConnection connection, string sql, DateTime cutoff, CancellationToken ct)
@@ -102,10 +113,10 @@ public sealed class HousekeepingService : BackgroundService
             try
             {
                 var result = await _runner.RunOnceAsync(_time.GetUtcNow().UtcDateTime, stoppingToken);
-                if (result.RefreshTokens + result.PublishedEvents > 0)
+                if (result.RefreshTokens + result.PublishedEvents + result.ReadNotifications > 0)
                     _logger.LogInformation(
-                        "Housekeeping removed {RefreshTokens} expired refresh tokens and {PublishedEvents} published events",
-                        result.RefreshTokens, result.PublishedEvents);
+                        "Housekeeping removed {RefreshTokens} expired refresh tokens, {PublishedEvents} published events and {ReadNotifications} read notifications",
+                        result.RefreshTokens, result.PublishedEvents, result.ReadNotifications);
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {

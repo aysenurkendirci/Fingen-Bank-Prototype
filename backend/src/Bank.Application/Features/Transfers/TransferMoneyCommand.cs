@@ -7,6 +7,7 @@ using Bank.Application.Abstractions.Security;
 using Bank.Application.Common;
 using Bank.Application.Common.Behaviors;
 using Bank.Application.Common.Exceptions;
+using Bank.Application.Features.Notifications;
 using Bank.Application.Features.Savings;
 using Bank.Contracts.Events;
 using Bank.Contracts.Payments;
@@ -52,6 +53,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
     private readonly ICurrentUser _currentUser;
     private readonly ISavingsGoalRepository _goals;
     private readonly IPublisher _publisher;
+    private readonly Notices _notices;
     private readonly BankingRules _rules;
     private readonly ILogger<TransferMoneyCommandHandler> _logger;
 
@@ -61,6 +63,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         ICurrentUser currentUser,
         ISavingsGoalRepository goals,
         IPublisher publisher,
+        Notices notices,
         IOptions<BankingRules> rules,
         ILogger<TransferMoneyCommandHandler> logger)
     {
@@ -69,6 +72,7 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         _currentUser = currentUser;
         _goals = goals;
         _publisher = publisher;
+        _notices = notices;
         _rules = rules.Value;
         _logger = logger;
     }
@@ -121,6 +125,13 @@ public sealed class TransferMoneyCommandHandler : IRequestHandler<TransferMoneyC
         // Same transaction as the transfer: the event exists if and only if the money moved.
         await _outbox.AddAsync(
             new TransferCompleted(stored.TransferId, source.Id, target.Id, amount.Amount, amount.Currency.Code, stored.CreatedAt), ct);
+
+        // Both sides hear about money that changes hands; a move between one's own accounts is no news.
+        if (target.UserId != userId)
+        {
+            await _notices.MoneySentAsync(userId, amount, target.HolderName, ct);
+            await _notices.MoneyReceivedAsync(target.UserId, amount, target.Iban, source.HolderName, ct);
+        }
 
         // Inside the same transaction: auto-save rules on the receiving account take their share now.
         await _publisher.Publish(new IncomingTransferPosted(stored.TransferId, target.Id, amount.Amount), ct);
