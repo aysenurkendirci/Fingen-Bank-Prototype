@@ -72,6 +72,8 @@ export interface Profile {
 export interface DisplayPreferences {
   theme: 'system' | 'light' | 'dark';
   accent: 'spruce' | 'ocean' | 'plum' | 'graphite';
+  /** Missing from older answers; treated as standard. */
+  mode?: 'standard' | 'young';
 }
 
 export interface ContactDetails {

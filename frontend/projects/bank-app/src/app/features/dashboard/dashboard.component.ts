@@ -4,12 +4,15 @@ import { RouterLink } from '@angular/router';
 
 import { BasePage } from '../../core/page/base-page';
 import { BalancePrivacyService } from '../../core/ui/balance-privacy.service';
+import { VoiceService } from '../../core/ui/voice.service';
 import { DashboardApi } from '../../data-access/api/dashboard.api';
 import { PlanningApi } from '../../data-access/api/finance.api';
+import { GoalsApi } from '../../data-access/api/goals.api';
 import { MarketApi } from '../../data-access/api/market.api';
 import { DashboardResponse } from '../../data-access/models/dashboard.models';
 import { Projection } from '../../data-access/models/finance.models';
 import { ExchangeRates } from '../../data-access/models/market.models';
+import { Goal } from '../../data-access/models/savings.models';
 import { totalInLira } from '../../shared/finance/currency-conversion';
 import { NoticeComponent } from '../../shared/ui/notice.component';
 import { BankCardTileComponent } from '../../shared/finance/bank-card-tile.component';
@@ -20,6 +23,7 @@ import { runningBalance } from '../../shared/finance/running-balance';
 import { SkeletonComponent } from '../../shared/ui/skeleton.component';
 import { AccountListComponent } from './components/account-list.component';
 import { RecentTransactionsComponent } from './components/recent-transactions.component';
+import { SavingsSpotlightComponent } from './components/savings-spotlight.component';
 
 function greetingFor(hour: number): string {
   if (hour < 6) return 'İyi geceler';
@@ -42,6 +46,7 @@ function greetingFor(hour: number): string {
     BankCardTileComponent,
     RecentTransactionsComponent,
     AccountListComponent,
+    SavingsSpotlightComponent,
   ],
   templateUrl: './dashboard.component.html',
 })
@@ -49,6 +54,8 @@ export class DashboardComponent extends BasePage {
   private readonly api = inject(DashboardApi);
   private readonly planning = inject(PlanningApi);
   private readonly market = inject(MarketApi);
+  private readonly goalsApi = inject(GoalsApi);
+  protected readonly voice = inject(VoiceService);
 
   protected readonly privacy = inject(BalancePrivacyService);
   protected readonly today = new Date();
@@ -67,6 +74,9 @@ export class DashboardComponent extends BasePage {
 
   protected readonly rates = signal<ExchangeRates | null>(null);
 
+  /** Shown first in the young mode; null until loaded, so the spotlight never flashes its empty invitation. */
+  protected readonly goals = signal<readonly Goal[] | null>(null);
+
   /** Every active account in lira at today's buying rate, shown only when there is foreign currency to add. */
   protected readonly estimate = computed(() => {
     const data = this.data();
@@ -79,6 +89,7 @@ export class DashboardComponent extends BasePage {
 
   constructor() {
     super();
+    this.goalsApi.list().subscribe({ next: (goals) => this.goals.set(goals), error: () => undefined });
     this.market.exchangeRates().subscribe({ next: (rates) => this.rates.set(rates), error: () => undefined });
     this.planning.projection(3).subscribe({
       next: (projection) => this.outlook.set(projection),

@@ -3,7 +3,7 @@
 // theme (light or dark) and on the accent the customer picked.
 const dna = require('./design-dna.json');
 
-const { color, accents, shape, motion, typography } = dna.design_system;
+const { color, accents, modes, shape, motion, typography } = dna.design_system;
 const [defaultAccent] = Object.keys(accents);
 
 const rgb = (hex) => {
@@ -63,6 +63,20 @@ const accentRules = Object.keys(accents)
     { '@media (prefers-color-scheme: dark)': {} },
   );
 
+// A mode comes last and wins over any accent: its colour replaces the chosen one, and its shapes are rounder.
+const modeRules = Object.entries(modes).reduce(
+  (rules, [mode, spec]) => {
+    const on = `:root[data-mode="${mode}"]`;
+    const radius = Object.fromEntries(Object.entries(spec.radius).map(([key, value]) => [`--r-${key}`, value]));
+    const tokens = (theme) => variables({ brand: spec[theme].brand, tile: spec[theme].tile });
+    rules[on] = { ...radius, ...tokens('light') };
+    rules['@media (prefers-color-scheme: dark)'][`${on}:not([data-theme="light"])`] = tokens('dark');
+    rules[`${on}[data-theme="dark"]`] = tokens('dark');
+    return rules;
+  },
+  { '@media (prefers-color-scheme: dark)': {} },
+);
+
 module.exports = {
   colors: colors(palette('light', defaultAccent)),
   fontFamily: [typography.family, ...typography.fallback.split(',').map((f) => f.trim())],
@@ -78,5 +92,6 @@ module.exports = {
       ':root[data-theme="dark"]': { ...variables(palette('dark', defaultAccent)), colorScheme: 'dark' },
     },
     accentRules,
+    modeRules,
   ],
 };

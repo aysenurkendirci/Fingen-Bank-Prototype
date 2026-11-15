@@ -5,6 +5,7 @@ import { Observable, map, of, switchMap } from 'rxjs';
 import { BasePage } from '../../core/page/base-page';
 import { ConfirmService } from '../../core/ui/confirm.service';
 import { ToastService } from '../../core/ui/toast.service';
+import { VoiceService } from '../../core/ui/voice.service';
 import { AccountsApi } from '../../data-access/api/banking.api';
 import { GoalsApi } from '../../data-access/api/goals.api';
 import { Account } from '../../data-access/models/banking.models';
@@ -56,6 +57,7 @@ export class GoalsPageComponent extends BasePage {
   private readonly dialog = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   protected readonly photos = new GoalPhotos();
+  protected readonly voice = inject(VoiceService);
   private readonly moves = new IdempotentAttempt<{ goalId: number; direction: string; money: GoalMoneyRequest }>();
 
   protected readonly goals = signal<readonly Goal[]>([]);

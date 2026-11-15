@@ -38,6 +38,30 @@ public sealed class PreferencesTests
         Assert.Equal(new PreferencesResponse("light", "plum"), await otherDevice.GetFromJsonAsync<PreferencesResponse>("/api/me/preferences"));
     }
 
+    [Fact]
+    public async Task TheYoungMode_IsSaved_AndAClientThatDoesNotSendAModeKeepsTheStandardOne()
+    {
+        var (client, _) = await _factory.CreateUserAsync();
+
+        var young = await client.PutAsJsonAsync("/api/me/preferences", new UpdatePreferencesRequest("light", "spruce", "young"));
+        var saved = await client.GetFromJsonAsync<PreferencesResponse>("/api/me/preferences");
+        var older = await client.PutAsJsonAsync("/api/me/preferences", new { theme = "dark", accent = "plum" });
+
+        Assert.Equal(HttpStatusCode.OK, young.StatusCode);
+        Assert.Equal("young", saved!.Mode);
+        Assert.Equal("standard", (await older.Content.ReadFromJsonAsync<PreferencesResponse>())!.Mode);
+    }
+
+    [Fact]
+    public async Task AnUnknownMode_Returns400()
+    {
+        var (client, _) = await _factory.CreateUserAsync();
+
+        var response = await client.PutAsJsonAsync("/api/me/preferences", new UpdatePreferencesRequest("light", "spruce", "kids"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Theory]
     [InlineData("sepia", "spruce")]
     [InlineData("dark", "neon")]

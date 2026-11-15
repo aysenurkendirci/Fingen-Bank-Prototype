@@ -10,16 +10,22 @@
   <div class="enter">
     <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 class="page-title">{{ greeting }}, {{ data.user.firstName }}</h1>
+        <h1 class="page-title">{{ voice.pick(greeting + ', ' + data.user.firstName, 'Selam ' + data.user.firstName) }}</h1>
         <p class="page-subtitle">{{ today | date: 'd MMMM y, EEEE' }}</p>
       </div>
       <a routerLink="/dashboard/transfer" class="btn-primary">Para gönder</a>
     </header>
 
+    @if (voice.young()) {
+      @if (goals(); as goals) {
+        <app-savings-spotlight class="mb-6 [--enter-step:1]" [goals]="goals" />
+      }
+    }
+
     <section class="panel mb-10 [--enter-step:1] grid gap-6 md:grid-cols-[1fr_minmax(0,18rem)] md:items-end">
       <div>
         <div class="flex items-center gap-2">
-          <p class="text-sm text-ink-soft">TL hesaplarınızda bugün</p>
+          <p class="text-sm text-ink-soft">{{ voice.pick('TL hesaplarınızda bugün', 'TL hesaplarında bugün') }}</p>
           <button
             type="button"
             class="p-1 -m-1 text-ink-faint hover:text-ink"

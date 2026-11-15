@@ -41,14 +41,14 @@ public sealed class UpdatePreferencesCommandHandler : IRequestHandler<UpdatePref
 
     public async Task<PreferencesResponse> Handle(UpdatePreferencesCommand command, CancellationToken ct)
     {
-        var (theme, accent) = (command.Preferences.Theme, command.Preferences.Accent);
-        await _preferences.SaveAsync(_currentUser.UserId, theme, accent, _time.GetUtcNow().UtcDateTime, ct);
-        return new PreferencesResponse(theme, accent);
+        var (theme, accent, mode) = (command.Preferences.Theme, command.Preferences.Accent, command.Preferences.Mode);
+        await _preferences.SaveAsync(_currentUser.UserId, theme, accent, mode, _time.GetUtcNow().UtcDateTime, ct);
+        return new PreferencesResponse(theme, accent, mode);
     }
 }
 
 internal static class PreferencesMapping
 {
     public static PreferencesResponse ToResponse(UserPreferencesRow? row)
-        => row is null ? PreferencesResponse.Default : new PreferencesResponse(row.Theme, row.Accent);
+        => row is null ? PreferencesResponse.Default : new PreferencesResponse(row.Theme, row.Accent, row.Mode);
 }
