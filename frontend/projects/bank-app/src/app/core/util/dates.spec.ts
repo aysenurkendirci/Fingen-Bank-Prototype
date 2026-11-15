@@ -1,4 +1,4 @@
-import { formatMonth, toIsoDate } from './dates';
+import { formatMonth, toIsoDate, todayIsoDate } from './dates';
 
 describe('toIsoDate', () => {
   it('uses the local calendar date, not the UTC one', () => {
@@ -10,6 +10,14 @@ describe('toIsoDate', () => {
 
   it('pads month and day', () => {
     expect(toIsoDate(new Date(2026, 0, 5))).toBe('2026-01-05');
+  });
+});
+
+describe('todayIsoDate', () => {
+  it("is the bank's day in Istanbul, not the device's", () => {
+    // 21:30 UTC on 15 November is already 00:30 on 16 November in Istanbul (UTC+3).
+    expect(todayIsoDate(new Date(Date.UTC(2026, 10, 15, 21, 30)))).toBe('2026-11-16');
+    expect(todayIsoDate(new Date(Date.UTC(2026, 10, 15, 20, 30)))).toBe('2026-11-15');
   });
 });
 

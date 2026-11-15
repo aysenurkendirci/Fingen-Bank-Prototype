@@ -11,8 +11,16 @@ export function toIsoDate(date: Date): IsoDate {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-export function todayIsoDate(): IsoDate {
-  return toIsoDate(new Date());
+// "en-CA" writes dates as yyyy-MM-dd, which is exactly the API's format.
+const istanbulDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' });
+
+/**
+ * Today in the bank's calendar, Istanbul time, whatever the device's clock says. The API decides what is in the
+ * past by the same calendar, so a customer abroad, or a browser on UTC just before midnight, never sends a date
+ * the bank already calls yesterday.
+ */
+export function todayIsoDate(now: Date = new Date()): IsoDate {
+  return istanbulDate.format(now);
 }
 
 const shortMonth = new Intl.DateTimeFormat('tr-TR', { month: 'short', year: 'numeric' });
