@@ -51,6 +51,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/bank-cards/bank-cards-page.component').then((m) => m.BankCardsPageComponent),
       },
       {
+        path: 'notifications',
+        title: 'Bildirimler',
+        loadComponent: () =>
+          import('./features/notifications/notifications-page.component').then((m) => m.NotificationsPageComponent),
+      },
+      {
         path: 'goals',
         title: 'Hedeflerim',
         loadComponent: () => import('./features/goals/goals-page.component').then((m) => m.GoalsPageComponent),

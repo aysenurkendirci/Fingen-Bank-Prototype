@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { SessionService } from '../../core/auth/session.service';
 import { ThemeService } from '../../core/ui/theme.service';
+import { NotificationsStore } from '../../shared/notifications/notifications.store';
 import { PreferencesStore } from '../../shared/preferences/preferences.store';
 import { BrandMarkComponent } from '../../shared/ui/brand-mark.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog.component';
@@ -19,7 +20,7 @@ interface NavGroup {
   readonly items: readonly NavItem[];
 }
 
-/** The frame of the signed-in app: the menu, the user's corner, and the dialog and toast outlets. */
+/** The frame of the signed-in app: the menu, the user's corner with the notification bell, and the dialog and toast outlets. */
 @Component({
   selector: 'app-dashboard-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, BrandMarkComponent, ConfirmDialogComponent, ToastHostComponent],
@@ -32,6 +33,8 @@ export class DashboardLayoutComponent {
   protected readonly fullName = this.session.fullName;
   protected readonly theme = inject(ThemeService);
   private readonly preferences = inject(PreferencesStore);
+  private readonly notifications = inject(NotificationsStore);
+  protected readonly unread = this.notifications.unread;
 
   protected readonly navGroups: readonly NavGroup[] = [
     {
@@ -65,6 +68,7 @@ export class DashboardLayoutComponent {
 
   constructor() {
     this.preferences.load();
+    this.notifications.watch(inject(DestroyRef));
   }
 
   protected flipTheme(): void {
