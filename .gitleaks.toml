@@ -1,15 +1,21 @@
-# Secret scanning rules for CI (gitleaks). The default rules apply; the only exceptions are two throwaway values
-# that exist on purpose: the SQL Server password of the CI containers and the signing keys of the integration tests
-# and CI jobs.
+# Secret scanning rules for CI (gitleaks). The default rules apply; the only exceptions are throwaway values that
+# exist on purpose: the SQL Server password of the CI containers, the signing keys of the integration tests and CI
+# jobs, and the passwords of the customers that tests sign up.
 # Neither protects anything outside a test run.
 
 [extend]
 useDefault = true
 
 [allowlist]
-description = "Throwaway credentials of CI containers and integration tests"
+description = "Throwaway credentials of CI containers and of test customers"
 regexes = [
   '''Ci_Only_Passw0rd!''',
   '''integration-tests-signing-key-[0-9a-f]+''',
   '''ci-only-[a-z0-9-]+''',
+  '''P@ssw0rd!2026''',
+  '''NewP@ssw0rd2026''',
+  '''Other#Passw0rd2026''',
+  '''Deneme1234!x''',
+  '''Yeni2026Sifre!x''',
+  '''Ci_Kontrol_2026''',
 ]
