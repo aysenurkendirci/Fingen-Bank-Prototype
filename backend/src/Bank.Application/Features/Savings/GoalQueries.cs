@@ -48,6 +48,9 @@ internal static class GoalMapping
             g.NewYearOf,
             g.Iban,
             AutoSavePlan.MonthlyNeeded(g.TargetAmount, g.SavedAmount, targetDate, today),
-            autoSave);
+            autoSave,
+            g.Category,
+            g.Details,
+            g.PhotoUpdatedAt);
     }
 }

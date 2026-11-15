@@ -16,8 +16,12 @@ public sealed record PersonalDataExport(
     IReadOnlyList<InstallmentPlanResponse> InstallmentPlans,
     IReadOnlyList<HistoryTransactionResponse> Transactions,
     IReadOnlyList<GoalResponse> SavingsGoals,
-    IReadOnlyList<NotificationResponse> Notifications
+    IReadOnlyList<NotificationResponse> Notifications,
+    IReadOnlyList<GoalPhotoExport> GoalPhotos
 );
+
+/// <summary>A photo the customer put on a goal, as uploaded.</summary>
+public sealed record GoalPhotoExport(long GoalId, string ContentType, string Base64, DateTime UploadedAt);
 
 public sealed record PersonalProfile(
     string TcNo,

@@ -5,6 +5,9 @@ namespace Bank.Contracts.Savings;
 /// <summary>A savings goal and the money already put aside for it, which sits in the goal's own savings account.</summary>
 /// <param name="NewYearOf">Set when the goal is a new year's resolution: the year it is meant for.</param>
 /// <param name="MonthlyNeeded">What would have to go in each month from now to reach the target on time; null without a date or once reached.</param>
+/// <param name="Category">What kind of wish it is, e.g. <c>car</c> or <c>travel</c>; null if not said.</param>
+/// <param name="Details">The wish in the customer's own words: the model, the colour, where to.</param>
+/// <param name="PhotoUpdatedAt">When the photo was last changed; null without a photo. Also tells the app when to fetch it again.</param>
 public sealed record GoalResponse(
     long Id,
     string Name,
@@ -14,7 +17,10 @@ public sealed record GoalResponse(
     int? NewYearOf,
     string Iban,
     decimal? MonthlyNeeded,
-    AutoSaveResponse? AutoSave
+    AutoSaveResponse? AutoSave,
+    string? Category,
+    string? Details,
+    DateTime? PhotoUpdatedAt
 );
 
 /// <param name="Mode"><c>Fixed</c>: Value is an amount. <c>Percent</c>: Value is a share of the incoming money.</param>
@@ -34,7 +40,13 @@ public sealed record GoalRequest(
 
     DateOnly? TargetDate,
 
-    int? NewYearOf
+    int? NewYearOf,
+
+    [AllowedValues(null, "car", "home", "travel", "education", "tech", "wedding", "other", ErrorMessage = "Hedef türü geçerli değil.")]
+    string? Category = null,
+
+    [StringLength(300, ErrorMessage = "Ayrıntılar en fazla 300 karakter olabilir.")]
+    string? Details = null
 );
 
 /// <summary>Money moved between one of the customer's accounts and a goal.</summary>
