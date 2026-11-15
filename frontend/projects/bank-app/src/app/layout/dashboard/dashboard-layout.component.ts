@@ -44,6 +44,7 @@ export class DashboardLayoutComponent {
         { path: '/dashboard/accounts', label: 'Hesaplarım', icon: 'account_balance' },
         { path: '/dashboard/transfer', label: 'Para transferi', icon: 'send_money' },
         { path: '/dashboard/bank-cards', label: 'Banka kartlarım', icon: 'payments' },
+        { path: '/dashboard/splits', label: 'Harcama bölme', icon: 'call_split' },
       ],
     },
     {

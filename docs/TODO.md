@@ -1,7 +1,6 @@
 # TODO
 
 Özellikler
-- [ ] Harcama bölme: bir harcamayı arkadaşlarla paylaşmak, kimin ne kadar borçlu olduğunu izlemek ve borcu transferle kapatmak
 - [ ] Gençler için ayrı görünüm: sade dil, birikim ve hedef odaklı ana sayfa
 - [ ] VakıfBank Yatırım Servisleri (sandbox) sağlayıcısı: döviz kurları, döviz hesaplayıcı, altın fiyatları
 
