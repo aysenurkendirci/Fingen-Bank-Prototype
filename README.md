@@ -18,7 +18,8 @@ Savings
 - Goals with their own savings account. Money goes in and out through the ledger like any other transfer.
 - Auto-save: when at least a set amount arrives on an account (a salary), a percentage or a fixed amount moves to the goal in the
   same transaction.
-- New year's resolutions as goals for a given year, shown in their own area.
+- A wish list per year: what is wanted in the customer's own words (the model, the colour, where to), over how many years,
+  and a photo if they like. Each wish is a goal with its own savings account.
 
 Planning and insight
 - Cash-flow projection from known income, expenses, subscriptions, card statements and installments.

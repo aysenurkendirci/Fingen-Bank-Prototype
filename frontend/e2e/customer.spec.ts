@@ -4,6 +4,9 @@ import { expect, test } from '@playwright/test';
 
 import { confirmDialog, field, newCustomer, signIn, toast } from './support';
 
+// The smallest PNG there is: a 1x1 transparent pixel.
+const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+
 test.describe('goals and the customer', () => {
   test('a goal gets a savings account, an auto-save rule, and closes when empty', async ({ page }) => {
     await newCustomer(page);
@@ -33,17 +36,27 @@ test.describe('goals and the customer', () => {
     await expect(toast(page)).toHaveText('Hedef kapatıldı.');
   });
 
-  test('new year goals are kept apart and summed for their year', async ({ page }) => {
+  test('a wish on the list keeps its details, its years and a photo', async ({ page }) => {
     await newCustomer(page);
     await page.goto('/dashboard/new-year-goals');
 
-    await page.getByRole('button', { name: 'Hedef ekle' }).click();
+    await page.getByRole('button', { name: 'Dilek ekle' }).click();
     await expect(field(page, 'isResolution')).toBeChecked();
-    await field(page, 'name').fill('İngilizce kursu');
-    await field(page, 'targetAmount').fill('20000');
+    await page.getByRole('button', { name: 'Araba' }).click();
+    await field(page, 'name').fill('İlk arabam');
+    await field(page, 'details').fill('Elektrikli, beyaz, otomatik vites');
+    await field(page, 'targetAmount').fill('900000');
+    await field(page, 'horizon').selectOption({ index: 2 });
+    await page.locator('input[name=photo]').setInputFiles({ name: 'araba.png', mimeType: 'image/png', buffer: Buffer.from(PNG, 'base64') });
+    await expect(page.getByAltText('Seçilen fotoğraf')).toBeVisible();
     await page.getByRole('button', { name: 'Hedefi oluştur' }).click();
+    await expect(toast(page)).toHaveText('Dileğiniz listenize eklendi, kumbarası açıldı.');
 
-    await expect(page.locator('section.panel').first()).toContainText('1 hedef');
+    const card = page.locator('app-goal-card').filter({ hasText: 'İlk arabam' });
+    await expect(card).toContainText('Elektrikli, beyaz, otomatik vites');
+    await expect(card).toContainText('3 yıllık hedef');
+    await expect(card.getByRole('img', { name: 'İlk arabam' })).toBeVisible();
+    await expect(page.locator('section.panel').first()).toContainText('1 dilek');
   });
 
   test('a new password is announced in the notification centre and marked read when opened', async ({ page }) => {

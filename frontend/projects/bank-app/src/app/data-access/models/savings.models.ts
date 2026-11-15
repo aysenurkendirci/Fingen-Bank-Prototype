@@ -3,6 +3,8 @@ import { IsoDate } from '../../core/util/dates';
 
 export type AutoSaveMode = 'Fixed' | 'Percent';
 
+export type GoalCategory = 'car' | 'home' | 'travel' | 'education' | 'tech' | 'wedding' | 'other';
+
 export interface AutoSave {
   sourceAccountId: number;
   sourceIban: string;
@@ -24,6 +26,11 @@ export interface Goal {
   iban: string;
   monthlyNeeded: number | null;
   autoSave: AutoSave | null;
+  category: GoalCategory | null;
+  /** The wish in the customer's own words: the model, the colour, where to. */
+  details: string | null;
+  /** When the photo last changed; null without a photo. */
+  photoUpdatedAt: string | null;
 }
 
 export interface GoalRequest {
@@ -31,6 +38,8 @@ export interface GoalRequest {
   targetAmount: number;
   targetDate: IsoDate | null;
   newYearOf: number | null;
+  category: GoalCategory | null;
+  details: string | null;
 }
 
 export interface GoalMoneyRequest {

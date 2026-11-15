@@ -63,7 +63,7 @@ export const routes: Routes = [
       },
       {
         path: 'new-year-goals',
-        title: 'Yılbaşı hedefleri',
+        title: 'İstek listem',
         data: { newYear: true },
         loadComponent: () => import('./features/goals/goals-page.component').then((m) => m.GoalsPageComponent),
       },

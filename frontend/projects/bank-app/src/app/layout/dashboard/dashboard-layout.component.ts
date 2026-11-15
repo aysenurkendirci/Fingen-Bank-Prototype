@@ -50,7 +50,7 @@ export class DashboardLayoutComponent {
       title: 'Birikim',
       items: [
         { path: '/dashboard/goals', label: 'Hedeflerim', icon: 'savings' },
-        { path: '/dashboard/new-year-goals', label: 'Yılbaşı hedefleri', icon: 'celebration' },
+        { path: '/dashboard/new-year-goals', label: 'İstek listem', icon: 'featured_seasonal_and_gifts' },
       ],
     },
     {
