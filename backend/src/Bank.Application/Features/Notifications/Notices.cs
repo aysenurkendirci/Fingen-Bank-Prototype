@@ -50,6 +50,22 @@ public sealed class Notices
                 ? "Kartınızla alışveriş ve nakit çekimi yapılamaz. İstediğiniz zaman Kartlarım ekranından açabilirsiniz."
                 : "Kartınızla yeniden alışveriş ve nakit çekimi yapabilirsiniz.", ct);
 
+    public Task ShareRequestedAsync(long debtorUserId, string ownerName, string splitTitle, decimal amount, CancellationToken ct)
+        => AddAsync(debtorUserId, "split", "Sizden pay istendi",
+            $"{ownerName}, \"{splitTitle}\" harcaması için sizden {Format(new Money(amount, Currency.TRY))} istiyor. Harcama bölme ekranından ödeyebilirsiniz.", ct);
+
+    public Task SharePaidAsync(long ownerUserId, string name, string splitTitle, decimal amount, CancellationToken ct)
+        => AddAsync(ownerUserId, "split", "Payını ödedi",
+            $"{name}, \"{splitTitle}\" için payı olan {Format(new Money(amount, Currency.TRY))} tutarı gönderdi.", ct);
+
+    public Task ShareDeclinedAsync(long ownerUserId, string name, string splitTitle, CancellationToken ct)
+        => AddAsync(ownerUserId, "split", "Pay isteği reddedildi",
+            $"{name}, \"{splitTitle}\" için istediğiniz payı ödemeyeceğini bildirdi.", ct);
+
+    public Task SplitCancelledAsync(long debtorUserId, string ownerName, string splitTitle, CancellationToken ct)
+        => AddAsync(debtorUserId, "split", "Pay isteği geri çekildi",
+            $"{ownerName}, \"{splitTitle}\" için sizden istediği payı artık istemiyor.", ct);
+
     private Task AddAsync(long userId, string kind, string title, string body, CancellationToken ct)
         => _notifications.AddAsync(new NewNotification(userId, kind, title, body, _time.GetUtcNow().UtcDateTime), ct);
 

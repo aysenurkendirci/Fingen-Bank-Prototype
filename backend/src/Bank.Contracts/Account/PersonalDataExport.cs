@@ -1,6 +1,7 @@
 using Bank.Contracts.Finance;
 using Bank.Contracts.Notifications;
 using Bank.Contracts.Savings;
+using Bank.Contracts.Splits;
 
 namespace Bank.Contracts.Account;
 
@@ -17,7 +18,8 @@ public sealed record PersonalDataExport(
     IReadOnlyList<HistoryTransactionResponse> Transactions,
     IReadOnlyList<GoalResponse> SavingsGoals,
     IReadOnlyList<NotificationResponse> Notifications,
-    IReadOnlyList<GoalPhotoExport> GoalPhotos
+    IReadOnlyList<GoalPhotoExport> GoalPhotos,
+    IReadOnlyList<SplitResponse> Splits
 );
 
 /// <summary>A photo the customer put on a goal, as uploaded.</summary>

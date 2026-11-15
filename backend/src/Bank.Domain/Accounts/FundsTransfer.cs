@@ -45,6 +45,6 @@ public static class FundsTransfer
     }
 
     // "AYŞE  NUR KENDİRCİ" and "Ayse Nur Kendirci" are the same person; spacing, case and Turkish letters must not matter.
-    private static bool NamesMatch(string typed, string holder)
+    public static bool NamesMatch(string typed, string holder)
         => TextFolding.Fold(typed) == TextFolding.Fold(holder);
 }
