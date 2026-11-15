@@ -1,0 +1,18 @@
+// The young mode changes colour and radius through the design tokens; here only what tokens cannot say.
+// Headings grow a step and buttons become pills, so the screens read lighter without moving anything around.
+:root[data-mode='young'] {
+  .page-title {
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    border-radius: 9999px;
+  }
+}

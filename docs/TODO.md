@@ -1,7 +1,6 @@
 # TODO
 
 Özellikler
-- [ ] Gençler için ayrı görünüm: sade dil, birikim ve hedef odaklı ana sayfa
 - [ ] VakıfBank Yatırım Servisleri (sandbox) sağlayıcısı: döviz kurları, döviz hesaplayıcı, altın fiyatları
 
 Güvenlik

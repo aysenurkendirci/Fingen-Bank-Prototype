@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import { ACCENTS, ThemePreference, ThemeService } from '../../../core/ui/theme.service';
+import { ACCENTS, Mode, ThemePreference, ThemeService } from '../../../core/ui/theme.service';
 import { PreferencesStore } from '../../../shared/preferences/preferences.store';
 
 /**
- * Light, dark or the system setting, and the accent colour. Every change shows at once, in the small preview and
+ * The standard or the young mode, light, dark or the system setting, and the accent colour. Every change shows at once, in the small preview and
  * across the whole app, and is saved to the account so other devices open the same way.
  */
 @Component({
@@ -12,6 +12,29 @@ import { PreferencesStore } from '../../../shared/preferences/preferences.store'
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
+    <fieldset class="mb-6">
+      <legend class="field-label mb-2">Uygulamanın tarzı</legend>
+      <div class="grid gap-3 sm:grid-cols-2">
+        @for (option of styles; track option.value) {
+          <button
+            type="button"
+            class="text-left rounded-panel border p-4 transition-colors"
+            [class.border-brand]="theme.mode() === option.value"
+            [class.bg-brand-tint]="theme.mode() === option.value"
+            [class.border-line]="theme.mode() !== option.value"
+            [attr.aria-pressed]="theme.mode() === option.value"
+            (click)="store.chooseMode(option.value)"
+          >
+            <span class="flex items-center gap-2 font-medium">
+              <span class="material-symbols-outlined text-[20px]" aria-hidden="true">{{ option.icon }}</span>
+              {{ option.label }}
+            </span>
+            <span class="block mt-1 text-sm text-ink-soft">{{ option.description }}</span>
+          </button>
+        }
+      </div>
+    </fieldset>
+
     <fieldset>
       <legend class="field-label mb-2">Görünüm</legend>
       <div class="segmented">
@@ -25,6 +48,9 @@ import { PreferencesStore } from '../../../shared/preferences/preferences.store'
       <p class="mt-2 text-xs text-ink-faint">Sistem seçiliyken cihazınızın açık ya da koyu ayarını izler.</p>
     </fieldset>
 
+    @if (theme.mode() === 'young') {
+      <p class="mt-6 text-sm text-ink-soft">Genç tarzın kendi rengi var; vurgu rengini Klasik tarzda seçebilirsin.</p>
+    } @else {
     <fieldset class="mt-6">
       <legend class="field-label mb-2">Vurgu rengi</legend>
       <div class="flex flex-wrap gap-2">
@@ -41,6 +67,7 @@ import { PreferencesStore } from '../../../shared/preferences/preferences.store'
         }
       </div>
     </fieldset>
+    }
 
     <div class="mt-6 rounded-panel border border-line bg-canvas p-4 flex flex-wrap items-center justify-between gap-4" aria-label="Önizleme">
       <div>
@@ -56,6 +83,16 @@ export class AppearanceSettingsComponent {
   protected readonly theme = inject(ThemeService);
   protected readonly store = inject(PreferencesStore);
   protected readonly accents = ACCENTS;
+
+  protected readonly styles: readonly { value: Mode; label: string; icon: string; description: string }[] = [
+    { value: 'standard', label: 'Klasik', icon: 'account_balance', description: 'Sakin renkler, resmi bir dil. Bütün bankacılık ve planlama bir arada.' },
+    {
+      value: 'young',
+      label: 'Genç',
+      icon: 'rocket_launch',
+      description: 'Canlı bir renk, yuvarlak hatlar ve samimi bir dil. Ana sayfada önce birikimlerin ve dileklerin.',
+    },
+  ];
 
   protected readonly modes: readonly { value: ThemePreference; label: string; icon: string }[] = [
     { value: 'system', label: 'Sistem', icon: 'contrast' },

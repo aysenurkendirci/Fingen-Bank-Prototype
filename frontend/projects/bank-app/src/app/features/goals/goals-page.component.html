@@ -1,5 +1,8 @@
 @if (newYear()) {
-  <app-page-header title="İstek listem" subtitle="Bu yıl ya da önümüzdeki yıllarda sahip olmak istedikleriniz. Her dileğin kendi kumbarası var.">
+  <app-page-header
+    [title]="voice.pick('İstek listem', 'Dilek listen')"
+    [subtitle]="voice.pick('Bu yıl ya da önümüzdeki yıllarda sahip olmak istedikleriniz. Her dileğin kendi kumbarası var.', 'Bu yıl ya da sonraki yıllarda ne istiyorsun? Her dileğin kendi kumbarası olsun.')"
+  >
     <button type="button" class="btn-primary" (click)="startCreating()">Dilek ekle</button>
   </app-page-header>
 
@@ -21,7 +24,10 @@
     </section>
   }
 } @else {
-  <app-page-header title="Hedeflerim" subtitle="Her hedefin kendi kumbarası var. İster elle doldurun, ister maaş yatınca kendiliğinden dolsun.">
+  <app-page-header
+    [title]="voice.pick('Hedeflerim', 'Kumbaraların')"
+    [subtitle]="voice.pick('Her hedefin kendi kumbarası var. İster elle doldurun, ister maaş yatınca kendiliğinden dolsun.', 'Her hedefin kendi kumbarası var. İster kendin at, ister harçlığın ya da maaşın yatınca kendiliğinden dolsun.')"
+  >
     <button type="button" class="btn-primary" (click)="startCreating()">Hedef ekle</button>
   </app-page-header>
 }

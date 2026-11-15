@@ -4,6 +4,8 @@ import dna from '../../../design/design-dna.json';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type Theme = 'light' | 'dark';
+/** The standard look, or the young one: brighter, rounder and on first-name terms. */
+export type Mode = 'standard' | 'young';
 
 const PALETTES = dna.design_system.accents;
 export type Accent = keyof typeof PALETTES;
@@ -19,6 +21,7 @@ const DEFAULT_ACCENT = ACCENTS[0].value;
 // Read by the small script in index.html too, so the right look is painted before the app starts.
 const THEME_KEY = 'theme';
 const ACCENT_KEY = 'accent';
+const MODE_KEY = 'mode';
 
 const storedTheme = (): ThemePreference => {
   const value = localStorage.getItem(THEME_KEY);
@@ -30,8 +33,10 @@ const storedAccent = (): Accent => {
   return value !== null && value in PALETTES ? (value as Accent) : DEFAULT_ACCENT;
 };
 
+const storedMode = (): Mode => (localStorage.getItem(MODE_KEY) === 'young' ? 'young' : 'standard');
+
 /**
- * How the app looks on this device: light or dark, and the accent colour. Follows the operating system until
+ * How the app looks on this device: light or dark, the accent colour, and the standard or the young mode. Follows the operating system until
  * the user picks a theme, and keeps following it live. The colours themselves are CSS variables; this only marks
  * the page with which set applies. Saving the choice to the user's account is PreferencesStore's job.
  */
@@ -42,6 +47,7 @@ export class ThemeService {
 
   readonly preference = signal<ThemePreference>(storedTheme());
   readonly accent = signal<Accent>(storedAccent());
+  readonly mode = signal<Mode>(storedMode());
   readonly theme = computed<Theme>(() => {
     const preference = this.preference();
     return preference === 'system' ? (this.systemDark() ? 'dark' : 'light') : preference;
@@ -54,12 +60,15 @@ export class ThemeService {
     effect(() => {
       const preference = this.preference();
       const accent = this.accent();
+      const mode = this.mode();
       const apply = () => {
         const root = document.documentElement;
         if (preference === 'system') root.removeAttribute('data-theme');
         else root.setAttribute('data-theme', preference);
         if (accent === DEFAULT_ACCENT) root.removeAttribute('data-accent');
         else root.setAttribute('data-accent', accent);
+        if (mode === 'young') root.setAttribute('data-mode', mode);
+        else root.removeAttribute('data-mode');
       };
 
       // The first run only confirms what index.html already painted; later changes cross-fade.
@@ -79,6 +88,12 @@ export class ThemeService {
     this.accent.set(accent);
     if (accent === DEFAULT_ACCENT) localStorage.removeItem(ACCENT_KEY);
     else localStorage.setItem(ACCENT_KEY, accent);
+  }
+
+  setMode(mode: Mode): void {
+    this.mode.set(mode);
+    if (mode === 'young') localStorage.setItem(MODE_KEY, mode);
+    else localStorage.removeItem(MODE_KEY);
   }
 
   /** The opposite of what is on screen now. */

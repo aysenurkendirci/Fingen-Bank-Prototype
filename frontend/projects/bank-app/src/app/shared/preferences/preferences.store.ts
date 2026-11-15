@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
-import { Accent, ThemePreference, ThemeService } from '../../core/ui/theme.service';
+import { Accent, Mode, ThemePreference, ThemeService } from '../../core/ui/theme.service';
 import { ProfileApi } from '../../data-access/api/profile.api';
 import { DisplayPreferences } from '../../data-access/models/banking.models';
 
@@ -28,15 +28,21 @@ export class PreferencesStore {
     this.save();
   }
 
+  chooseMode(mode: Mode): void {
+    this.theme.setMode(mode);
+    this.save();
+  }
+
   private apply(saved: DisplayPreferences): void {
     this.theme.set(saved.theme);
     this.theme.setAccent(saved.accent);
+    this.theme.setMode(saved.mode ?? 'standard');
   }
 
   // The look already changed on screen; if saving fails it simply stays local to this device.
   private save(): void {
     this.api
-      .updatePreferences({ theme: this.theme.preference(), accent: this.theme.accent() })
+      .updatePreferences({ theme: this.theme.preference(), accent: this.theme.accent(), mode: this.theme.mode() })
       .subscribe({ error: () => undefined });
   }
 }

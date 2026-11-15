@@ -77,6 +77,21 @@
         }
       }
     },
+    "modes": {
+      "young": {
+        "label": "Genç",
+        "notes": "For customers who are just starting out. One bright colour of its own in place of the chosen accent, rounder shapes and larger headings. The neutrals, the type and the motion stay the same, so it is the same bank in a younger voice.",
+        "light": {
+          "brand": { "DEFAULT": "#6d28d9", "hover": "#5b21b6", "tint": "#ede9fe", "contrast": "#ffffff" },
+          "tile": { "DEFAULT": "#6d28d9" }
+        },
+        "dark": {
+          "brand": { "DEFAULT": "#c4b5fd", "hover": "#ddd6fe", "tint": "#2b2147", "contrast": "#170f2e" },
+          "tile": { "DEFAULT": "#3f2d73" }
+        },
+        "radius": { "control": "12px", "panel": "20px", "tile": "24px" }
+      }
+    },
     "chart": {
       "light": {
         "series": ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"],

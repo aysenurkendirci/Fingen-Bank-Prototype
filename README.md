@@ -33,6 +33,8 @@ Customer
 - Profile, contact details, password change, data export and account erasure under KVKK.
 - A notification centre: money sent or received, auto-saves, goals reached, a new password, a blocked card.
 - Light, dark or system theme and an accent colour, saved with the account.
+- A young mode for customers just starting out: a colour of its own, rounder shapes, a plainer first-name voice and
+  a home screen that leads with savings and wishes.
 
 ## Banking rules
 

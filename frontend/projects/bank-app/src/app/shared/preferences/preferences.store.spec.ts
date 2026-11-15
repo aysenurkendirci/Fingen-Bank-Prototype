@@ -43,7 +43,17 @@ describe('PreferencesStore', () => {
     expect(theme.accent()).toBe('ocean');
     const save = backend.expectOne('/api/me/preferences');
     expect(save.request.method).toBe('PUT');
-    expect(save.request.body).toEqual({ theme: 'dark', accent: 'ocean' });
+    expect(save.request.body).toEqual({ theme: 'dark', accent: 'ocean', mode: 'standard' });
+  });
+
+  it('takes the young mode from the account, and an answer without a mode means standard', () => {
+    store.load();
+    backend.expectOne('/api/me/preferences').flush({ theme: 'light', accent: 'spruce', mode: 'young' });
+    expect(theme.mode()).toBe('young');
+
+    store.load();
+    backend.expectOne('/api/me/preferences').flush({ theme: 'light', accent: 'spruce' });
+    expect(theme.mode()).toBe('standard');
   });
 
   it('keeps the look on this device when saving fails', () => {

@@ -59,6 +59,26 @@ test.describe('goals and the customer', () => {
     await expect(page.locator('section.panel').first()).toContainText('1 dilek');
   });
 
+  test('the young mode changes the look and the words, and follows the customer', async ({ page }) => {
+    const customer = await newCustomer(page);
+    await page.goto('/dashboard/profile');
+    // Leaving the page cancels a save still on its way, so the test waits for it as a person would see it land.
+    const saved = page.waitForResponse((r) => r.url().endsWith('/api/me/preferences') && r.request().method() === 'PUT');
+    await page.getByRole('button', { name: /Genç/ }).click();
+    await saved;
+
+    await expect(page.locator('html')).toHaveAttribute('data-mode', 'young');
+    await expect(page.getByRole('navigation', { name: 'Ana menü' }).first()).toContainText('Kumbaraların');
+
+    await page.goto('/dashboard');
+    await expect(page.locator('app-savings-spotlight')).toContainText('İlk kumbaranı aç');
+
+    // Another device: the choice comes back with the account.
+    await page.evaluate(() => localStorage.clear());
+    await signIn(page, customer);
+    await expect(page.locator('html')).toHaveAttribute('data-mode', 'young');
+  });
+
   test('a new password is announced in the notification centre and marked read when opened', async ({ page }) => {
     const customer = await newCustomer(page);
     await page.goto('/dashboard/profile');
