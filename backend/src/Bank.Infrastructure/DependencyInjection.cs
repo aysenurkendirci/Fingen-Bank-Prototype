@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<ISavingsGoalRepository, SavingsGoalRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IErasureRepository, ErasureRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddMemoryCache();
         services.AddMarketData(configuration);
 

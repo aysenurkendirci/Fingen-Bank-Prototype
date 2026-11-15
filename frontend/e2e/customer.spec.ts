@@ -46,6 +46,25 @@ test.describe('goals and the customer', () => {
     await expect(page.locator('section.panel').first()).toContainText('1 hedef');
   });
 
+  test('a new password is announced in the notification centre and marked read when opened', async ({ page }) => {
+    const customer = await newCustomer(page);
+    await page.goto('/dashboard/profile');
+    await field(page, 'currentPassword').fill(customer.password);
+    await field(page, 'newPassword').fill('Yeni2026Sifre!x');
+    await field(page, 'repeat').fill('Yeni2026Sifre!x');
+    await page.getByRole('button', { name: 'Şifreyi değiştir' }).click();
+    await expect(toast(page)).toHaveText('Şifreniz değiştirildi.');
+
+    await page.goto('/dashboard/notifications');
+    const item = page.getByRole('button', { name: /^Okunmadı\. Şifreniz değiştirildi/ });
+    await expect(item).toBeVisible();
+    await expect(page.locator('.unread-badge')).toContainText('1');
+
+    await item.click();
+    await expect(page.getByRole('button', { name: /^Şifreniz değiştirildi/ })).toBeVisible();
+    await expect(page.locator('.unread-badge')).toHaveCount(0);
+  });
+
   test('profile, theme and data follow the customer, and the account can be erased', async ({ page, browser }) => {
     const customer = await newCustomer(page);
     await page.goto('/dashboard/profile');

@@ -32,6 +32,7 @@
 
   // Menu entries. The current page is marked by a short bar on its left edge, not by a filled pill.
   .nav-item { @apply relative flex items-center gap-2.5 h-9 px-3 rounded-control text-sm text-ink-soft hover:bg-muted hover:text-ink; }
+  .unread-badge { @apply min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-brand text-brand-contrast text-xs font-semibold tabular-nums; }
   .nav-item--active { @apply bg-surface text-ink font-medium before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-brand; }
 
   // Secondary details on one line, separated by space rather than by dots.

@@ -4,6 +4,7 @@ using Bank.Application.Common;
 using Bank.Application.Common.Behaviors;
 using Bank.Application.Common.Exceptions;
 using Bank.Application.Features.Accounts;
+using Bank.Application.Features.Notifications;
 using Bank.Contracts.Savings;
 using Bank.Domain.Accounts;
 using FluentValidation;
@@ -97,15 +98,18 @@ public sealed class GoalCommandHandlers :
     private readonly ISavingsGoalRepository _goals;
     private readonly IAccountRepository _accounts;
     private readonly SavingsTransfers _transfers;
+    private readonly Notices _notices;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _time;
 
     public GoalCommandHandlers(
-        ISavingsGoalRepository goals, IAccountRepository accounts, SavingsTransfers transfers, ICurrentUser currentUser, TimeProvider time)
+        ISavingsGoalRepository goals, IAccountRepository accounts, SavingsTransfers transfers, Notices notices, ICurrentUser currentUser,
+        TimeProvider time)
     {
         _goals = goals;
         _accounts = accounts;
         _transfers = transfers;
+        _notices = notices;
         _currentUser = currentUser;
         _time = time;
     }
@@ -132,7 +136,13 @@ public sealed class GoalCommandHandlers :
         await _transfers.MoveAsync(
             UserId, command.Money.AccountId!.Value, goal.AccountId, command.Money.Amount,
             $"Kumbara: {goal.Name}", $"goal-in:{command.IdempotencyKey}", ct);
-        return await ReadAsync(goal.GoalId, ct);
+
+        var after = await GoalAsync(goal.GoalId, ct);
+        // Only the deposit that crosses the line is news; a replayed one finds the goal already reached.
+        if (goal.SavedAmount < goal.TargetAmount && after.SavedAmount >= after.TargetAmount)
+            await _notices.GoalReachedAsync(UserId, after.Name, after.TargetAmount, ct);
+
+        return GoalMapping.ToResponse(after, BusinessDate.Today(_time));
     }
 
     public async Task<GoalResponse> Handle(WithdrawFromGoalCommand command, CancellationToken ct)

@@ -26,6 +26,7 @@ public static class DependencyInjection
         // Read helpers shared by more than one query handler.
         services.AddScoped<ProjectionInputLoader>();
         services.AddScoped<Features.Savings.SavingsTransfers>();
+        services.AddScoped<Features.Notifications.Notices>();
         services.AddScoped<AnalyticsHistory>();
         services.AddScoped<Features.Auth.RefreshTokenIssuer>();
 

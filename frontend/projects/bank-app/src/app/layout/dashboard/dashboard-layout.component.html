@@ -25,6 +25,13 @@
     </nav>
 
     <div class="border-t border-line px-3 py-3 space-y-0.5">
+      <a routerLink="/dashboard/notifications" routerLinkActive="nav-item--active" ariaCurrentWhenActive="page" class="nav-item">
+        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">notifications</span>
+        Bildirimler
+        @if (unread() > 0) {
+          <span class="unread-badge ml-auto">{{ unread() > 99 ? '99+' : unread() }}<span class="sr-only"> okunmamış</span></span>
+        }
+      </a>
       <a routerLink="/dashboard/profile" routerLinkActive="nav-item--active" class="nav-item !h-auto py-2">
         <span class="min-w-0">
           <span class="block text-sm font-medium text-ink truncate">{{ fullName() }}</span>
@@ -49,6 +56,16 @@
         <button type="button" (click)="flipTheme()" class="p-2 text-ink-soft" [attr.aria-label]="theme.theme() === 'dark' ? 'Açık görünüm' : 'Koyu görünüm'">
           <span class="material-symbols-outlined text-[22px]" aria-hidden="true">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
         </button>
+        <a
+          routerLink="/dashboard/notifications"
+          class="relative p-2 text-ink-soft"
+          [attr.aria-label]="unread() > 0 ? 'Bildirimler, ' + unread() + ' okunmamış' : 'Bildirimler'"
+        >
+          <span class="material-symbols-outlined text-[22px]" aria-hidden="true">notifications</span>
+          @if (unread() > 0) {
+            <span class="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand ring-2 ring-canvas" aria-hidden="true"></span>
+          }
+        </a>
         <a routerLink="/dashboard/profile" class="p-2 text-ink-soft" aria-label="Hesap ayarları">
           <span class="material-symbols-outlined text-[22px]" aria-hidden="true">person</span>
         </a>

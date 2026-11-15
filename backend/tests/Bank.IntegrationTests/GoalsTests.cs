@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Bank.Contracts.Notifications;
 using Bank.Contracts.Payments;
 using Bank.Contracts.Savings;
 using Bank.IntegrationTests.Infrastructure;
@@ -94,6 +95,27 @@ public sealed class GoalsTests
         await SendAsync(payer, source, salaryIban, 3_000m, "second");
 
         Assert.Equal(1_500m, (await saver.GetFromJsonAsync<List<GoalResponse>>(Url))!.Single().SavedAmount);
+
+        // Newest first: the second salary, its auto-save and the goal reached, then the first salary and its auto-save.
+        var kinds = (await saver.GetFromJsonAsync<NotificationFeedResponse>("/api/notifications"))!.Items.Select(n => n.Kind);
+        Assert.Equal(["goal", "savings", "money-in", "savings", "money-in"], kinds);
+    }
+
+    [Fact]
+    public async Task ReachingTheTarget_IsAnnouncedOnce_EvenWhenTheDepositIsRetried()
+    {
+        var (client, userId) = await _factory.CreateUserAsync();
+        var (account, _) = await TestData.AddAccountAsync(userId, 2_000m);
+        var goal = await CreateAsync(client, new GoalRequest("Tatil", 1_000m, null, null));
+
+        await MoveAsync(client, goal.Id, "deposits", account, 600m, "first");
+        await MoveAsync(client, goal.Id, "deposits", account, 400m, "second");
+        await MoveAsync(client, goal.Id, "deposits", account, 400m, "second");
+
+        var feed = (await client.GetFromJsonAsync<NotificationFeedResponse>("/api/notifications"))!;
+        var reached = Assert.Single(feed.Items);
+        Assert.Equal("goal", reached.Kind);
+        Assert.Contains("\"Tatil\" kumbaranız 1.000,00 TL hedefine ulaştı.", reached.Body);
     }
 
     [Fact]

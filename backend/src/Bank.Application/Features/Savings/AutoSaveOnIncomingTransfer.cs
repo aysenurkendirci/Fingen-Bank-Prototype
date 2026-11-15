@@ -1,4 +1,5 @@
 using Bank.Application.Abstractions.Repositories;
+using Bank.Application.Features.Notifications;
 using Bank.Domain.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -17,14 +18,16 @@ public sealed class AutoSaveOnIncomingTransfer : INotificationHandler<IncomingTr
 {
     private readonly ISavingsGoalRepository _goals;
     private readonly SavingsTransfers _transfers;
+    private readonly Notices _notices;
     private readonly TimeProvider _time;
     private readonly ILogger<AutoSaveOnIncomingTransfer> _logger;
 
     public AutoSaveOnIncomingTransfer(
-        ISavingsGoalRepository goals, SavingsTransfers transfers, TimeProvider time, ILogger<AutoSaveOnIncomingTransfer> logger)
+        ISavingsGoalRepository goals, SavingsTransfers transfers, Notices notices, TimeProvider time, ILogger<AutoSaveOnIncomingTransfer> logger)
     {
         _goals = goals;
         _transfers = transfers;
+        _notices = notices;
         _time = time;
         _logger = logger;
     }
@@ -47,6 +50,10 @@ public sealed class AutoSaveOnIncomingTransfer : INotificationHandler<IncomingTr
                     goal.UserId, goal.SourceAccountId, goal.GoalAccountId, amount,
                     $"Otomatik birikim: {goal.Name}", $"autosave:{goal.GoalId}:{posted.TransferId}", ct);
                 await _goals.CompleteAutoSaveAsync(goal.GoalId, posted.TransferId, moved.TransferId, ct);
+
+                await _notices.AutoSavedAsync(goal.UserId, amount, goal.Name, ct);
+                if (goal.SavedAmount + amount >= goal.TargetAmount)
+                    await _notices.GoalReachedAsync(goal.UserId, goal.Name, goal.TargetAmount, ct);
 
                 _logger.LogInformation(
                     "Auto-save moved {Amount} to goal {GoalId} after transfer {TransferId}", amount, goal.GoalId, posted.TransferId);
