@@ -45,7 +45,7 @@ Customer
 | Accounts | A frozen or closed account neither sends nor receives. At most 5 open accounts per currency. Only an empty account closes, and the last lira demand account stays open. |
 | Savings | A goal's savings account only moves money to the owner's own accounts. A goal closes once its savings account is empty. Auto-save never goes past the target and never blocks the payment that triggered it. |
 | Cards | The daily limit cannot exceed the monthly limit. A temporary block can be lifted; cancellation is final, and a cancelled card can no longer be changed. |
-| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 12 characters with a letter and a digit. |
+| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 12 characters with a letter and a digit, and must not be known from a data breach. |
 | Splits | Shares cannot add up to more than the expense. A friend's name must match the IBAN holder. A share is settled only by the friend's own transfer to the payer's account for exactly the share, and one transfer settles one share. |
 | Notifications | Written in the same transaction as the change, so a refused transfer leaves none. Moves between a customer's own accounts are not announced. Read ones are removed after 90 days, unread ones stay. |
 | Ledger | Every transfer is two postings that balance. Balances never go negative, enforced by the database as a last line of defence. |
@@ -55,8 +55,9 @@ Limits are read from the `Banking` section of `appsettings.json`. The reasoning 
 ## Security
 
 Short-lived access tokens kept in memory, rotating refresh cookies with reuse detection, new passwords checked against
-known breaches without the password leaving the server, rate limits on sign-in and on money movements, a strict Content-Security-Policy, and secret scanning, CodeQL and Dependabot in CI. The threat model is in
-[SECURITY.md](SECURITY.md).
+known breaches without the password leaving the server, rate limits on sign-in and on money movements, a strict
+Content-Security-Policy with a per-request nonce for styles, and secret scanning, CodeQL and Dependabot in CI. The threat
+model and the OWASP ASVS review are in [SECURITY.md](SECURITY.md).
 
 ## Stack
 
@@ -317,12 +318,24 @@ only.
 
 Some choices worth knowing:
 
-- Money is `DECIMAL(19,4)`, never floating point. A check constraint keeps balances from going negative even if the code had
-  a bug, and a transfer is always exactly one debit and one credit (`UQ_LedgerEntries_TransferSide`).
+- Money is never floating point. Balances and ledger amounts are `DECIMAL(19,4)`; goal and split amounts, always whole
+  kuruş, are `DECIMAL(19,2)`. A check constraint keeps balances from going negative even if the code had a bug, and a
+  transfer is always exactly one debit and one credit (`UQ_LedgerEntries_TransferSide`).
 - The idempotency key is unique per customer, so a retried transfer finds the first one instead of sending money twice.
 - The planner's tables are temporal (system-versioned), so every change to a card or a plan keeps its earlier version.
 - Erasure is one stored procedure, `compliance.EraseUser`. It deletes the person's own data with its history, closes the
   accounts and anonymises the user row. The ledger stays, because the other side of each transfer still needs it.
+
+## Known limits
+
+What a bank going live would still need, marked in the code with "Known limit:" where it applies:
+
+- A second factor at sign-in (SMS or app approval), which BDDK expects for internet banking, and locking an account after
+  repeated failed sign-ins. Today guessing is slowed per client address only.
+- Rate limit counters shared between API instances; each instance counts on its own.
+- Card payments. Card limits and switches are stored and checked, but no authorisation flow uses them yet.
+- A consumer for the published events, and an asymmetric signing key once other services need to check tokens.
+- Retention periods for records other than the ledger, and deleting them when they run out.
 
 ## Layout
 
@@ -335,7 +348,10 @@ backend/src/
   Bank.Contracts/       DTOs and events
   Bank.Database/        DbUp migrator and SQL scripts
 backend/tests/          unit and integration tests
+backend/tools/          Bank.Evaluation: reproduces the analytics evaluation
 frontend/               Angular app; design tokens in projects/bank-app/src/design
+frontend/e2e/           Playwright end-to-end tests
+frontend/scripts/       the layer check run in CI
 docs/                   decisions (adr/), notes, analytics evaluation
 ```
 
@@ -376,8 +392,8 @@ cd frontend && npm run e2e                  # Playwright, against the API on :51
 ```
 
 Integration tests run against a real database, `BankDb_IntegrationTests`, rebuilt from the migrations on every run. Set
-`INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services such as
-TCMB are replaced by fakes, so the suite never needs the internet.
+`INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services, TCMB's
+rates and the breached password list, are replaced by fakes, so the suite never needs the internet.
 
 The end-to-end tests in `frontend/e2e` sign up their own customers and walk through accounts, transfers, planning, goals,
 the profile and erasure in a real browser. CI runs them against a fresh database, and also starts the whole system with
