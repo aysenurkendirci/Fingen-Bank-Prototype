@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<ISplitRepository, SplitRepository>();
         services.AddMemoryCache();
         services.AddMarketData(configuration);
+        services.AddBreachedPasswords(configuration);
 
         var housekeeping = configuration.GetSection(HousekeepingOptions.Section);
         services.Configure<HousekeepingOptions>(housekeeping);

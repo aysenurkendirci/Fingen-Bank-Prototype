@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Bank.Contracts.Account;
 using Bank.Contracts.Auth;
 using Bank.Contracts.Savings;
 using Bank.IntegrationTests.Infrastructure;
@@ -47,6 +48,20 @@ public sealed class SecurityTests
             statuses.Add((await client.PostAsJsonAsync("/api/goals", new GoalRequest($"Hedef {i}", 1_000m, null, null))).StatusCode);
 
         Assert.Equal([HttpStatusCode.Created, HttpStatusCode.Created, HttpStatusCode.TooManyRequests], statuses);
+    }
+
+    [Fact]
+    public async Task APasswordKnownFromABreach_IsRefused_AtSignUpAndOnChange()
+    {
+        var signUp = await _factory.CreateClient().PostAsJsonAsync(
+            "/api/auth/register", TestUsers.NewRegistration() with { Password = FakeBreachedPasswords.Breached });
+        var (client, _) = await _factory.CreateUserAsync();
+        var change = await client.PutAsJsonAsync(
+            "/api/me/password", new ChangePasswordRequest(TestUsers.Password, FakeBreachedPasswords.Breached));
+
+        Assert.Equal(HttpStatusCode.BadRequest, signUp.StatusCode);
+        Assert.Contains("sızdırılmış", await signUp.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.BadRequest, change.StatusCode);
     }
 
     [Fact]
