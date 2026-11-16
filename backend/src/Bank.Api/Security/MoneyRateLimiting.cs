@@ -12,6 +12,8 @@ namespace Bank.Api.Security;
 /// <remarks>
 /// Partitioned by the signed-in user, so customers behind one office address do not share a budget. The
 /// limiter runs after authentication for that reason; an unauthenticated request never reaches these endpoints.
+///
+/// Known limit: like the sign-in limit, the counters are per process, not shared between API instances.
 /// </remarks>
 public static class MoneyRateLimiting
 {

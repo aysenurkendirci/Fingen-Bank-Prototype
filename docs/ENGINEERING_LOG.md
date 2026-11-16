@@ -81,3 +81,20 @@ kapatma da gidecekti. Handler `null` dönüyor, 401'i controller atıyor.
 
 `FOR SYSTEM_TIME AS OF` testi arada bir kırılıyordu. Dapper `DateTime`'ı `datetime` olarak gönderiyor, bu 3 ms'ye yuvarlanıyor, yuvarlama da
 hemen ardından gelen güncellemeyi geçebiliyor. Parametreyi `datetime2` yaptım. CI'daki kırmızının sebebi bu muydu henüz bilmiyorum.
+
+## "Bugün" hangi gün, ikinci kez
+
+Sunucuyu İstanbul saatine göre düzeltmiştim ama formlar bugünü hâlâ tarayıcının saatinden alıyordu. CI'daki tarayıcı UTC'de
+çalışıyor ve testler 21:45'te koşunca İstanbul'da gün çoktan değişmişti; senaryo ekranı "dün" yapılmış bir alışverişi reddetti.
+Yurt dışındaki bir müşteri de aynı şeyi yaşardı. Uygulamanın bugünü artık her yerde İstanbul günü.
+
+## Yarıda bırakılan istekler 500 sayılıyordu
+
+Testlerin günlüğünde onlarca 500 vardı ama hiçbiri gerçek bir hata değildi. Kullanıcı sayfadan çıkınca SQL Server iptal edilen
+komutu kendi hatası olarak bildiriyor, `OperationCanceledException` gelmiyor. İstemci gittiyse artık 499 dönüyorum ve hata
+günlüğüne yazmıyorum.
+
+## Test şifreleri sır sanıldı
+
+Şifre en az 12 karakter olunca testlerdeki sabit şifreler de uzadı ve gitleaks onları gerçek sır sandı. Taramayı kapatmak yerine
+bu birkaç değeri, CI veritabanı şifresinin yanına, izin listesine ekledim.

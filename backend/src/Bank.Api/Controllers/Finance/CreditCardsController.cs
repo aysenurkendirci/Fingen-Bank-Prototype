@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bank.Api.Controllers.Finance;
 
+/// <summary>
+/// Credit cards the customer holds, at this bank or elsewhere, for planning: limit, statement day and payment
+/// due days. These are planner records, not cards this bank issued (see CardsController).
+/// </summary>
 [ApiController]
 [Route("api/finance/credit-cards")]
 [Authorize]

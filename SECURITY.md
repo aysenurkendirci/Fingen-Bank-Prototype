@@ -47,7 +47,7 @@ ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan üç 
 | 8.1.x Veri koruma | Finansal yanıtlar önbelleğe alınmaz, tarayıcıda token tutulmaz. |
 | 13.1.x API | CORS yalnızca geliştirmede açık, istek gövdesi sınırlı. |
 | 14.3.3 Sunucu bilgisi | Kapatıldı: API `Server: Kestrel` gönderiyordu, artık göndermiyor; nginx sürümünü gizler. |
-| 14.4.x Güvenlik başlıkları | CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS. |
+| 14.4.x Güvenlik başlıkları | CSP (stiller için istek başına nonce), X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS. |
 
 ## Otomatik kontroller
 
@@ -55,13 +55,16 @@ Her push'ta CI şunları yapar:
 - Gizli anahtar taraması (gitleaks).
 - Bilinen açığı olan NuGet paketlerinin kontrolü.
 - Katman kuralları.
-- Bütün testler. Yetki ve güvenlik testleri de buna dahil: başkasının kaydına erişim, istek sınırları, CSRF başlığı, yabancı origin ve zayıf şifre.
+- Bütün testler. Yetki ve güvenlik testleri de buna dahil: başkasının kaydına erişim, istek sınırları, CSRF başlığı, yabancı origin, zayıf ve sızmış şifre.
 - Gerçek tarayıcıda uçtan uca testler.
-- Bütün sistemin `docker compose` ile kurulup nginx üzerinden denenmesi.
+- Bütün sistemin `docker compose` ile kurulup nginx üzerinden denenmesi; sayfadaki nonce'un CSP başlığındakiyle aynı olduğu ve her istekte değiştiği de burada denetlenir.
 
 CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabot da bağımlılık güncellemelerini her hafta önerir.
 
 ## Bilinen sınırlar
 
 - Uygulamanın kendisi HTTPS sunmaz, TLS önündeki ters vekilde biter. HSTS başlığı bu durumda anlam kazanır.
+- Girişte tek faktör var: şifre. BDDK internet bankacılığında ikinci bir doğrulama (SMS ya da mobil onay) bekler. Ayrıca art arda yanlış girişte hesap kilitlenmez; deneme yalnızca istemci adresi başına yavaşlatılır.
+- İstek sınırlarının sayaçları her API sürecinin kendi belleğinde tutulur. Birden fazla süreç çalışırsa sınır süreç sayısı kadar artar; ortak bir depo (Redis) gerekir.
+- JWT tek bir paylaşılan HMAC anahtarıyla imzalanır ve anahtar döndürülmez. Token'ları başka servisler de doğrulayacaksa asimetrik anahtara geçilmelidir.
 - Stil öznitelikleri (`style="..."`) `style-src-attr` ile açık, çünkü ECharts araç ipuçlarını onlarla yazar. Bir öznitelik bir şey yükleyemez ya da çalıştıramaz. `style-src-attr` desteklemeyen eski tarayıcılarda bu ipuçları biçimsiz görünür.

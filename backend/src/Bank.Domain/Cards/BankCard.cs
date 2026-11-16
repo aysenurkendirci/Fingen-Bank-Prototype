@@ -13,6 +13,10 @@ public enum BankCardStatus
 /// A debit or credit card issued by the bank on one of the customer's accounts. Only the settings the customer
 /// controls live here; the card number itself is never held by this system (PCI DSS), only its last four digits.
 /// </summary>
+/// <remarks>
+/// Known limit: card payments are not modelled. The daily and monthly limits and the contactless and online
+/// switches are stored and validated, but no authorisation flow reads them yet; a card processor would.
+/// </remarks>
 public sealed class BankCard
 {
     public long Id { get; }

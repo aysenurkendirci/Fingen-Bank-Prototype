@@ -8,6 +8,11 @@ namespace Bank.Infrastructure.Messaging;
 /// Publishes outbox messages to a durable topic exchange with publisher confirms: a message counts as sent only
 /// after the broker has confirmed it, otherwise <see cref="PublishAsync"/> throws and the row stays pending.
 /// </summary>
+/// <remarks>
+/// Delivery is at least once: a confirm lost on the way back means the row is sent again. A consumer must skip a
+/// MessageId it has already handled. Known limit: nothing in this repository consumes the events yet; they are
+/// there for fraud monitoring or a statement service to subscribe to.
+/// </remarks>
 public sealed class RabbitMqPublisher : IMessagePublisher, IAsyncDisposable
 {
     private readonly RabbitMqOptions _options;

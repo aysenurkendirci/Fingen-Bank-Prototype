@@ -76,6 +76,7 @@ public sealed class SplitCommandHandlers :
     public async Task<SplitResponse> Handle(CreateSplitCommand command, CancellationToken ct)
     {
         var request = command.Split;
+        // Known limit: splits are in lira only; the database checks it too (CK_Splits_Currency).
         SplitPlan.Check(request.TotalAmount, request.Shares.Select(s => s.Amount).ToList(), request.SpentOn, BusinessDate.Today(_time));
 
         var receiving = (await _accounts.ListAsync(UserId, ct)).SingleOrDefault(a => a.AccountId == request.ReceivingAccountId)

@@ -178,6 +178,8 @@ public sealed class SavingsGoalRepository : ISavingsGoalRepository
     public async Task<bool> SavePhotoAsync(long userId, long goalId, GoalPhoto photo, CancellationToken ct = default)
     {
         // The goal check and the write are one statement, so a photo never lands on someone else's or a closed goal.
+        // Known limit: photos are kept in the database, which is simple and goes with backups and erasure. At many
+        // customers they would move to object storage, with only a reference here.
         const string sql = """
             MERGE savings.GoalPhotos WITH (HOLDLOCK) AS target
             USING (SELECT GoalId FROM savings.Goals WHERE GoalId = @GoalId AND UserId = @UserId AND Status = 'Active') AS source

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
+/// <summary>Money sent by IBAN. A transfer needs an Idempotency-Key, so a retry never sends it twice.</summary>
 [ApiController]
 [Route("api/transfers")]
 [Authorize]

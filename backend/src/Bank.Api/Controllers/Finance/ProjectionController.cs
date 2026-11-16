@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bank.Api.Controllers.Finance;
 
+/// <summary>The day by day cash-flow projection for the months ahead, from what the customer told the planner.</summary>
 [ApiController]
 [Route("api/finance/projection")]
 [Authorize]
