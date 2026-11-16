@@ -1,4 +1,6 @@
 # Weekly pull requests for dependency updates, so a fixed vulnerability does not wait for someone to notice it.
+# Patches and minor versions come as they are released. Some major versions are left out on purpose: each is a
+# migration of its own, planned and done in one piece rather than merged from a bot's pull request.
 version: 2
 updates:
   - package-ecosystem: nuget
@@ -8,6 +10,21 @@ updates:
     groups:
       microsoft:
         patterns: ["Microsoft.*", "System.*"]
+    ignore:
+      # The 11.x packages belong to .NET 11; the project stays on the .NET 10 LTS until it moves as a whole.
+      - dependency-name: "Microsoft.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "System.*"
+        update-types: ["version-update:semver-major"]
+      # Swagger UI moves together with Microsoft.OpenApi's new object model.
+      - dependency-name: "Swashbuckle.AspNetCore"
+        update-types: ["version-update:semver-major"]
+      # From version 13 MediatR needs a commercial licence.
+      - dependency-name: "MediatR"
+        versions: [">=13.0.0"]
+      # Version 4 of the runner is for xUnit v3, which is a move of the test projects.
+      - dependency-name: "xunit.runner.visualstudio"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /frontend
@@ -16,6 +33,20 @@ updates:
     groups:
       angular:
         patterns: ["@angular/*", "@angular-devkit/*"]
+    ignore:
+      # A new Angular major is taken with `ng update`, which also migrates the code.
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-devkit/*"
+        update-types: ["version-update:semver-major"]
+      # Angular decides which TypeScript and Vitest majors it supports.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      # Tailwind 4 replaces the JavaScript config the design tokens are generated into.
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
