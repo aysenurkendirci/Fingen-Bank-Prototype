@@ -3,9 +3,6 @@
 Özellikler
 - [ ] VakıfBank Yatırım Servisleri (sandbox) sağlayıcısı: döviz kurları, döviz hesaplayıcı, altın fiyatları
 
-Güvenlik
-- [ ] Stil için `'unsafe-inline'` yerine nonce
-
 Veri
 - [ ] Saklama süresi dolan bankacılık kayıtlarının silinmesi (süreler belli değil)
 
