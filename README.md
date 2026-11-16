@@ -374,6 +374,7 @@ dotnet run --project src/Bank.Database      # creates BankDb and applies the mig
 
 cd src/Bank.Api
 dotnet user-secrets set "Jwt:Key" "<at least 32 random characters>"
+dotnet user-secrets set "Security:EncryptionKey" "<another 32+ random characters>"
 dotnet run                                  # http://localhost:5164
 
 cd ../../../frontend

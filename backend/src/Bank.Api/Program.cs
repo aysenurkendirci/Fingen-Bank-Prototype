@@ -112,10 +112,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            // New tokens are signed with Jwt:Key. To rotate it, move the old key to Jwt:PreviousKeys and set a new one:
+            // tokens signed before the change keep working until they expire (minutes), nobody is signed out.
+            IssuerSigningKeys = new[] { jwtKey }
+                .Concat(builder.Configuration.GetSection("Jwt:PreviousKeys").Get<string[]>() ?? [])
+                .Where(key => Encoding.UTF8.GetByteCount(key) >= 32)
+                .Select(key => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)))
+                .ToArray(),
             // Only the algorithm the tokens are signed with; anything else (including "none") is refused.
             // Known limit: one shared HMAC key suits a single service that both signs and checks tokens. Other
-            // services checking them would need an asymmetric key (RS256/ES256), and the key is not rotated yet.
+            // services checking them would need an asymmetric key (RS256/ES256).
             ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ClockSkew = TimeSpan.Zero
         };

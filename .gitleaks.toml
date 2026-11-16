@@ -11,6 +11,7 @@ description = "Throwaway credentials of CI containers and of test customers"
 regexes = [
   '''Ci_Only_Passw0rd!''',
   '''integration-tests-signing-key-[0-9a-f]+''',
+  '''integration-tests-encryption-key-[0-9a-f]+''',
   '''ci-only-[a-z0-9-]+''',
   '''P@ssw0rd!2026''',
   '''NewP@ssw0rd2026''',

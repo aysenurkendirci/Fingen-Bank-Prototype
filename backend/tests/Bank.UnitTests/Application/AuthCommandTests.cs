@@ -2,8 +2,10 @@ using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
 using Bank.Application.Common.Exceptions;
 using Bank.Application.Features.Auth;
+using Bank.Application.Features.Notifications;
 using Bank.Contracts.Auth;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace Bank.UnitTests.Application;
@@ -19,6 +21,7 @@ public sealed class AuthCommandTests
     private readonly IRefreshTokenRepository _refreshTokens = Substitute.For<IRefreshTokenRepository>();
     private readonly ISessionPolicy _policy = Substitute.For<ISessionPolicy>();
     private readonly IBreachedPasswords _breached = Substitute.For<IBreachedPasswords>();
+    private readonly IUserSecurityRepository _security = Substitute.For<IUserSecurityRepository>();
     private readonly RecordingLogger<LoginCommandHandler> _log = new();
     private readonly LoginCommandHandler _login;
     private readonly RegisterCommandHandler _register;
@@ -36,7 +39,11 @@ public sealed class AuthCommandTests
     {
         _policy.RefreshTokenLifetime.Returns(TimeSpan.FromHours(8));
         var issuer = new RefreshTokenIssuer(_refreshTokens, _policy, TimeProvider.System);
-        _login = new LoginCommandHandler(_repo, _hasher, _tokens, issuer, _log);
+        _security.GetAsync(Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(new UserSecurityRow());
+        var notices = new Notices(Substitute.For<INotificationRepository>(), TimeProvider.System);
+        _login = new LoginCommandHandler(
+            _repo, _security, _hasher, Substitute.For<ISecretProtector>(), _tokens, issuer, notices,
+            Options.Create(new SignInPolicy()), TimeProvider.System, _log);
         _register = new RegisterCommandHandler(_repo, _hasher, _tokens, issuer, _breached, new RecordingLogger<RegisterCommandHandler>());
         _tokens.Generate(Arg.Any<long>()).Returns("jwt");
     }

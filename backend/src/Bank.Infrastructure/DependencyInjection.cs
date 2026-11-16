@@ -45,6 +45,15 @@ public static class DependencyInjection
         services.AddScoped<IErasureRepository, ErasureRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<ISplitRepository, SplitRepository>();
+        services.AddScoped<IUserSecurityRepository, UserSecurityRepository>();
+
+        services.Configure<SignInPolicy>(configuration.GetSection(SignInPolicy.Section));
+        // Required like the JWT key: without it a second factor secret could not be stored safely.
+        var encryptionKey = configuration["Security:EncryptionKey"];
+        if (string.IsNullOrWhiteSpace(encryptionKey))
+            throw new InvalidOperationException(
+                "Security:EncryptionKey is not set. Locally: dotnet user-secrets set \"Security:EncryptionKey\" \"<at least 32 random characters>\"");
+        services.AddSingleton<ISecretProtector>(new AesGcmSecretProtector(encryptionKey));
         services.AddMemoryCache();
         services.AddMarketData(configuration);
         services.AddBreachedPasswords(configuration);

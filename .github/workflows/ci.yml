@@ -85,6 +85,7 @@ jobs:
     env:
       SQL_SA_PASSWORD: "Ci_Only_Passw0rd!"
       JWT_KEY: "ci-only-signing-key-that-is-long-enough-123"
+      ENCRYPTION_KEY: "ci-only-encryption-key-that-is-long-enough-123"
       RABBITMQ_PASSWORD: "ci-only"
     steps:
       - uses: actions/checkout@v7
@@ -142,6 +143,7 @@ jobs:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__BankDb: "Server=localhost,1433;Database=BankDb_E2E;User Id=sa;Password=Ci_Only_Passw0rd!;TrustServerCertificate=True"
       Jwt__Key: "ci-only-signing-key-that-is-long-enough-123"
+      Security__EncryptionKey: "ci-only-encryption-key-that-is-long-enough-123"
     steps:
       - uses: actions/checkout@v7
 

@@ -55,6 +55,8 @@ services:
     environment:
       ConnectionStrings__BankDb: "Server=sqlserver;Database=BankDb;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True"
       Jwt__Key: ${JWT_KEY:?set JWT_KEY in .env}
+      # Encrypts second factor secrets at rest; losing it means customers set their authenticator up again.
+      Security__EncryptionKey: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env}
       # The API has no published port: only nginx can reach it, so forwarded headers can be trusted.
       ReverseProxy__Enabled: "true"
       Messaging__Enabled: "true"
