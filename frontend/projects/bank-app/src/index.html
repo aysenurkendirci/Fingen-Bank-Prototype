@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 </head>
 <body>
-  <app-root></app-root>
+  <!-- nginx puts a fresh value here on every request, the same one the Content-Security-Policy allows. -->
+  <app-root ngCspNonce="__CSP_NONCE__"></app-root>
 </body>
 </html>

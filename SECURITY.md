@@ -19,6 +19,7 @@ STRIDE başlıklarına göre, neye karşı ne yapıldığı:
 
 - CSP yalnızca kendi betiklerine izin verir. Satır içi betik ve `eval` yasaktır, sayfa başka bir sitenin çerçevesine konamaz.
 - Bu yüzden tema seçimini erkenden uygulayan betik ayrı bir dosyada durur ve kritik CSS satır içine alınmaz.
+- `<style>` etiketleri yalnızca her istekte yeniden üretilen bir nonce ile kabul edilir. nginx aynı değeri hem sayfaya hem CSP başlığına yazar, Angular kendi stillerine ekler; dışarıdan sokulan bir `<style>` reddedilir. Bu yüzden sayfa kabuğu hiç önbelleğe alınmaz.
 - Cookie kullanan uçlar `X-Requested-By` başlığını ister (CSRF). CORS yalnızca geliştirme ortamında `localhost:4200` için açıktır.
 - Angular, şablonlardaki bütün değerleri kaçışlar. Kodda `innerHTML` ya da güvenliği atlayan bir çağrı yok.
 
@@ -63,4 +64,4 @@ CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabo
 ## Bilinen sınırlar
 
 - Uygulamanın kendisi HTTPS sunmaz, TLS önündeki ters vekilde biter. HSTS başlığı bu durumda anlam kazanır.
-- Stil için `'unsafe-inline'` açık, çünkü Angular ve ECharts satır içi stil kullanır. Stil kod çalıştıramaz, ama ileride nonce'a geçilebilir.
+- Stil öznitelikleri (`style="..."`) `style-src-attr` ile açık, çünkü ECharts araç ipuçlarını onlarla yazar. Bir öznitelik bir şey yükleyemez ya da çalıştıramaz. `style-src-attr` desteklemeyen eski tarayıcılarda bu ipuçları biçimsiz görünür.

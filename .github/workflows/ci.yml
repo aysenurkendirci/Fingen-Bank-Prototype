@@ -99,6 +99,13 @@ jobs:
             sleep 5
           done
           curl -fsSI http://localhost:8080/ | grep -i "content-security-policy"
+          # The page and its CSP carry the same nonce, a new one on every request, and the page is not cached.
+          page=$(curl -fsS -D headers.txt http://localhost:8080/dashboard)
+          nonce=$(echo "$page" | grep -o 'ngcspnonce="[0-9a-f]\{32\}"' | cut -d'"' -f2)
+          test -n "$nonce"
+          grep -i "content-security-policy" headers.txt | grep -q "'nonce-$nonce'"
+          grep -qi "cache-control: no-store" headers.txt
+          test "$nonce" != "$(curl -fsS http://localhost:8080/ | grep -o 'ngcspnonce="[0-9a-f]*"' | cut -d'"' -f2)"
           for i in $(seq 1 60); do
             status=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/api/auth/refresh -H "X-Requested-By: bank-web")
             [ "$status" = "401" ] && break
