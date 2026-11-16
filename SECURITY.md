@@ -26,17 +26,18 @@ STRIDE başlıklarına göre, neye karşı ne yapıldığı:
 
 - Bütün SQL sorguları parametreli (Dapper), dinamik SQL yalnızca silme prosedüründe ve sabit metinle.
 - Şifreler ASP.NET Identity'nin hash'iyle saklanır, en az 12 karakter, bir harf ve bir rakam istenir.
+- Yeni bir şifre, bilinen veri sızıntılarında geçen şifrelerle karşılaştırılır (Pwned Passwords). Şifrenin SHA-1 özetinin yalnızca ilk beş karakteri dışarı gider ve yanıt dolgulu istenir; şifre, özetin tamamı ve müşteriye dair hiçbir bilgi sunucudan çıkmaz. Liste yanıt vermezse kayıt engellenmez, şifre kuralları yine geçerlidir.
 - Dışarıdan gelen XML (TCMB kurları) DTD kapalı ve çözümleyicisiz okunur, boyutu sınırlıdır.
 - Hedef fotoğrafları uygulamada yeniden çizilerek küçültülür, böylece konum gibi EXIF bilgileri sunucuya hiç gitmez. Sunucu türü dosya adına değil ilk baytlarına bakarak belirler (yalnızca JPEG, PNG, WebP), en fazla 2 MB kabul eder ve fotoğrafı `nosniff` ve `default-src 'none'` ile döner.
 
 ## OWASP ASVS
 
-ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan iki açık kapatıldı.
+ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan üç açık kapatıldı.
 
 | Madde | Durum |
 |---|---|
 | 2.1.1 Şifre en az 12 karakter | Kapatıldı: 8 karakterdi, artık 12 ve bir harf ile bir rakam isteniyor. |
-| 2.1.7 Sızmış şifre listesi kontrolü | Yok, bilinen sınırlarda. |
+| 2.1.7 Sızmış şifre listesi kontrolü | Kapatıldı: kayıtta ve şifre değişiminde şifre Pwned Passwords listesine karşı denetlenir. |
 | 2.2.1 Otomatik denemelere karşı koruma | Giriş uçlarında IP başına, para hareketlerinde kullanıcı başına istek sınırı. |
 | 2.5.x / 3.x Oturum | Kısa ömürlü erişim token'ı, her kullanımda yenilenen HttpOnly cookie, tekrar kullanımda bütün oturumlar kapanır, çıkış sunucuda iptal eder, şifre değişince diğer oturumlar kapanır. |
 | 4.1.x Erişim kontrolü | Her kayıt kullanıcı kimliğiyle süzülür; başkasının kaydı 404 döner, testlerle kilitli. |
@@ -63,4 +64,3 @@ CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabo
 
 - Uygulamanın kendisi HTTPS sunmaz, TLS önündeki ters vekilde biter. HSTS başlığı bu durumda anlam kazanır.
 - Stil için `'unsafe-inline'` açık, çünkü Angular ve ECharts satır içi stil kullanır. Stil kod çalıştıramaz, ama ileride nonce'a geçilebilir.
-- Şifreler sızıntı listelerine karşı denetlenmiyor.

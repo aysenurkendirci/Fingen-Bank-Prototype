@@ -17,16 +17,18 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
     private readonly IPasswordHasher _hasher;
     private readonly ITokenGenerator _tokens;
     private readonly RefreshTokenIssuer _refreshTokens;
+    private readonly IBreachedPasswords _breached;
     private readonly ILogger<RegisterCommandHandler> _logger;
 
     public RegisterCommandHandler(
         IAuthRepository repo, IPasswordHasher hasher, ITokenGenerator tokens, RefreshTokenIssuer refreshTokens,
-        ILogger<RegisterCommandHandler> logger)
+        IBreachedPasswords breached, ILogger<RegisterCommandHandler> logger)
     {
         _repo = repo;
         _hasher = hasher;
         _tokens = tokens;
         _refreshTokens = refreshTokens;
+        _breached = breached;
         _logger = logger;
     }
 
@@ -39,6 +41,12 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         {
             _logger.LogWarning("Registration refused for {TcNo}: identity number already registered", maskedTc);
             throw new ConflictException("Bu TC kimlik numarası ile kayıtlı bir kullanıcı var.");
+        }
+
+        if (await _breached.IsBreachedAsync(registration.Password, ct) == true)
+        {
+            _logger.LogInformation("Registration refused for {TcNo}: password found in a breach list", maskedTc);
+            throw new BadRequestException(BreachedPasswordMessages.Refused);
         }
 
         var user = await _repo.CreateUserAsync(

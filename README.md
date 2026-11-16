@@ -54,8 +54,8 @@ Limits are read from the `Banking` section of `appsettings.json`. The reasoning 
 
 ## Security
 
-Short-lived access tokens kept in memory, rotating refresh cookies with reuse detection, rate limits on sign-in and on money
-movements, a strict Content-Security-Policy, and secret scanning, CodeQL and Dependabot in CI. The threat model is in
+Short-lived access tokens kept in memory, rotating refresh cookies with reuse detection, new passwords checked against
+known breaches without the password leaving the server, rate limits on sign-in and on money movements, a strict Content-Security-Policy, and secret scanning, CodeQL and Dependabot in CI. The threat model is in
 [SECURITY.md](SECURITY.md).
 
 ## Stack

@@ -1,3 +1,4 @@
+using Bank.Application.Abstractions.Security;
 using Bank.Database;
 using Bank.Infrastructure.MarketData;
 using Microsoft.AspNetCore.Hosting;
@@ -58,6 +59,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             services.AddSingleton<TimeProvider>(new FakeTimeProvider(Now));
             services.RemoveAll<IExchangeRateSource>();
             services.AddSingleton<IExchangeRateSource, FakeExchangeRateSource>();
+            services.RemoveAll<IBreachedPasswords>();
+            services.AddSingleton<IBreachedPasswords, FakeBreachedPasswords>();
         });
     }
 

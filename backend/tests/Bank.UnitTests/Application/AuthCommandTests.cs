@@ -18,6 +18,7 @@ public sealed class AuthCommandTests
     private readonly ITokenGenerator _tokens = Substitute.For<ITokenGenerator>();
     private readonly IRefreshTokenRepository _refreshTokens = Substitute.For<IRefreshTokenRepository>();
     private readonly ISessionPolicy _policy = Substitute.For<ISessionPolicy>();
+    private readonly IBreachedPasswords _breached = Substitute.For<IBreachedPasswords>();
     private readonly RecordingLogger<LoginCommandHandler> _log = new();
     private readonly LoginCommandHandler _login;
     private readonly RegisterCommandHandler _register;
@@ -36,7 +37,7 @@ public sealed class AuthCommandTests
         _policy.RefreshTokenLifetime.Returns(TimeSpan.FromHours(8));
         var issuer = new RefreshTokenIssuer(_refreshTokens, _policy, TimeProvider.System);
         _login = new LoginCommandHandler(_repo, _hasher, _tokens, issuer, _log);
-        _register = new RegisterCommandHandler(_repo, _hasher, _tokens, issuer, new RecordingLogger<RegisterCommandHandler>());
+        _register = new RegisterCommandHandler(_repo, _hasher, _tokens, issuer, _breached, new RecordingLogger<RegisterCommandHandler>());
         _tokens.Generate(Arg.Any<long>()).Returns("jwt");
     }
 
@@ -126,6 +127,30 @@ public sealed class AuthCommandTests
         _repo.GetCredentialsAsync(ExistingUser.UserId, Arg.Any<CancellationToken>())
              .Returns(new CredentialRow { UserId = ExistingUser.UserId, PasswordHash = StoredHash });
         _hasher.Verify(Arg.Any<string>(), StoredHash).Returns(call => call.ArgAt<string>(0) == password);
+    }
+
+    [Fact]
+    public async Task Register_WithABreachedPassword_IsRefusedAndCreatesNothing()
+    {
+        _breached.IsBreachedAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+
+        var e = await Assert.ThrowsAsync<BadRequestException>(() => _register.Handle(new RegisterCommand(NewRegistration()), default));
+
+        Assert.Equal(BreachedPasswordMessages.Refused, e.Message);
+        await _repo.DidNotReceive().CreateUserAsync(Arg.Any<NewUser>(), Arg.Any<CancellationToken>());
+    }
+
+    // The breach list being out of reach is no reason to turn a customer away.
+    [Fact]
+    public async Task Register_WhenTheBreachCheckCannotAnswer_GoesAhead()
+    {
+        _breached.IsBreachedAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((bool?)null);
+        _hasher.Hash(Arg.Any<string>()).Returns("hashed-value");
+        _repo.CreateUserAsync(Arg.Any<NewUser>(), Arg.Any<CancellationToken>()).Returns(ExistingUser);
+
+        await _register.Handle(new RegisterCommand(NewRegistration()), default);
+
+        await _repo.Received(1).CreateUserAsync(Arg.Any<NewUser>(), Arg.Any<CancellationToken>());
     }
 
     private static RegisterRequest NewRegistration()

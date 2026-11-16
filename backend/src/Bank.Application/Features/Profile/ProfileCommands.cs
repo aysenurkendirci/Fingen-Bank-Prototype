@@ -76,6 +76,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     private readonly ITokenGenerator _accessTokens;
     private readonly ICurrentUser _currentUser;
     private readonly Notices _notices;
+    private readonly IBreachedPasswords _breached;
     private readonly TimeProvider _time;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
@@ -87,6 +88,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         ITokenGenerator accessTokens,
         ICurrentUser currentUser,
         Notices notices,
+        IBreachedPasswords breached,
         TimeProvider time,
         ILogger<ChangePasswordCommandHandler> logger)
     {
@@ -97,6 +99,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         _accessTokens = accessTokens;
         _currentUser = currentUser;
         _notices = notices;
+        _breached = breached;
         _time = time;
         _logger = logger;
     }
@@ -111,6 +114,9 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
             _logger.LogWarning("Password change refused for user {UserId}: wrong current password", userId);
             throw new BadRequestException("Mevcut şifre doğrulanamadı.");
         }
+
+        if (await _breached.IsBreachedAsync(command.Change.NewPassword, ct) == true)
+            throw new BadRequestException(BreachedPasswordMessages.Refused);
 
         await _users.UpdatePasswordAsync(userId, _hasher.Hash(command.Change.NewPassword), ct);
         await _refreshTokenStore.RevokeAllAsync(userId, _time.GetUtcNow().UtcDateTime, ct);
