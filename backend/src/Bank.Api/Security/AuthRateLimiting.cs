@@ -11,6 +11,9 @@ namespace Bank.Api.Security;
 /// <remarks>
 /// Partitioned by remote IP. Behind a reverse proxy every request would share the proxy's address, so a
 /// deployment must enable forwarded headers before this partitioning is meaningful.
+///
+/// Known limit: the counters live in this process. With more than one API instance each has its own budget,
+/// so the real limit is the configured one times the number of instances; a shared store (Redis) would fix it.
 /// </remarks>
 public static class AuthRateLimiting
 {

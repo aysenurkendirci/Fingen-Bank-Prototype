@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bank.Api.Controllers.Finance;
 
+/// <summary>Income and expenses that repeat (salary, rent, subscriptions), the main input of the projection.</summary>
 [ApiController]
 [Route("api/finance/recurring-cash-flows")]
 [Authorize]

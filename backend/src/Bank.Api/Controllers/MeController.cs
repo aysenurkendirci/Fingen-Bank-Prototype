@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
+/// <summary>The signed-in customer: profile, password, display preferences, and the KVKK export and erasure.</summary>
 [ApiController]
 [Route("api/me")]
 [Authorize]

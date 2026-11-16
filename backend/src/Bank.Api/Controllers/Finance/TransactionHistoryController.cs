@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bank.Api.Controllers.Finance;
 
+/// <summary>Past spending imported from statements, or generated as demo data, which the analytics read.</summary>
 [ApiController]
 [Route("api/finance/transactions")]
 [Authorize]

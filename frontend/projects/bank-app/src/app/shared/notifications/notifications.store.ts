@@ -11,6 +11,9 @@ const CHECK_EVERY_MS = 60_000;
  * The unread count behind the bell in the menu. Checked on every move to another screen, once a minute while the
  * tab is in view and again when the customer comes back to it; a hidden tab asks nothing. A failed check keeps
  * the last count.
+ *
+ * Known limit: the count is pulled, not pushed. A server push (SignalR or server-sent events) would show a new
+ * notification at once and spare the requests a hidden tab no longer makes anyway.
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationsStore {

@@ -114,6 +114,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             // Only the algorithm the tokens are signed with; anything else (including "none") is refused.
+            // Known limit: one shared HMAC key suits a single service that both signs and checks tokens. Other
+            // services checking them would need an asymmetric key (RS256/ES256), and the key is not rotated yet.
             ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ClockSkew = TimeSpan.Zero
         };
@@ -124,7 +126,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Bank API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "FinGen API", Version = "v1" });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -205,7 +207,7 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bank API V1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FinGen API v1"));
 }
 
 // Order matters: CORS must answer preflight requests before authentication rejects them.

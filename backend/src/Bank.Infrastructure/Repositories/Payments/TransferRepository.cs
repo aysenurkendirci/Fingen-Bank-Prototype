@@ -145,6 +145,9 @@ public sealed class TransferRepository : ITransferRepository
                ?? throw new InvalidOperationException($"Transfer {transferId} was not found right after being written.");
     }
 
+    // Known limit: payments.Transfers has no (UserId, CreatedAt) index, so this reads the customer's transfers
+    // through the idempotency key index. Cheap at a few thousand transfers a customer; a busy account would want
+    // the index.
     public async Task<decimal> SumSentToOthersTodayAsync(long userId, string currencyCode, CancellationToken ct = default)
     {
         // Only money that left for another customer; moves between the user's own accounts are not limited. The day

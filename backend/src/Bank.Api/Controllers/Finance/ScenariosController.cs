@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Bank.Api.Controllers.Finance;
 
+/// <summary>Compares ways of paying for a planned purchase against the projection. Nothing is stored.</summary>
 [ApiController]
 [Route("api/finance/scenarios")]
 [Authorize]

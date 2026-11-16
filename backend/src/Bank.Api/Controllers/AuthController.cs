@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
+/// <summary>
+/// Sign-up, sign-in and the session. The access token goes in the response body and lives only in memory; the
+/// refresh token goes in an HttpOnly cookie that the refresh and logout endpoints read.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 [EnableRateLimiting(AuthRateLimiting.Policy)]

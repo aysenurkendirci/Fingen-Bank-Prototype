@@ -14,6 +14,11 @@ public sealed record LoginCommand(LoginRequest Credentials) : IRequest<AuthResul
 /// Every sign-in attempt is logged as a security event so brute force and credential stuffing can be
 /// spotted. The client always gets the same "wrong identity number or password" answer, but the log
 /// keeps the real reason. Identity numbers are masked before they reach the log.
+///
+/// Known limit: a password is the only factor. Turkish regulation (BDDK) expects internet banking to ask for a
+/// second one, usually a one-time code by SMS or a mobile app approval. Also, guessing is slowed per client
+/// address only; an account is not locked after repeated failures, so many addresses could still try one
+/// identity number. Both belong in front of this handler before the bank goes live.
 /// </remarks>
 public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
 {

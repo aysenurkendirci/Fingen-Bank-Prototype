@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bank.Api.Controllers;
 
+/// <summary>The customer's bank accounts: opening, closing an empty one, and the statement read from the ledger.</summary>
 [ApiController]
 [Route("api/accounts")]
 [Authorize]
