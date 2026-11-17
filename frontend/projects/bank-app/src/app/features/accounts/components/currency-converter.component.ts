@@ -20,9 +20,9 @@ import { Conversion, ConversionRequest } from '../../../data-access/models/marke
   host: { class: 'block' },
   template: `
     <p class="field-label mb-2">Hesaplayıcı</p>
-    <div class="grid grid-cols-[1fr_auto] gap-2">
-      <input class="input tabular-nums" type="number" min="0.01" step="0.01" aria-label="Tutar" name="amount" [ngModel]="amount()" (ngModelChange)="amount.set($event ?? 0)" />
-      <select class="input" aria-label="Elinizdeki döviz" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)">
+    <div class="grid grid-cols-[minmax(0,1fr)_6rem] gap-2">
+      <input class="input w-full min-w-0 tabular-nums" type="number" min="0.01" step="0.01" aria-label="Tutar" name="amount" [ngModel]="amount()" (ngModelChange)="amount.set($event ?? 0)" />
+      <select class="input w-full" aria-label="Elinizdeki döviz" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)">
         @for (code of currencies(); track code) {
           <option [value]="code">{{ label(code) }}</option>
         }
@@ -32,7 +32,7 @@ import { Conversion, ConversionRequest } from '../../../data-access/models/marke
       <button type="button" class="btn-link" aria-label="Yönü değiştir" (click)="swap()">
         <span class="material-symbols-outlined text-[18px] align-middle" aria-hidden="true">swap_vert</span>
       </button>
-      <select class="input flex-1" aria-label="Almak istediğiniz döviz" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)">
+      <select class="input min-w-0 flex-1" aria-label="Almak istediğiniz döviz" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)">
         @for (code of currencies(); track code) {
           <option [value]="code" [disabled]="code === from()">{{ label(code) }}</option>
         }
