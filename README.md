@@ -30,7 +30,7 @@ Banking
 - Accounts in TRY, USD and EUR with generated IBANs, statements read from a double-entry ledger, closing an empty account.
 - Transfers by IBAN with a review step and a receipt. Each transfer carries an Idempotency-Key, so a retry never sends the money
   twice.
-- Debit and credit cards: contactless and online use, daily and monthly limits, a temporary block.
+- Debit and credit card settings: contactless and online use, daily and monthly limits, a temporary block.
 - Splitting an expense with friends. A friend who banks here is asked in the app and pays their share with a transfer;
   a friend outside is marked paid by hand.
 
@@ -45,8 +45,8 @@ Planning and insight
 - Cash-flow projection from known income, expenses, subscriptions, card statements and installments.
 - Installment scenarios compared side by side before a purchase.
 - Statement import from other banks and analytics on the history: category trends, recurring payments, unusual spending.
-- Exchange rates from VakıfBank's API Portal when its credentials are set, with TCMB's public daily rates behind it,
-  a converter that asks the bank's own calculator, and foreign currency balances estimated in lira.
+- Exchange rates from VakıfBank's API Portal when its credentials are set, with TCMB's public daily rates behind it.
+- A currency converter that asks VakıfBank's own calculator, and foreign currency balances estimated in lira.
 
 Customer
 - Profile, contact details, password change, two-step verification with an authenticator app, data export and account
@@ -356,18 +356,6 @@ Some choices worth knowing:
 - Erasure is one stored procedure, `compliance.EraseUser`. It deletes the person's own data with its history, closes the
   accounts and anonymises the user row. The ledger stays, because the other side of each transfer still needs it.
 
-## Known limits
-
-What a bank going live would still need, marked in the code with "Known limit:" where it applies:
-
-- A second factor on every sign-in, as BDDK expects for internet banking. Today it is optional and an authenticator app
-  code; an SMS code needs an SMS provider.
-- Rate limit counters shared between API instances; each instance counts on its own.
-- Card payments. Card limits and switches are stored and checked, but no authorisation flow uses them yet.
-- A consumer for the published events, and an asymmetric signing key once other services need to check tokens.
-- Archiving the ledger after its ten-year retention. Every other record has a retention period and is removed when it
-  runs out (ADR-0005).
-
 ## Layout
 
 ```
@@ -383,7 +371,7 @@ backend/tools/          Bank.Evaluation: reproduces the analytics evaluation
 frontend/               Angular app; design tokens in projects/bank-app/src/design
 frontend/e2e/           Playwright end-to-end tests
 frontend/scripts/       the layer check run in CI
-docs/                   decisions (adr/), notes, analytics evaluation
+docs/                   decisions (adr/), notes, analytics evaluation, screenshots
 ```
 
 ## Run
@@ -427,18 +415,50 @@ cd frontend && npm run e2e                  # Playwright, against the API on :51
 ```
 
 Integration tests run against a real database, `BankDb_IntegrationTests`, rebuilt from the migrations on every run. Set
-`INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services, TCMB's
-rates and the breached password list, are replaced by fakes, so the suite never needs the internet.
+`INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services (TCMB,
+VakıfBank and the breached password list) are replaced by fakes, so the suite never needs the internet.
 
 The end-to-end tests in `frontend/e2e` sign up their own customers and walk through accounts, transfers, planning, goals
 and the wish list with a photo, splitting an expense between two customers, notifications, the young mode, two-step
 verification, the profile and erasure in a real browser. CI runs them against a fresh database, and also starts the whole
 system with `docker compose` and checks it through nginx, including the style nonce.
 
+## Known limits
+
+What a bank going live would still need, marked in the code with "Known limit:" where it applies:
+
+- A second factor on every sign-in, as BDDK expects for internet banking. Today it is optional and an authenticator app
+  code; an SMS code needs an SMS provider.
+- Rate limit counters shared between API instances; each instance counts on its own.
+- Card payments. Card limits and switches are stored and checked, but no authorisation flow uses them yet.
+- A consumer for the published events, and an asymmetric signing key once other services need to check tokens.
+- Archiving the ledger after its ten-year retention. Every other record has a retention period and is removed when it
+  runs out (ADR-0005).
+
 ## Docs
 
-- [Decisions](docs/adr/)
-- [Security](SECURITY.md)
-- [Notes](docs/ENGINEERING_LOG.md): problems that took a while to solve
-- [TODO](docs/TODO.md)
-- [Analytics evaluation](docs/analytics/EVALUATION.md)
+- [SECURITY.md](SECURITY.md): threat model, the OWASP ASVS review, retention and known limits
+- [docs/ENGINEERING_LOG.md](docs/ENGINEERING_LOG.md): problems that took a while to solve
+- [docs/analytics/EVALUATION.md](docs/analytics/EVALUATION.md): how the analytics were measured, reproducible with one command
+- [frontend/README.md](frontend/README.md): the web app's structure and conventions
+- [docs/TODO.md](docs/TODO.md): what is left
+
+Decisions are written up as ADRs in [docs/adr](docs/adr), in Turkish:
+
+| ADR | Decision |
+|---|---|
+| [0001](docs/adr/0001-database-schema-migrations.md), [0002](docs/adr/0002-sql-server-instead-of-oracle.md) | SQL Server instead of Oracle, versioned DbUp scripts |
+| [0003](docs/adr/0003-cash-flow-projection-assumptions.md) | Assumptions behind the cash-flow projection |
+| [0004](docs/adr/0004-session-hardening.md) | Short-lived access tokens and rotating refresh cookies |
+| [0005](docs/adr/0005-right-to-erasure.md) | KVKK erasure and retention periods |
+| [0006](docs/adr/0006-cqrs-with-mediatr.md) | Commands and queries with MediatR |
+| [0007](docs/adr/0007-idempotent-transfers-and-locking.md) | Idempotent transfers and account locking |
+| [0008](docs/adr/0008-double-entry-ledger.md) | Double-entry ledger |
+| [0009](docs/adr/0009-transactional-outbox.md) | Transactional outbox |
+| [0010](docs/adr/0010-frontend-layers.md) | Frontend layers |
+| [0011](docs/adr/0011-market-data.md) | Exchange rates from VakıfBank and TCMB, and the converter |
+| [0012](docs/adr/0012-savings-goals.md) | Goals with their own savings account, and the wish list |
+| [0013](docs/adr/0013-banking-rules.md) | Banking rules: limits, accounts, cards |
+| [0014](docs/adr/0014-expense-splits.md) | Splitting an expense |
+| [0015](docs/adr/0015-notifications.md) | Notification centre |
+| [0016](docs/adr/0016-sign-in-security.md) | Account lockout and two-step verification |

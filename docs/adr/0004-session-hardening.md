@@ -1,6 +1,6 @@
-# ADR-0004: Oturum güvenliğini sertleştirme planı
+# ADR-0004: Oturum güvenliğini sertleştirme
 
-Durum: Uygulandı.
+Durum: Kabul edildi ve uygulandı
 
 ## Bağlam
 

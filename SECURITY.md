@@ -12,7 +12,7 @@ STRIDE başlıklarına göre, neye karşı ne yapıldığı:
 | Kurcalama | Başkasının hesabından para çekmek, tutarı değiştirmek | Her hesap, hedef ve kart sorgusu kullanıcı kimliğiyle süzülür, başkasının kaydı 404 döner. Bakiye yalnızca defter kaydıyla değişir, veritabanı negatif bakiyeyi ve tek taraflı kaydı reddeder. |
 | İnkâr | "Bu transferi ben yapmadım" | Her para hareketi çift taraflı deftere ve outbox olayına yazılır, finans tabloları temporal tablolarla geçmişini saklar, her istek bir korelasyon kimliğiyle günlüğe düşer. |
 | Bilgi sızması | Kişisel verinin günlüğe, hata mesajına ya da başka siteye sızması | Günlüklerde T.C. kimlik numarası maskeli. Beklenmeyen hatalar ayrıntı vermeden 500 döner. Finansal yanıtlar önbelleğe alınmaz. Olaylarda kişisel veri yok. Bildirimlerde hesap numarasının yalnızca son dört hanesi geçer. KVKK için veri indirme ve silme var, bildirimler de buna dahil. |
-| Hizmet engelleme | Aynı anda yüzlerce transfer, dev istek gövdesi | Para hareketlerinde kullanıcı başına dakikada 30 istek sınırı. İstek gövdesi 1 MB ile sınırlı, dosya yükleme kendi sınırıyla. Dış kur kaynağına zaman aşımı ve devre kesici. |
+| Hizmet engelleme | Aynı anda yüzlerce transfer, dev istek gövdesi | Para hareketlerinde kullanıcı başına dakikada 30 istek sınırı. İstek gövdesi 1 MB ile sınırlı, dosya yükleme kendi sınırıyla. Dış kur kaynaklarına (VakıfBank, TCMB) zaman aşımı ve devre kesici; banka geç kalırsa TCMB'ye düşülür. |
 | Yetki yükseltme | Başkasının hedefine para koymak, kumbaradan dışarı para göndermek | Uç noktalar varsayılan olarak giriş ister. Kumbara hesabı yalnızca sahibinin hesaplarına para aktarabilir. Silinmiş kullanıcının token'ı geçerlilik süresi dolmadan da reddedilir. |
 
 ## Tarayıcı
@@ -30,11 +30,12 @@ STRIDE başlıklarına göre, neye karşı ne yapıldığı:
 - Yeni bir şifre, bilinen veri sızıntılarında geçen şifrelerle karşılaştırılır (Pwned Passwords). Şifrenin SHA-1 özetinin yalnızca ilk beş karakteri dışarı gider ve yanıt dolgulu istenir; şifre, özetin tamamı ve müşteriye dair hiçbir bilgi sunucudan çıkmaz. Liste yanıt vermezse kayıt engellenmez, şifre kuralları yine geçerlidir.
 - Her kaydın bir saklama süresi var: defter 10 yıl (TTK), silinen müşterinin T.C. numarası 8 yıl (5549 sayılı Kanun), saklama yükümlülüğü olmayan veri hesap silinince hemen. Tablo ADR-0005'te.
 - Dışarıdan gelen XML (TCMB kurları) DTD kapalı ve çözümleyicisiz okunur, boyutu sınırlıdır.
+- VakıfBank API Portal'ın client id ve secret'ı yalnızca user-secrets'ta ya da ortam değişkeninde durur; repoya, CI'a ve günlüğe girmez. Secret yalnızca token isteğinin gövdesinde, HTTPS üzerinden gider.
 - Hedef fotoğrafları uygulamada yeniden çizilerek küçültülür, böylece konum gibi EXIF bilgileri sunucuya hiç gitmez. Sunucu türü dosya adına değil ilk baytlarına bakarak belirler (yalnızca JPEG, PNG, WebP), en fazla 2 MB kabul eder ve fotoğrafı `nosniff` ve `default-src 'none'` ile döner.
 
 ## OWASP ASVS
 
-ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan üç açık kapatıldı.
+ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. "Kapatıldı" yazan satırlar, denetimde eksik bulunup sonradan düzeltilenler.
 
 | Madde | Durum |
 |---|---|
@@ -42,12 +43,12 @@ ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan üç 
 | 2.1.7 Sızmış şifre listesi kontrolü | Kapatıldı: kayıtta ve şifre değişiminde şifre Pwned Passwords listesine karşı denetlenir. |
 | 2.2.1 Otomatik denemelere karşı koruma | Kapatıldı: IP başına istek sınırına ek olarak hesap başına kilit. 5 yanlış şifre ya da kod 15 dakika kilitler, kilit sırasında doğru şifre de kabul edilmez. |
 | 2.2.3 Güvenlik olaylarının bildirilmesi | Her giriş, kilitlenme, şifre değişikliği ve ikinci doğrulamanın açılıp kapanması müşteriye bildirim olarak gider. |
-| 2.8.x Tek kullanımlık kodlar | RFC 6238 TOTP, RFC'nin test vektörleriyle doğrulanır. Anahtar AES-256-GCM ile şifreli saklanır, bir kod iki kez kullanılamaz, kapatmak için şifre ve geçerli bir kod gerekir. |
-| 3.x Kullanıcı tespiti | Kayıtlı olmayan bir T.C. numarası da bir şifre özeti kadar zaman alır; yanıt süresinden kimin müşteri olduğu anlaşılamaz. Şifre doğru olmadan ikinci doğrulamanın açık olup olmadığı söylenmez. |
 | 2.5.x / 3.x Oturum | Kısa ömürlü erişim token'ı, her kullanımda yenilenen HttpOnly cookie, tekrar kullanımda bütün oturumlar kapanır, çıkış sunucuda iptal eder, şifre değişince diğer oturumlar kapanır. |
+| 2.8.x Tek kullanımlık kodlar | RFC 6238 TOTP, RFC'nin test vektörleriyle doğrulanır. Anahtar AES-256-GCM ile şifreli saklanır, bir kod iki kez kullanılamaz, kapatmak için şifre ve geçerli bir kod gerekir. |
+| Hesap tespiti (WSTG-IDNT-04) | Kapatıldı: kayıtlı olmayan bir T.C. numarası da bir şifre özeti kadar zaman alır; yanıt süresinden kimin müşteri olduğu anlaşılamaz. Şifre doğru olmadan ikinci doğrulamanın açık olup olmadığı söylenmez. |
 | 4.1.x Erişim kontrolü | Her kayıt kullanıcı kimliğiyle süzülür; başkasının kaydı 404 döner, testlerle kilitli. |
 | 5.x Girdi doğrulama ve XML | Bütün istekler sözleşme ve doğrulayıcılarla denetlenir, SQL parametreli, dış XML DTD kapalı okunur. |
-| 7.1.x Günlükler | Kişisel veri maskeli, başarısız girişler kayıtlı, her istek bir korelasyon kimliği taşır. İsteklerin içeriği, şifreler, kodlar ve şifreden türetilen hiçbir değer günlüğe yazılmaz; beklenen 4xx yanıtlar hata olarak kaydedilmez. |
+| 7.1.x Günlükler | Kapatıldı: sızmış şifre kontrolünün adresi, şifre özetinin ilk beş karakteriyle günlüğe düşüyordu; artık düşmüyor. Kişisel veri maskeli, başarısız girişler kayıtlı, her istek bir korelasyon kimliği taşır. İsteklerin içeriği, şifreler, kodlar ve şifreden türetilen hiçbir değer günlüğe yazılmaz; beklenen 4xx yanıtlar hata olarak kaydedilmez. |
 | 8.1.x Veri koruma | Finansal yanıtlar önbelleğe alınmaz, tarayıcıda token tutulmaz. |
 | 13.1.x API | CORS yalnızca geliştirmede açık, istek gövdesi sınırlı. |
 | 14.3.3 Sunucu bilgisi | Kapatıldı: API `Server: Kestrel` gönderiyordu, artık göndermiyor; nginx sürümünü gizler. |
