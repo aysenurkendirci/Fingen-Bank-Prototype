@@ -30,4 +30,30 @@ public sealed class MarketDataTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task TheConverter_WorksFromTheRates_WhenNoBankCalculatorIsSetUp()
+    {
+        var client = await _factory.CreateAuthenticatedClientAsync();
+
+        var response = await client.PostAsJsonAsync("/api/market/convert", new ConvertCurrencyRequest("TRY", 1_000m, "USD"));
+        var quote = await response.Content.ReadFromJsonAsync<ConversionResponse>();
+
+        // The fake source sells a dollar for 40.20 lira: 1000 / 40.2, rounded down to the cent.
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(24.87m, quote!.TargetAmount);
+        Assert.Equal(FakeExchangeRateSource.Name, quote.Source);
+    }
+
+    [Theory]
+    [InlineData("USD", "USD")]
+    [InlineData("usd", "TRY")]
+    public async Task AConversionWithTheSameOrAMalformedCurrency_Returns400(string from, string to)
+    {
+        var client = await _factory.CreateAuthenticatedClientAsync();
+
+        var response = await client.PostAsJsonAsync("/api/market/convert", new ConvertCurrencyRequest(from, 100m, to));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
