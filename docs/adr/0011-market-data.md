@@ -20,7 +20,15 @@ Döviz hesaplarının lira karşılığını göstermek ve kur hesaplayıcı sun
 
 ## VakıfBank
 
-Sağlayıcı aynı arayüzle eklenecek. API Key ve Secret yalnızca user-secrets'ta ya da ortam değişkeninde durur, repoya ve CI'a girmez. CI her push'ta gizli anahtar taraması yapar. Token süresi dolana kadar önbellekte tutulur. Uygulama sandbox planında olduğu için yalnızca test verisi gelir.
+Sağlayıcı aynı arayüzle eklendi (`VakifBankExchangeRateSource`) ve kimlik bilgileri ayarlıysa TCMB'nin önüne konur. Ayarlı değilse hiç kaydedilmez, TCMB tek başına cevap verir.
+
+- Servis: `POST /getCurrencyRates`, gövdede `ValidityDate`. Gün, İstanbul gece yarısının UTC anı olarak gönderilir: 1 Haziran için `2020-05-31T21:00:00.000Z`.
+- Yetkilendirme OAuth2 client credentials ile yapılır. Token süresi dolmadan bir dakika öncesine kadar paylaşılan bir önbellekte tutulur, aynı anda tek bir istek yenisini alır. Ağ geçidi token'ı reddederse bir kez yenilenir.
+- Banka kuru müşterinin gözünden verir: `SaleRate` müşterinin dövizi bankaya sattığı, `PurchaseRate` bankadan aldığı fiyattır. Uygulamada ilki bankanın alış, ikincisi satış kurudur. Dokümanda sayı, örnekte metin olarak geçtikleri için ikisi de kabul edilir.
+- Yanıt `APIGW000000` dışında bir durum kodu taşırsa ya da kullanılabilir kur yoksa kaynak başarısız sayılır, sıradaki kaynak (TCMB) denenir.
+- Bankaya TCMB'den daha kısa süre tanınır (deneme başına 5, toplamda 10 saniye): yavaş bir cevap kurları bekletmek yerine TCMB'ye düşer.
+- Client id ve secret yalnızca user-secrets'ta ya da ortam değişkeninde durur (`MarketData:VakifBank:ClientId`, `MarketData:VakifBank:ClientSecret`), repoya ve CI'a girmez. Gizli bilgi yalnızca token isteğinin gövdesinde, HTTPS üzerinden gider ve günlüğe yazılmaz. Uygulama sandbox planında olduğu için yalnızca test verisi gelir.
+- Token adresi portalın "Yetkilendirme" sayfasına göre `MarketData:VakifBank:TokenUrl` ile değiştirilebilir.
 
 ## Sonuçlar
 

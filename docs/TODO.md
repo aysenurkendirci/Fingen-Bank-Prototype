@@ -1,7 +1,7 @@
 # TODO
 
 Özellikler
-- [ ] VakıfBank Yatırım Servisleri (sandbox) sağlayıcısı: döviz kurları, döviz hesaplayıcı, altın fiyatları
+- [ ] VakıfBank: token adresini portalın Yetkilendirme sayfasıyla teyit etmek, altın fiyatları servisi
 
 Güvenlik
 - [ ] Canlıya geçilirse: ikinci doğrulamayı zorunlu kılmak ve SMS koduyla da sunmak (demo için bilerek isteğe bağlı, ADR-0016)

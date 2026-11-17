@@ -27,7 +27,8 @@ Planning and insight
 - Cash-flow projection from known income, expenses, subscriptions, card statements and installments.
 - Installment scenarios compared side by side before a purchase.
 - Statement import from other banks and analytics on the history: category trends, recurring payments, unusual spending.
-- Exchange rates from TCMB's public daily rates, a converter, and foreign currency balances estimated in lira.
+- Exchange rates from VakıfBank's API Portal when its credentials are set, with TCMB's public daily rates behind it,
+  a converter, and foreign currency balances estimated in lira.
 
 Customer
 - Profile, contact details, password change, two-step verification with an authenticator app, data export and account
@@ -80,7 +81,7 @@ flowchart LR
     infra["Bank.Infrastructure<br/>Dapper repositories, outbox"]
     sql[("SQL Server")]
     rabbit[["RabbitMQ"]]
-    tcmb(["TCMB daily rates"])
+    tcmb(["VakıfBank API, then TCMB<br/>exchange rates"])
 
     browser --> nginx --> api --> pipeline --> handlers
     handlers --> domain
@@ -387,6 +388,9 @@ dotnet run --project src/Bank.Database      # creates BankDb and applies the mig
 cd src/Bank.Api
 dotnet user-secrets set "Jwt:Key" "<at least 32 random characters>"
 dotnet user-secrets set "Security:EncryptionKey" "<another 32+ random characters>"
+# optional: rates from VakıfBank's sandbox in front of TCMB
+dotnet user-secrets set "MarketData:VakifBank:ClientId" "<client id>"
+dotnet user-secrets set "MarketData:VakifBank:ClientSecret" "<client secret>"
 dotnet run                                  # http://localhost:5164
 
 cd ../../../frontend
