@@ -5,8 +5,10 @@ using Bank.Contracts.Account;
 using Bank.Contracts.Auth;
 using Bank.Contracts.Notifications;
 using Bank.Domain.Security;
+using Bank.Infrastructure.Security;
 using Bank.IntegrationTests.Infrastructure;
 using Dapper;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
 
 namespace Bank.IntegrationTests;
@@ -140,6 +142,27 @@ public sealed class SignInSecurityTests
         Assert.NotEqual(secret, stored);
         Assert.False(stored.AsSpan().IndexOf(secret) >= 0);
         Assert.Equal(0, left);
+    }
+
+    [Fact]
+    public async Task AfterAnEncryptionKeyRotation_ASignInMovesTheSecretToTheNewKey()
+    {
+        const string oldKey = "integration-tests-encryption-key-0123456789abcdef";
+        const string newKey = "integration-tests-encryption-key-fedcba9876543210";
+        var registration = TestUsers.NewRegistration();
+        var (client, userId) = await _factory.CreateUserAsync(registration);
+        var secret = await SwitchOnSecondFactorAsync(client, confirmAtStep: Step - 1);
+        var rotated = _factory.WithWebHostBuilder(b => b
+            .UseSetting("Security:EncryptionKey", newKey)
+            .UseSetting("Security:PreviousEncryptionKeys:0", oldKey));
+
+        var signedIn = await rotated.CreateClient().PostAsJsonAsync(
+            Login, new LoginRequest(registration.TcNo, registration.Password, Totp.CodeAt(secret, Step)));
+
+        await using var connection = new SqlConnection(ApiFactory.ConnectionString);
+        var stored = await connection.QuerySingleAsync<byte[]>("SELECT TotpSecret FROM dbo.UserSecurity WHERE UserId = @UserId", new { UserId = userId });
+        Assert.Equal(HttpStatusCode.OK, signedIn.StatusCode);
+        Assert.Equal(secret, ((Bank.Application.Abstractions.Security.ISecretProtector)new AesGcmSecretProtector(newKey)).Unprotect(stored));
     }
 
     [Fact]

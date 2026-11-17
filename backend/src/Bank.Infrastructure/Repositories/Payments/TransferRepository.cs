@@ -145,13 +145,10 @@ public sealed class TransferRepository : ITransferRepository
                ?? throw new InvalidOperationException($"Transfer {transferId} was not found right after being written.");
     }
 
-    // Known limit: payments.Transfers has no (UserId, CreatedAt) index, so this reads the customer's transfers
-    // through the idempotency key index. Cheap at a few thousand transfers a customer; a busy account would want
-    // the index.
     public async Task<decimal> SumSentToOthersTodayAsync(long userId, string currencyCode, CancellationToken ct = default)
     {
         // Only money that left for another customer; moves between the user's own accounts are not limited. The day
-        // is turned into a UTC range once, so the CreatedAt index can be used.
+        // is turned into a UTC range once, so IX_Transfers_User_CreatedAt can seek straight to today's transfers.
         const string sql = """
             DECLARE @StartLocal DATETIME2 = CAST(CAST(SYSUTCDATETIME() AT TIME ZONE 'UTC' AT TIME ZONE 'Turkey Standard Time' AS DATE) AS DATETIME2);
             DECLARE @FromUtc DATETIME2 = CAST(@StartLocal AT TIME ZONE 'Turkey Standard Time' AT TIME ZONE 'UTC' AS DATETIME2);
