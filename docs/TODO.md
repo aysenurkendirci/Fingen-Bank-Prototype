@@ -8,8 +8,5 @@ Güvenlik
 - [ ] İkinci doğrulama anahtarlarını şifreleyen anahtarı döndürebilmek
 - [ ] İstek sınırları için API süreçleri arasında ortak sayaç (Redis)
 
-Sunum
-- [ ] Ekran görüntüleri ve kısa bir tanıtım
-
 Sonra
 - [ ] iOS uygulaması (Swift)

@@ -1,10 +1,28 @@
 # FinGen
 
-A retail bank with a personal finance planner built in. Customers hold accounts and cards, send money by IBAN and save towards
-goals; the planner shows the months ahead day by day, so a short month is visible before it arrives. A portfolio project, not a
-live service.
+A retail bank prototype with a personal finance planner built in. Customers open accounts, send money by IBAN, save towards
+goals and split bills with friends. The planner lays out the coming months day by day, so a tight month shows up before it
+arrives.
 
-The planner only shows the customer's own obligations. It never recommends a product or a decision.
+It started as my internship project. I kept working on it until it behaved more like a real bank than a demo: money moves
+through a double-entry ledger, a retried transfer never goes out twice, a customer can take their data out or have it erased
+under KVKK, and the security was checked against OWASP ASVS. It is a portfolio project and will not go live. The planner only
+shows the customer's own obligations and never recommends a product.
+
+The interface is in Turkish. Every person and number in the screenshots is made up.
+
+![Home screen](docs/screenshots/home.png)
+
+| | |
+|---|---|
+| ![Accounts, exchange rates and the converter](docs/screenshots/accounts.png) | ![A wish list for 2027](docs/screenshots/wish-list.png) |
+| Accounts, today's rates and the converter | The wish list: what she wants, over how many years |
+| ![Splitting a weekend trip](docs/screenshots/splits.png) | ![The next six months](docs/screenshots/cash-flow.png) |
+| A weekend trip split with two friends | The next six months, day by day |
+| ![The young mode](docs/screenshots/home-young.png) | ![Dark theme](docs/screenshots/home-dark.png) |
+| The young mode: savings first | The dark theme |
+
+More screens are in [docs/screenshots](docs/screenshots): goals, analytics, notifications and the sign-in page.
 
 ## What it does
 

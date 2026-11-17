@@ -69,7 +69,7 @@ import { NoticeComponent } from '../../../shared/ui/notice.component';
         <p class="mt-4 text-xs text-ink-faint">Anahtar yalnızca şimdi gösterilir ve bankada şifreli saklanır. Telefonunuzu kaybederseniz şifrenizle girip bankamızla iletişime geçin.</p>
       } @else {
         <p class="text-sm text-ink-soft">
-          Kapalı. Açarsanız girişte şifrenize ek olarak telefonunuzdaki doğrulayıcı uygulamanın ürettiği kod istenir; şifreniz ele geçse bile hesabınıza girilemez.
+          Kapalı. Açarsanız her girişte şifrenizle birlikte telefonunuzdaki doğrulayıcı uygulamanın gösterdiği kod da istenir.
         </p>
         <button type="button" class="btn-primary mt-4" [disabled]="busy()" (click)="start()">İki adımlı doğrulamayı aç</button>
       }
