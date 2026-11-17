@@ -56,7 +56,7 @@ ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan üç 
 
 Her push'ta CI şunları yapar:
 - Gizli anahtar taraması (gitleaks).
-- Bilinen açığı olan NuGet paketlerinin kontrolü.
+- Bilinen açığı olan NuGet paketlerinin ve tarayıcıya giden npm paketlerinin kontrolü.
 - Katman kuralları.
 - Bütün testler. Yetki ve güvenlik testleri de buna dahil: başkasının kaydına erişim, istek sınırları, CSRF başlığı, yabancı origin, zayıf ve sızmış şifre.
 - Gerçek tarayıcıda uçtan uca testler.
@@ -66,6 +66,7 @@ CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabo
 
 ## Bilinen sınırlar
 
+- Derleme ve test araçlarının kullandığı glob, minimatch ve picomatch için yayımlanmış uyarılar (ReDoS) var. Bunlar tarayıcıya gitmez, yalnızca projenin kendi dosya kalıplarını işler. picomatch'in düzeltilmiş bir sürümü henüz yok; glob ve minimatch düzeltmeleri, Angular'ın derleme araçlarının istemediği yeni ana sürümlerde. Angular araçları güncellendikçe kendiliğinden kalkacaklar.
 - Uygulamanın kendisi HTTPS sunmaz, TLS önündeki ters vekilde biter. HSTS başlığı bu durumda anlam kazanır.
 - İkinci doğrulama isteğe bağlıdır ve yalnızca doğrulayıcı uygulama kodu olarak vardır. BDDK internet bankacılığında her girişte ikinci doğrulama bekler; zorunlu kılmak bir ayar, SMS kodu ise bir SMS sağlayıcısı gerektirir.
 - Hesap kilidi, bir T.C. numarasının kayıtlı olduğunu beş denemeden sonra belli eder. Kilit olmasaydı şifre birçok adresten sınırsızca denenebilirdi; bankaların da kabul ettiği bir takas.

@@ -206,6 +206,11 @@ jobs:
 
       - run: npm ci
 
+      # What ships to the browser must have no known vulnerability. Build and test tools are not shipped; their
+      # advisories are reviewed by hand (see SECURITY.md) rather than failing every build.
+      - name: Check for vulnerable packages
+        run: npm audit --omit=dev --audit-level=low
+
       - name: Layer boundaries
         run: node scripts/check-layers.mjs
 
