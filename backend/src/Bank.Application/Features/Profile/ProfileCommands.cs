@@ -77,6 +77,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     private readonly ICurrentUser _currentUser;
     private readonly Notices _notices;
     private readonly IBreachedPasswords _breached;
+    private readonly FailedPasswordGuard _failures;
     private readonly TimeProvider _time;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
@@ -89,6 +90,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         ICurrentUser currentUser,
         Notices notices,
         IBreachedPasswords breached,
+        FailedPasswordGuard failures,
         TimeProvider time,
         ILogger<ChangePasswordCommandHandler> logger)
     {
@@ -100,6 +102,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         _currentUser = currentUser;
         _notices = notices;
         _breached = breached;
+        _failures = failures;
         _time = time;
         _logger = logger;
     }
@@ -108,9 +111,11 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     {
         var userId = _currentUser.UserId;
 
+        await _failures.EnsureNotLockedAsync(userId, ct);
         var stored = await _users.GetCredentialsAsync(userId, ct);
         if (!_hasher.Verify(command.Change.CurrentPassword, stored.PasswordHash))
         {
+            await _failures.RecordAsync(userId, ct);
             _logger.LogWarning("Password change refused for user {UserId}: wrong current password", userId);
             throw new BadRequestException("Mevcut şifre doğrulanamadı.");
         }

@@ -91,10 +91,15 @@ test.describe('goals and the customer', () => {
     await page.goto('/dashboard/notifications');
     const item = page.getByRole('button', { name: /^Okunmadı\. Şifreniz değiştirildi/ });
     await expect(item).toBeVisible();
-    await expect(page.locator('.unread-badge')).toContainText('1');
+    // The sign-in itself is announced too, so two are unread.
+    await expect(page.getByRole('button', { name: /^Okunmadı\. Hesabınıza giriş yapıldı/ })).toBeVisible();
+    await expect(page.locator('.unread-badge')).toContainText('2');
 
     await item.click();
     await expect(page.getByRole('button', { name: /^Şifreniz değiştirildi/ })).toBeVisible();
+    await expect(page.locator('.unread-badge')).toContainText('1');
+
+    await page.getByRole('button', { name: 'Tümünü okundu say' }).click();
     await expect(page.locator('.unread-badge')).toHaveCount(0);
   });
 

@@ -85,3 +85,14 @@ export interface PasswordChange {
   currentPassword: string;
   newPassword: string;
 }
+
+export interface TwoFactorStatus {
+  enabled: boolean;
+  enabledAt: string | null;
+}
+
+/** A new authenticator key: the app reads setupUri from a QR code, or the secret is typed in. */
+export interface TwoFactorSetup {
+  secret: string;
+  setupUri: string;
+}

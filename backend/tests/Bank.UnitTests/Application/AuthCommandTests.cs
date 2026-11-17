@@ -2,8 +2,10 @@ using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
 using Bank.Application.Common.Exceptions;
 using Bank.Application.Features.Auth;
+using Bank.Application.Features.Notifications;
 using Bank.Contracts.Auth;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace Bank.UnitTests.Application;
@@ -19,6 +21,7 @@ public sealed class AuthCommandTests
     private readonly IRefreshTokenRepository _refreshTokens = Substitute.For<IRefreshTokenRepository>();
     private readonly ISessionPolicy _policy = Substitute.For<ISessionPolicy>();
     private readonly IBreachedPasswords _breached = Substitute.For<IBreachedPasswords>();
+    private readonly IUserSecurityRepository _security = Substitute.For<IUserSecurityRepository>();
     private readonly RecordingLogger<LoginCommandHandler> _log = new();
     private readonly LoginCommandHandler _login;
     private readonly RegisterCommandHandler _register;
@@ -36,7 +39,13 @@ public sealed class AuthCommandTests
     {
         _policy.RefreshTokenLifetime.Returns(TimeSpan.FromHours(8));
         var issuer = new RefreshTokenIssuer(_refreshTokens, _policy, TimeProvider.System);
-        _login = new LoginCommandHandler(_repo, _hasher, _tokens, issuer, _log);
+        _security.GetAsync(Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(new UserSecurityRow());
+        var notices = new Notices(Substitute.For<INotificationRepository>(), TimeProvider.System);
+        _login = new LoginCommandHandler(
+            _repo, _security, _hasher, Substitute.For<ISecretProtector>(), _tokens, issuer, notices,
+            new FailedPasswordGuard(_security, _refreshTokens, notices, Options.Create(new SignInPolicy()), TimeProvider.System,
+                new RecordingLogger<FailedPasswordGuard>()),
+            TimeProvider.System, _log);
         _register = new RegisterCommandHandler(_repo, _hasher, _tokens, issuer, _breached, new RecordingLogger<RegisterCommandHandler>());
         _tokens.Generate(Arg.Any<long>()).Returns("jwt");
     }
@@ -78,6 +87,18 @@ public sealed class AuthCommandTests
             () => Login(new LoginRequest("99999999999", "anything")));
 
         Assert.Equal(wrongPassword.Message, unknownUser.Message);
+    }
+
+    // Answering an unknown identity number faster than a known one would let anyone time their way through
+    // the list of customers; both cost a password check.
+    [Fact]
+    public async Task Login_UnknownUser_StillChecksAPassword()
+    {
+        _hasher.Hash(Arg.Any<string>()).Returns("decoy-hash");
+
+        await Assert.ThrowsAsync<AuthenticationFailedException>(() => Login(new LoginRequest("99999999999", "anything")));
+
+        _hasher.Received(1).Verify("anything", Arg.Any<string>());
     }
 
     [Fact]

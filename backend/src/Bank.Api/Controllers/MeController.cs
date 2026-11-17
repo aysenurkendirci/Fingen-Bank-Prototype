@@ -39,6 +39,27 @@ public sealed class MeController : ControllerBase
         return Ok(result.Response);
     }
 
+    /// <summary>Whether the customer signs in with a code from an authenticator app as well as the password.</summary>
+    [HttpGet("two-factor")]
+    public async Task<ActionResult<TwoFactorStatusResponse>> TwoFactor(CancellationToken ct)
+        => Ok(await _sender.Send(new GetTwoFactorStatusQuery(), ct));
+
+    /// <summary>A new key for the authenticator app; not in use until a code from it is confirmed.</summary>
+    [HttpPost("two-factor/setup")]
+    [EnableRateLimiting(AuthRateLimiting.Policy)]
+    public async Task<ActionResult<TwoFactorSetupResponse>> StartTwoFactor(CancellationToken ct)
+        => Ok(await _sender.Send(new StartTwoFactorSetupCommand(), ct));
+
+    [HttpPost("two-factor/confirm")]
+    [EnableRateLimiting(AuthRateLimiting.Policy)]
+    public async Task<ActionResult<TwoFactorStatusResponse>> ConfirmTwoFactor([FromBody] ConfirmTwoFactorRequest request, CancellationToken ct)
+        => Ok(await _sender.Send(new ConfirmTwoFactorCommand(request.Code), ct));
+
+    [HttpDelete("two-factor")]
+    [EnableRateLimiting(AuthRateLimiting.Policy)]
+    public async Task<ActionResult<TwoFactorStatusResponse>> DisableTwoFactor([FromBody] DisableTwoFactorRequest request, CancellationToken ct)
+        => Ok(await _sender.Send(new DisableTwoFactorCommand(request.Password, request.Code), ct));
+
     /// <summary>How the customer wants the app to look; the defaults until they change something.</summary>
     [HttpGet("preferences")]
     public async Task<ActionResult<PreferencesResponse>> Preferences(CancellationToken ct)

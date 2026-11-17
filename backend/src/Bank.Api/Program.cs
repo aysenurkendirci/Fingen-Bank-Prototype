@@ -99,8 +99,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var userId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 var erasure = context.HttpContext.RequestServices.GetRequiredService<IErasureRepository>();
 
-                if (long.TryParse(userId, out var id) && await erasure.IsErasedAsync(id, context.HttpContext.RequestAborted))
-                    context.Fail("The account has been erased.");
+                try
+                {
+                    if (long.TryParse(userId, out var id) && await erasure.IsErasedAsync(id, context.HttpContext.RequestAborted))
+                        context.Fail("The account has been erased.");
+                }
+                catch (Exception) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    // The client went away during the check; SQL Server may report that as an error of its own.
+                    // Nobody is waiting for an answer, and the request is refused either way.
+                    context.Fail("The request was abandoned.");
+                }
             }
         };
 
@@ -112,10 +121,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            // New tokens are signed with Jwt:Key. To rotate it, move the old key to Jwt:PreviousKeys and set a new one:
+            // tokens signed before the change keep working until they expire (minutes), nobody is signed out.
+            IssuerSigningKeys = new[] { jwtKey }
+                .Concat(builder.Configuration.GetSection("Jwt:PreviousKeys").Get<string[]>() ?? [])
+                .Where(key => Encoding.UTF8.GetByteCount(key) >= 32)
+                .Select(key => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)))
+                .ToArray(),
             // Only the algorithm the tokens are signed with; anything else (including "none") is refused.
             // Known limit: one shared HMAC key suits a single service that both signs and checks tokens. Other
-            // services checking them would need an asymmetric key (RS256/ES256), and the key is not rotated yet.
+            // services checking them would need an asymmetric key (RS256/ES256).
             ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ClockSkew = TimeSpan.Zero
         };
@@ -201,7 +216,10 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging();
 
 // Registered before the rest so it also catches exceptions thrown by later middleware.
-app.UseExceptionHandler();
+// The middleware would log every exception as an error with its stack trace, including a wrong password or a
+// refused transfer, which are answers rather than faults. GlobalExceptionHandler logs the unexpected ones itself,
+// with the request; a client that went away is not logged as an error at all.
+app.UseExceptionHandler(new ExceptionHandlerOptions { SuppressDiagnosticsCallback = _ => true });
 app.UseMiddleware<SecurityHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())

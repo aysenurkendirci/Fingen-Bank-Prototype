@@ -64,7 +64,8 @@ test.describe('planning', () => {
   test('demo history pages and analytics read it', async ({ page }) => {
     await page.goto('/dashboard/transactions');
     await page.getByRole('button', { name: /demo verisi/ }).click();
-    await expect(page.locator('app-transaction-list li').first()).toBeVisible();
+    // Twelve months of history are written in one go; on a busy machine that takes several seconds.
+    await expect(page.locator('app-transaction-list li').first()).toBeVisible({ timeout: 30_000 });
     await page.getByRole('button', { name: 'Sonraki' }).click();
     await expect(page.locator('nav[aria-label=Sayfalar] span')).toContainText('2 /');
 

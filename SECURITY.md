@@ -8,7 +8,7 @@ STRIDE başlıklarına göre, neye karşı ne yapıldığı:
 
 | Tehdit | Örnek | Önlem |
 |---|---|---|
-| Kimlik taklidi | Çalınan oturum, şifre deneme | Erişim token'ı 10 dakika ve yalnızca bellekte. Yenileme token'ı HttpOnly, Secure, SameSite=Strict cookie'de, her kullanımda yenilenir, tekrar kullanılırsa bütün oturumlar kapanır. Giriş uçlarında IP başına istek sınırı. JWT'de algoritma HS256'ya sabit, anahtar en az 32 bayt. |
+| Kimlik taklidi | Çalınan oturum, şifre deneme | Erişim token'ı 10 dakika ve yalnızca bellekte. Yenileme token'ı HttpOnly, Secure, SameSite=Strict cookie'de, her kullanımda yenilenir, tekrar kullanılırsa bütün oturumlar kapanır. Giriş uçlarında IP başına istek sınırı. Art arda 5 yanlış şifre ya da kod hesabı 15 dakika kilitler; oturum içindeki şifre sorularında da sayılır, kilitlenince bütün oturumlar kapanır. İsteğe bağlı ikinci doğrulama: doğrulayıcı uygulama kodu, her kod bir kez. Her giriş müşteriye bildirilir. JWT'de algoritma HS256'ya sabit, anahtar en az 32 bayt ve kesintisiz döndürülebilir. |
 | Kurcalama | Başkasının hesabından para çekmek, tutarı değiştirmek | Her hesap, hedef ve kart sorgusu kullanıcı kimliğiyle süzülür, başkasının kaydı 404 döner. Bakiye yalnızca defter kaydıyla değişir, veritabanı negatif bakiyeyi ve tek taraflı kaydı reddeder. |
 | İnkâr | "Bu transferi ben yapmadım" | Her para hareketi çift taraflı deftere ve outbox olayına yazılır, finans tabloları temporal tablolarla geçmişini saklar, her istek bir korelasyon kimliğiyle günlüğe düşer. |
 | Bilgi sızması | Kişisel verinin günlüğe, hata mesajına ya da başka siteye sızması | Günlüklerde T.C. kimlik numarası maskeli. Beklenmeyen hatalar ayrıntı vermeden 500 döner. Finansal yanıtlar önbelleğe alınmaz. Olaylarda kişisel veri yok. Bildirimlerde hesap numarasının yalnızca son dört hanesi geçer. KVKK için veri indirme ve silme var, bildirimler de buna dahil. |
@@ -39,11 +39,14 @@ ASVS 4.0'ın bu projeye dokunan maddeleri koda karşı denetlendi. Bulunan üç 
 |---|---|
 | 2.1.1 Şifre en az 12 karakter | Kapatıldı: 8 karakterdi, artık 12 ve bir harf ile bir rakam isteniyor. |
 | 2.1.7 Sızmış şifre listesi kontrolü | Kapatıldı: kayıtta ve şifre değişiminde şifre Pwned Passwords listesine karşı denetlenir. |
-| 2.2.1 Otomatik denemelere karşı koruma | Giriş uçlarında IP başına, para hareketlerinde kullanıcı başına istek sınırı. |
+| 2.2.1 Otomatik denemelere karşı koruma | Kapatıldı: IP başına istek sınırına ek olarak hesap başına kilit. 5 yanlış şifre ya da kod 15 dakika kilitler, kilit sırasında doğru şifre de kabul edilmez. |
+| 2.2.3 Güvenlik olaylarının bildirilmesi | Her giriş, kilitlenme, şifre değişikliği ve ikinci doğrulamanın açılıp kapanması müşteriye bildirim olarak gider. |
+| 2.8.x Tek kullanımlık kodlar | RFC 6238 TOTP, RFC'nin test vektörleriyle doğrulanır. Anahtar AES-256-GCM ile şifreli saklanır, bir kod iki kez kullanılamaz, kapatmak için şifre ve geçerli bir kod gerekir. |
+| 3.x Kullanıcı tespiti | Kayıtlı olmayan bir T.C. numarası da bir şifre özeti kadar zaman alır; yanıt süresinden kimin müşteri olduğu anlaşılamaz. Şifre doğru olmadan ikinci doğrulamanın açık olup olmadığı söylenmez. |
 | 2.5.x / 3.x Oturum | Kısa ömürlü erişim token'ı, her kullanımda yenilenen HttpOnly cookie, tekrar kullanımda bütün oturumlar kapanır, çıkış sunucuda iptal eder, şifre değişince diğer oturumlar kapanır. |
 | 4.1.x Erişim kontrolü | Her kayıt kullanıcı kimliğiyle süzülür; başkasının kaydı 404 döner, testlerle kilitli. |
 | 5.x Girdi doğrulama ve XML | Bütün istekler sözleşme ve doğrulayıcılarla denetlenir, SQL parametreli, dış XML DTD kapalı okunur. |
-| 7.1.x Günlükler | Kişisel veri maskeli, başarısız girişler kayıtlı, her istek bir korelasyon kimliği taşır. |
+| 7.1.x Günlükler | Kişisel veri maskeli, başarısız girişler kayıtlı, her istek bir korelasyon kimliği taşır. İsteklerin içeriği, şifreler, kodlar ve şifreden türetilen hiçbir değer günlüğe yazılmaz; beklenen 4xx yanıtlar hata olarak kaydedilmez. |
 | 8.1.x Veri koruma | Finansal yanıtlar önbelleğe alınmaz, tarayıcıda token tutulmaz. |
 | 13.1.x API | CORS yalnızca geliştirmede açık, istek gövdesi sınırlı. |
 | 14.3.3 Sunucu bilgisi | Kapatıldı: API `Server: Kestrel` gönderiyordu, artık göndermiyor; nginx sürümünü gizler. |
@@ -64,7 +67,9 @@ CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabo
 ## Bilinen sınırlar
 
 - Uygulamanın kendisi HTTPS sunmaz, TLS önündeki ters vekilde biter. HSTS başlığı bu durumda anlam kazanır.
-- Girişte tek faktör var: şifre. BDDK internet bankacılığında ikinci bir doğrulama (SMS ya da mobil onay) bekler. Ayrıca art arda yanlış girişte hesap kilitlenmez; deneme yalnızca istemci adresi başına yavaşlatılır.
+- İkinci doğrulama isteğe bağlıdır ve yalnızca doğrulayıcı uygulama kodu olarak vardır. BDDK internet bankacılığında her girişte ikinci doğrulama bekler; zorunlu kılmak bir ayar, SMS kodu ise bir SMS sağlayıcısı gerektirir.
+- Hesap kilidi, bir T.C. numarasının kayıtlı olduğunu beş denemeden sonra belli eder. Kilit olmasaydı şifre birçok adresten sınırsızca denenebilirdi; bankaların da kabul ettiği bir takas.
+- İkinci doğrulama anahtarlarını şifreleyen anahtar (`Security:EncryptionKey`) henüz döndürülemez; kaybolursa müşterilerin doğrulayıcıyı yeniden kurması gerekir.
 - İstek sınırlarının sayaçları her API sürecinin kendi belleğinde tutulur. Birden fazla süreç çalışırsa sınır süreç sayısı kadar artar; ortak bir depo (Redis) gerekir.
-- JWT tek bir paylaşılan HMAC anahtarıyla imzalanır ve anahtar döndürülmez. Token'ları başka servisler de doğrulayacaksa asimetrik anahtara geçilmelidir.
+- JWT tek bir paylaşılan HMAC anahtarıyla imzalanır. Anahtar `Jwt:PreviousKeys` ile kimsenin oturumu düşmeden değiştirilebilir, ama token'ları başka servisler de doğrulayacaksa asimetrik anahtara geçilmelidir.
 - Stil öznitelikleri (`style="..."`) `style-src-attr` ile açık, çünkü ECharts araç ipuçlarını onlarla yazar. Bir öznitelik bir şey yükleyemez ya da çalıştıramaz. `style-src-attr` desteklemeyen eski tarayıcılarda bu ipuçları biçimsiz görünür.

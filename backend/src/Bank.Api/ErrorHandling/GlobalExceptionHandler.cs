@@ -45,6 +45,9 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
             ConflictException => (StatusCodes.Status409Conflict, "İşlem mevcut kayıtla çakışıyor"),
             IdempotencyKeyReusedException => (StatusCodes.Status422UnprocessableEntity, "Idempotency-Key yeniden kullanıldı"),
             AuthenticationFailedException => (StatusCodes.Status401Unauthorized, "Kimlik doğrulama başarısız"),
+            SecondFactorRequiredException => (StatusCodes.Status401Unauthorized, "İkinci doğrulama gerekli"),
+            SecondFactorFailedException => (StatusCodes.Status401Unauthorized, "İkinci doğrulama başarısız"),
+            AccountLockedException => (StatusCodes.Status423Locked, "Hesap geçici olarak kilitli"),
             ServiceUnavailableException => (StatusCodes.Status503ServiceUnavailable, "Hizmet geçici olarak kullanılamıyor"),
             _ => (StatusCodes.Status500InternalServerError, "Beklenmeyen bir hata oluştu")
         };
@@ -72,6 +75,12 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
             Exception = exception,
             ProblemDetails = details
         };
+
+        // The sign-in form reads this to ask for the code instead of showing an error.
+        if (exception is SecondFactorRequiredException)
+            problem.ProblemDetails.Extensions["secondFactorRequired"] = true;
+        if (exception is AccountLockedException locked)
+            problem.ProblemDetails.Extensions["lockedUntil"] = DateTime.SpecifyKind(locked.LockedUntil, DateTimeKind.Utc);
 
         if (exception is ImportRejectedException rejected)
             problem.ProblemDetails.Extensions["errors"] = rejected.Errors;

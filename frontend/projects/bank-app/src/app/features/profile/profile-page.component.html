@@ -55,6 +55,12 @@
         <app-password-form [busy]="busy()" (save)="changePassword($event)" />
       </section>
 
+      <section id="iki-adim" class="panel scroll-mt-6">
+        <h2 class="section-title">İki adımlı doğrulama</h2>
+        <p class="text-sm text-ink-soft mt-1 mb-4">Girişte şifrenize ek olarak telefonunuzdaki bir koddan geçilir.</p>
+        <app-two-factor-settings />
+      </section>
+
       <section id="gorunum" class="panel scroll-mt-6">
         <h2 class="section-title">Tema</h2>
         <p class="text-sm text-ink-soft mt-1 mb-5">Seçiminiz hesabınıza kaydedilir, giriş yaptığınız her cihazda aynı görünür.</p>

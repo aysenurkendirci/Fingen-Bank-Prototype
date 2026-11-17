@@ -66,6 +66,21 @@ public sealed class Notices
         => AddAsync(debtorUserId, "split", "Pay isteği geri çekildi",
             $"{ownerName}, \"{splitTitle}\" için sizden istediği payı artık istemiyor.", ct);
 
+    public Task SignedInAsync(long userId, CancellationToken ct)
+        => AddAsync(userId, "security", "Hesabınıza giriş yapıldı",
+            "Bu giriş siz değilseniz hemen şifrenizi değiştirin ve iki adımlı doğrulamayı açın.", ct);
+
+    public Task AccountLockedAsync(long userId, CancellationToken ct)
+        => AddAsync(userId, "security", "Hesabınız geçici olarak kilitlendi",
+            "Art arda hatalı şifre ya da kod girildi. Kilit kısa süre sonra kendiliğinden açılır. Bu denemeler size ait değilse şifrenizi değiştirin.", ct);
+
+    public Task SecondFactorChangedAsync(long userId, bool enabled, CancellationToken ct)
+        => AddAsync(userId, "security",
+            enabled ? "İki adımlı doğrulama açıldı" : "İki adımlı doğrulama kapatıldı",
+            enabled
+                ? "Girişlerde şifrenizle birlikte doğrulayıcı uygulamanızdaki kod da istenecek."
+                : "Girişlerde artık yalnızca şifreniz isteniyor. Bunu siz yapmadıysanız hemen şifrenizi değiştirin.", ct);
+
     private Task AddAsync(long userId, string kind, string title, string body, CancellationToken ct)
         => _notifications.AddAsync(new NewNotification(userId, kind, title, body, _time.GetUtcNow().UtcDateTime), ct);
 

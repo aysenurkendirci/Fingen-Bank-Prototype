@@ -14,10 +14,11 @@ import { SkeletonComponent } from '../../shared/ui/skeleton.component';
 import { AppearanceSettingsComponent } from './components/appearance-settings.component';
 import { ContactFormComponent } from './components/contact-form.component';
 import { PasswordFormComponent } from './components/password-form.component';
+import { TwoFactorSettingsComponent } from './components/two-factor-settings.component';
 
 /** The customer's own record and the KVKK rights over it: seeing it, taking a copy and having it erased. */
 @Component({
-  imports: [DatePipe, FormsModule, NoticeComponent, SkeletonComponent, AppearanceSettingsComponent, ContactFormComponent, PasswordFormComponent],
+  imports: [DatePipe, FormsModule, NoticeComponent, SkeletonComponent, AppearanceSettingsComponent, ContactFormComponent, PasswordFormComponent, TwoFactorSettingsComponent],
   templateUrl: './profile-page.component.html',
 })
 export class ProfilePageComponent extends BasePage {
@@ -39,6 +40,7 @@ export class ProfilePageComponent extends BasePage {
     { id: 'kisisel', label: 'Kişisel bilgiler' },
     { id: 'iletisim', label: 'İletişim' },
     { id: 'guvenlik', label: 'Şifre' },
+    { id: 'iki-adim', label: 'İki adımlı doğrulama' },
     { id: 'gorunum', label: 'Tema' },
     { id: 'verilerim', label: 'Verilerim' },
     { id: 'hesabi-kapat', label: 'Hesabımı sil' },
