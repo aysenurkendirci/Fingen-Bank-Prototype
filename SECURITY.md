@@ -58,7 +58,7 @@ Her push'ta CI şunları yapar:
 - Gizli anahtar taraması (gitleaks).
 - Bilinen açığı olan NuGet paketlerinin ve tarayıcıya giden npm paketlerinin kontrolü.
 - Katman kuralları.
-- Bütün testler. Yetki ve güvenlik testleri de buna dahil: başkasının kaydına erişim, istek sınırları, CSRF başlığı, yabancı origin, zayıf ve sızmış şifre.
+- Bütün testler. Yetki ve güvenlik testleri de buna dahil: başkasının kaydına erişim, istek sınırları, CSRF başlığı, yabancı origin, zayıf ve sızmış şifre, hesap kilidi, çalınan oturumla şifre tahmini, iki adımlı doğrulama ve kodun tekrar kullanılması, JWT anahtar döndürme, şifreli anahtarın değiştirilmesi.
 - Gerçek tarayıcıda uçtan uca testler.
 - Bütün sistemin `docker compose` ile kurulup nginx üzerinden denenmesi; sayfadaki nonce'un CSP başlığındakiyle aynı olduğu ve her istekte değiştiği de burada denetlenir.
 

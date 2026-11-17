@@ -32,7 +32,8 @@ Planning and insight
 Customer
 - Profile, contact details, password change, two-step verification with an authenticator app, data export and account
   erasure under KVKK.
-- A notification centre: money sent or received, auto-saves, goals reached, a new password, a blocked card.
+- A notification centre: money sent or received, auto-saves, goals reached, split requests and answers, every
+  sign-in, a lock, a new password, two-step verification switched on or off, a blocked card.
 - Light, dark or system theme and an accent colour, saved with the account.
 - A young mode for customers just starting out: a colour of its own, rounder shapes, a plainer first-name voice and
   a home screen that leads with savings and wishes.
@@ -139,7 +140,7 @@ them on start; anywhere else it refuses to start on a database that is behind th
 
 | Schema | Tables | What for |
 |---|---|---|
-| dbo | Users, Accounts, Cards, Transactions, RefreshTokens, UserPreferences, Notifications | the customer, accounts and cards, sessions |
+| dbo | Users, Accounts, Cards, Transactions, RefreshTokens, UserSecurity, UserPreferences, Notifications | the customer, accounts and cards, sessions, sign-in protection |
 | payments | Transfers, LedgerEntries | money movement, double-entry |
 | savings | Goals, AutoSaveRuns, GoalPhotos | goals and wishes with their own savings account, and their photos |
 | finance | CreditCards, RecurringCashFlows, InstallmentPlans, ImportBatches, Transactions | the planner's inputs; cards, plans and cash flows are system-versioned |
@@ -163,6 +164,7 @@ erDiagram
     Transfers ||--o{ AutoSaveRuns : triggers
     Goals ||--o| GoalPhotos : "pictured by"
     Users ||--o{ RefreshTokens : "signed in with"
+    Users ||--o| UserSecurity : "guarded by"
     Users ||--o| UserPreferences : prefers
     Users ||--o{ Notifications : "is told"
     Users ||--o{ CreditCards : plans
@@ -248,6 +250,13 @@ erDiagram
         binary TokenHash UK
         datetime ExpiresAt
         bigint ReplacedByTokenId FK
+    }
+    UserSecurity {
+        bigint UserId PK
+        int FailedSignIns
+        datetime LockedUntil
+        varbinary TotpSecret "encrypted by the API"
+        bigint TotpLastStep "a code works once"
     }
     UserPreferences {
         bigint UserId PK
@@ -398,9 +407,10 @@ Integration tests run against a real database, `BankDb_IntegrationTests`, rebuil
 `INTEGRATION_TESTS_DB` to use another server. The RabbitMQ test only runs when `RABBITMQ_HOST` is set. Outside services, TCMB's
 rates and the breached password list, are replaced by fakes, so the suite never needs the internet.
 
-The end-to-end tests in `frontend/e2e` sign up their own customers and walk through accounts, transfers, planning, goals,
-the profile and erasure in a real browser. CI runs them against a fresh database, and also starts the whole system with
-`docker compose` and checks it through nginx.
+The end-to-end tests in `frontend/e2e` sign up their own customers and walk through accounts, transfers, planning, goals
+and the wish list with a photo, splitting an expense between two customers, notifications, the young mode, two-step
+verification, the profile and erasure in a real browser. CI runs them against a fresh database, and also starts the whole
+system with `docker compose` and checks it through nginx, including the style nonce.
 
 ## Docs
 
