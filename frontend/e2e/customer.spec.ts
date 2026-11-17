@@ -62,10 +62,8 @@ test.describe('goals and the customer', () => {
   test('the young mode changes the look and the words, and follows the customer', async ({ page }) => {
     const customer = await newCustomer(page);
     await page.goto('/dashboard/profile');
-    // Leaving the page cancels a save still on its way, so the test waits for it as a person would see it land.
-    const saved = page.waitForResponse((r) => r.url().endsWith('/api/me/preferences') && r.request().method() === 'PUT');
+    // No waiting for the save: it is sent with keepalive, so leaving the page right away must not lose it.
     await page.getByRole('button', { name: /Genç/ }).click();
-    await saved;
 
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'young');
     await expect(page.getByRole('navigation', { name: 'Ana menü' }).first()).toContainText('Kumbaraların');

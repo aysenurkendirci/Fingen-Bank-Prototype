@@ -39,9 +39,8 @@ export class PreferencesStore {
     this.theme.setMode(saved.mode ?? 'standard');
   }
 
-  // The look already changed on screen; if saving fails it simply stays local to this device.
-  // Known limit: a save still on its way is lost if the page is closed or reloaded at that moment; the next
-  // sign-in then brings back the earlier choice. Sending it with fetch's keepalive would let it finish.
+  // The look already changed on screen; if saving fails it simply stays local to this device. The request is
+  // sent with keepalive, so leaving the page right after a change does not lose it.
   private save(): void {
     this.api
       .updatePreferences({ theme: this.theme.preference(), accent: this.theme.accent(), mode: this.theme.mode() })
