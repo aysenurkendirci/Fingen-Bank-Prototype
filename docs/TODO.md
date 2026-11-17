@@ -9,4 +9,7 @@ Güvenlik
 - [ ] İstek sınırları için API süreçleri arasında ortak sayaç (Redis)
 
 Sonra
+- [ ] Kart ödemelerinin onay akışı: kayıtlı limitler ve anahtarlar burada kullanılır
+- [ ] Yayınlanan olaylar için bir tüketici, örneğin dolandırıcılık izleme
+- [ ] Defterin 10 yıllık saklama süresinden sonra arşivlenmesi
 - [ ] iOS uygulaması (Swift)

@@ -98,3 +98,9 @@ günlüğüne yazmıyorum.
 
 Şifre en az 12 karakter olunca testlerdeki sabit şifreler de uzadı ve gitleaks onları gerçek sır sandı. Taramayı kapatmak yerine
 bu birkaç değeri, CI veritabanı şifresinin yanına, izin listesine ekledim.
+
+## VakıfBank isteği camelCase gidiyordu
+
+Portalın örneğinde alan `ValidityDate` diye yazıyor. Ben isimsiz bir nesne gönderdim, `JsonContent.Create` varsayılan olarak web
+ayarlarını kullandığı için alan `validityDate` olarak gitti. Gerçek anahtarla denemeden fark edemezdim; portalın örnek cevabıyla
+yazdığım test yakaladı. İstek gövdeleri artık alan adları açıkça yazılmış kayıtlar.
