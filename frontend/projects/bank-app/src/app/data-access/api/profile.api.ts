@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AuthResponse } from '../models/auth.models';
-import { ContactDetails, DisplayPreferences, PasswordChange, Profile } from '../models/banking.models';
+import { ContactDetails, DisplayPreferences, PasswordChange, Profile, TwoFactorSetup, TwoFactorStatus } from '../models/banking.models';
 import { BaseApi } from './base-api';
 
 /** The signed-in customer's own data. */
@@ -30,6 +30,24 @@ export class ProfileApi extends BaseApi {
   /** Ends every other session; the answer is the new token for this one. */
   changePassword(change: PasswordChange): Observable<AuthResponse> {
     return this.http.put<AuthResponse>(this.url('/password'), change);
+  }
+
+  /** Whether sign-in asks for an authenticator app code as well as the password. */
+  twoFactor(): Observable<TwoFactorStatus> {
+    return this.http.get<TwoFactorStatus>(this.url('/two-factor'));
+  }
+
+  /** A new key for the authenticator app, shown once; not in use until confirmed with a code. */
+  startTwoFactor(): Observable<TwoFactorSetup> {
+    return this.http.post<TwoFactorSetup>(this.url('/two-factor/setup'), null);
+  }
+
+  confirmTwoFactor(code: string): Observable<TwoFactorStatus> {
+    return this.http.post<TwoFactorStatus>(this.url('/two-factor/confirm'), { code });
+  }
+
+  disableTwoFactor(password: string, code: string): Observable<TwoFactorStatus> {
+    return this.http.delete<TwoFactorStatus>(this.url('/two-factor'), { body: { password, code } });
   }
 
   /** Everything stored about the signed-in user, as a file (KVKK right of access). */

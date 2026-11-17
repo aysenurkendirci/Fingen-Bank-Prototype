@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -8,7 +9,10 @@ import { AuthApi } from '../../../../data-access/api/auth.api';
 import { AuthShellComponent } from '../../../../layout/auth/auth-shell.component';
 import { NoticeComponent } from '../../../../shared/ui/notice.component';
 
-/** Signs the customer in and takes them back to the page they came from. */
+/**
+ * Signs the customer in and takes them back to the page they came from. For a customer with a second factor the
+ * API answers the right password by asking for a code; the form then shows the code field and sends both again.
+ */
 @Component({
   imports: [ReactiveFormsModule, RouterLink, AuthShellComponent, NoticeComponent],
   templateUrl: './login.component.html',
@@ -25,17 +29,35 @@ export class LoginComponent extends BasePage {
   protected readonly form = inject(FormBuilder).nonNullable.group({
     tcNo: [this.params.get('tcNo') ?? '', Validators.required],
     password: ['', Validators.required],
+    code: [''],
   });
+
+  /** True once the API said this customer signs in with an authenticator code as well. */
+  protected readonly needsCode = signal(false);
 
   protected submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.busy()) return;
 
-    this.act(this.auth.login(this.form.getRawValue()), {
+    const { tcNo, password, code } = this.form.getRawValue();
+    if (this.needsCode() && !/^\d{6}$/.test(code.replace(/\s/g, ''))) {
+      this.error.set('Doğrulayıcı uygulamanızdaki 6 haneli kodu girin.');
+      return;
+    }
+
+    this.act(this.auth.login(this.needsCode() ? { tcNo, password, code: code.replace(/\s/g, '') } : { tcNo, password }), {
       fallback: 'Giriş yapılamadı.',
       onDone: (response) => {
         this.session.start(response);
         this.router.navigateByUrl(this.safeReturnUrl());
+      },
+      onError: (err) => {
+        if (err instanceof HttpErrorResponse && err.error?.secondFactorRequired === true) {
+          // Not a failure: the password was right and the code comes next.
+          this.error.set(null);
+          this.needsCode.set(true);
+        }
+        this.form.controls.code.reset('');
       },
     });
   }

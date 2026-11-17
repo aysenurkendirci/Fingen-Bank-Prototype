@@ -24,8 +24,8 @@ public sealed record LoginCommand(LoginRequest Credentials) : IRequest<AuthResul
 /// Identity numbers are masked before they reach the log.
 /// </para>
 /// <para>
-/// Wrong passwords and wrong codes count towards a lock: after <see cref="SignInPolicy.MaxFailures"/> in a row
-/// the account is locked for <see cref="SignInPolicy.LockFor"/>, and while it is locked even the right password
+/// Wrong passwords and wrong codes count towards a lock (<see cref="FailedPasswordGuard"/>): after
+/// <see cref="SignInPolicy.MaxFailures"/> in a row the account is locked for <see cref="SignInPolicy.LockFor"/>, and while it is locked even the right password
 /// does not sign in. The customer is told in the notification centre. A lock tells a guesser that the identity
 /// number exists; banks accept that, because without the lock the password could be guessed at leisure from many
 /// addresses.
@@ -38,6 +38,10 @@ public sealed record LoginCommand(LoginRequest Credentials) : IRequest<AuthResul
 /// </remarks>
 public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
 {
+    // A real hash of a password nobody has, made once. An unknown identity number is checked against it, so it
+    // costs the same time as a known one and the answer's timing does not tell which numbers are registered.
+    private static string? _decoyHash;
+
     private readonly IAuthRepository _repo;
     private readonly IUserSecurityRepository _security;
     private readonly IPasswordHasher _hasher;
@@ -45,7 +49,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
     private readonly ITokenGenerator _tokens;
     private readonly RefreshTokenIssuer _refreshTokens;
     private readonly Notices _notices;
-    private readonly SignInPolicy _policy;
+    private readonly FailedPasswordGuard _failures;
     private readonly TimeProvider _time;
     private readonly ILogger<LoginCommandHandler> _logger;
 
@@ -57,7 +61,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
         ITokenGenerator tokens,
         RefreshTokenIssuer refreshTokens,
         Notices notices,
-        IOptions<SignInPolicy> policy,
+        FailedPasswordGuard failures,
         TimeProvider time,
         ILogger<LoginCommandHandler> logger)
     {
@@ -68,7 +72,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
         _tokens = tokens;
         _refreshTokens = refreshTokens;
         _notices = notices;
-        _policy = policy.Value;
+        _failures = failures;
         _time = time;
         _logger = logger;
     }
@@ -82,6 +86,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
         var user = await _repo.GetUserByTcOrDefaultAsync(credentials.TcNo, ct);
         if (user is null)
         {
+            _hasher.Verify(credentials.Password, _decoyHash ??= _hasher.Hash(Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24))));
             _logger.LogWarning("Login failed for {TcNo}: unknown identity number", maskedTc);
             throw new AuthenticationFailedException();
         }
@@ -97,7 +102,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
         if (!_hasher.Verify(credentials.Password, stored.PasswordHash))
         {
             _logger.LogWarning("Login failed for user {UserId} ({TcNo}): wrong password", user.UserId, maskedTc);
-            await FailAsync(user.UserId, now, ct);
+            await _failures.RecordAsync(user.UserId, ct);
             throw new AuthenticationFailedException();
         }
 
@@ -110,25 +115,16 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
             if (step is null || !await _security.TryUseStepAsync(user.UserId, step.Value, ct))
             {
                 _logger.LogWarning("Login failed for user {UserId} ({TcNo}): wrong or reused second factor code", user.UserId, maskedTc);
-                await FailAsync(user.UserId, now, ct);
+                await _failures.RecordAsync(user.UserId, ct);
                 throw new SecondFactorFailedException();
             }
         }
 
-        await _security.ClearFailuresAsync(user.UserId, ct);
+        await _failures.ClearAsync(user.UserId, ct);
         await _repo.UpdateLastLoginAsync(user.UserId, ct);
         await _notices.SignedInAsync(user.UserId, ct);
 
         _logger.LogInformation("User {UserId} logged in{Factor}", user.UserId, security.SecondFactorEnabled ? " with a second factor" : string.Empty);
         return await AuthResponses.CreateAsync(user.UserId, $"{user.FirstName} {user.LastName}", _tokens, _refreshTokens, ct);
-    }
-
-    private async Task FailAsync(long userId, DateTimeOffset now, CancellationToken ct)
-    {
-        if (await _security.RecordFailureAsync(userId, _policy.MaxFailures, now.UtcDateTime, _policy.LockFor, ct) is { } lockedUntil)
-        {
-            _logger.LogWarning("User {UserId} locked until {LockedUntil} after {Failures} failed sign-ins", userId, lockedUntil, _policy.MaxFailures);
-            await _notices.AccountLockedAsync(userId, ct);
-        }
     }
 }

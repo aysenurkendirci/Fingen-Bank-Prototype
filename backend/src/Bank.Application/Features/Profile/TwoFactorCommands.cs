@@ -2,6 +2,7 @@ using Bank.Application.Abstractions.Repositories;
 using Bank.Application.Abstractions.Security;
 using Bank.Application.Common;
 using Bank.Application.Common.Exceptions;
+using Bank.Application.Features.Auth;
 using Bank.Application.Features.Notifications;
 using Bank.Contracts.Account;
 using Bank.Domain.Security;
@@ -33,6 +34,7 @@ public sealed class TwoFactorHandlers :
     private readonly IPasswordHasher _hasher;
     private readonly ISecretProtector _secrets;
     private readonly Notices _notices;
+    private readonly FailedPasswordGuard _failures;
     private readonly ICurrentUser _currentUser;
     private readonly SignInPolicy _policy;
     private readonly TimeProvider _time;
@@ -44,6 +46,7 @@ public sealed class TwoFactorHandlers :
         IPasswordHasher hasher,
         ISecretProtector secrets,
         Notices notices,
+        FailedPasswordGuard failures,
         ICurrentUser currentUser,
         IOptions<SignInPolicy> policy,
         TimeProvider time,
@@ -54,6 +57,7 @@ public sealed class TwoFactorHandlers :
         _hasher = hasher;
         _secrets = secrets;
         _notices = notices;
+        _failures = failures;
         _currentUser = currentUser;
         _policy = policy.Value;
         _time = time;
@@ -84,8 +88,13 @@ public sealed class TwoFactorHandlers :
         if (security.TotpPendingSecret is not { } pending)
             throw new BadRequestException("Önce yeni bir anahtar oluşturun.");
 
-        var step = Totp.Verify(_secrets.Unprotect(pending), command.Code, _time.GetUtcNow())
-                   ?? throw new SecondFactorFailedException();
+        await _failures.EnsureNotLockedAsync(UserId, ct);
+        if (Totp.Verify(_secrets.Unprotect(pending), command.Code, _time.GetUtcNow()) is not { } step)
+        {
+            // Six digits can be guessed; wrong codes while setting up count like any other.
+            await _failures.RecordAsync(UserId, ct);
+            throw new SecondFactorFailedException();
+        }
         if (!await _security.EnableSecretAsync(UserId, step, _time.GetUtcNow().UtcDateTime, ct))
             throw new ConflictException("Anahtar bu arada değişti. Kurulumu yeniden başlatın.");
 
@@ -100,13 +109,20 @@ public sealed class TwoFactorHandlers :
         if (security.TotpSecret is not { } secret)
             return Status(security);
 
+        await _failures.EnsureNotLockedAsync(UserId, ct);
         var stored = await _users.GetCredentialsAsync(UserId, ct);
         if (!_hasher.Verify(command.Password, stored.PasswordHash))
+        {
+            await _failures.RecordAsync(UserId, ct);
             throw new BadRequestException("Mevcut şifre doğrulanamadı.");
+        }
 
         var step = Totp.Verify(_secrets.Unprotect(secret), command.Code, _time.GetUtcNow());
         if (step is null || !await _security.TryUseStepAsync(UserId, step.Value, ct))
+        {
+            await _failures.RecordAsync(UserId, ct);
             throw new SecondFactorFailedException();
+        }
 
         await _security.DisableSecretAsync(UserId, ct);
         _logger.LogWarning("User {UserId} switched off the second factor", UserId);

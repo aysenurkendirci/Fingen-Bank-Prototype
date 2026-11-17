@@ -23,6 +23,14 @@
       }
     </label>
 
+    @if (needsCode()) {
+      <label class="field">
+        <span class="field-label">Doğrulama kodu</span>
+        <input class="input tabular-nums tracking-[0.3em]" formControlName="code" inputmode="numeric" maxlength="7" autocomplete="one-time-code" placeholder="000000" />
+        <span class="text-xs text-ink-faint">Doğrulayıcı uygulamanızda FinGen için görünen 6 haneli kod.</span>
+      </label>
+    }
+
     <button type="submit" class="btn-primary w-full" [disabled]="busy()">
       {{ busy() ? 'Giriş yapılıyor...' : 'Giriş yap' }}
     </button>

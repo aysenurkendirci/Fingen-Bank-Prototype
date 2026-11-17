@@ -2,6 +2,8 @@
 export interface LoginRequest {
   tcNo: string;
   password: string;
+  /** The authenticator app code, sent only once the API asked for it. */
+  code?: string;
 }
 
 export interface RegisterRequest {

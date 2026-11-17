@@ -43,7 +43,9 @@ public sealed class AuthCommandTests
         var notices = new Notices(Substitute.For<INotificationRepository>(), TimeProvider.System);
         _login = new LoginCommandHandler(
             _repo, _security, _hasher, Substitute.For<ISecretProtector>(), _tokens, issuer, notices,
-            Options.Create(new SignInPolicy()), TimeProvider.System, _log);
+            new FailedPasswordGuard(_security, _refreshTokens, notices, Options.Create(new SignInPolicy()), TimeProvider.System,
+                new RecordingLogger<FailedPasswordGuard>()),
+            TimeProvider.System, _log);
         _register = new RegisterCommandHandler(_repo, _hasher, _tokens, issuer, _breached, new RecordingLogger<RegisterCommandHandler>());
         _tokens.Generate(Arg.Any<long>()).Returns("jwt");
     }
@@ -85,6 +87,18 @@ public sealed class AuthCommandTests
             () => Login(new LoginRequest("99999999999", "anything")));
 
         Assert.Equal(wrongPassword.Message, unknownUser.Message);
+    }
+
+    // Answering an unknown identity number faster than a known one would let anyone time their way through
+    // the list of customers; both cost a password check.
+    [Fact]
+    public async Task Login_UnknownUser_StillChecksAPassword()
+    {
+        _hasher.Hash(Arg.Any<string>()).Returns("decoy-hash");
+
+        await Assert.ThrowsAsync<AuthenticationFailedException>(() => Login(new LoginRequest("99999999999", "anything")));
+
+        _hasher.Received(1).Verify("anything", Arg.Any<string>());
     }
 
     [Fact]

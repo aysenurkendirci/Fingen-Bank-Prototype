@@ -4,7 +4,8 @@
 - [ ] VakıfBank Yatırım Servisleri (sandbox) sağlayıcısı: döviz kurları, döviz hesaplayıcı, altın fiyatları
 
 Güvenlik
-- [ ] Girişte ikinci doğrulama (SMS ya da mobil onay) ve art arda yanlış girişte hesap kilitleme
+- [ ] İkinci doğrulamayı herkes için zorunlu kılmak ve SMS koduyla da sunmak (SMS sağlayıcısı gerekir)
+- [ ] İkinci doğrulama anahtarlarını şifreleyen anahtarı döndürebilmek
 - [ ] İstek sınırları için API süreçleri arasında ortak sayaç (Redis)
 
 Veri

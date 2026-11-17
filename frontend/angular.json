@@ -21,6 +21,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "projects/bank-app/src/main.ts",
+            "allowedCommonJsDependencies": ["qrcode"],
             "tsConfig": "projects/bank-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [

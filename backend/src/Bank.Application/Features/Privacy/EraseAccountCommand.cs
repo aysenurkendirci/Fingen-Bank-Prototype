@@ -20,6 +20,7 @@ public sealed class EraseAccountCommandHandler : IRequestHandler<EraseAccountCom
     private readonly IAccountRepository _accounts;
     private readonly IErasureRepository _erasure;
     private readonly IPasswordHasher _hasher;
+    private readonly Auth.FailedPasswordGuard _failures;
     private readonly ICurrentUser _currentUser;
     private readonly TimeProvider _time;
     private readonly ILogger<EraseAccountCommandHandler> _logger;
@@ -29,6 +30,7 @@ public sealed class EraseAccountCommandHandler : IRequestHandler<EraseAccountCom
         IAccountRepository accounts,
         IErasureRepository erasure,
         IPasswordHasher hasher,
+        Auth.FailedPasswordGuard failures,
         ICurrentUser currentUser,
         TimeProvider time,
         ILogger<EraseAccountCommandHandler> logger)
@@ -37,6 +39,7 @@ public sealed class EraseAccountCommandHandler : IRequestHandler<EraseAccountCom
         _accounts = accounts;
         _erasure = erasure;
         _hasher = hasher;
+        _failures = failures;
         _currentUser = currentUser;
         _time = time;
         _logger = logger;
@@ -46,9 +49,11 @@ public sealed class EraseAccountCommandHandler : IRequestHandler<EraseAccountCom
     {
         var userId = _currentUser.UserId;
 
+        await _failures.EnsureNotLockedAsync(userId, ct);
         var credentials = await _users.GetCredentialsAsync(userId, ct);
         if (!_hasher.Verify(command.Password, credentials.PasswordHash))
         {
+            await _failures.RecordAsync(userId, ct);
             _logger.LogWarning("Erasure refused for user {UserId}: wrong password", userId);
             throw new BadRequestException("Şifre doğrulanamadı.");
         }

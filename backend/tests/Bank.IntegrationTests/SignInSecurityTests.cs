@@ -60,6 +60,26 @@ public sealed class SignInSecurityTests
     }
 
     [Fact]
+    public async Task AStolenSession_CannotGuessThePassword_TheAccountLocksAndEverySessionEnds()
+    {
+        var registration = TestUsers.NewRegistration();
+        var (client, userId) = await _factory.CreateUserAsync(registration);
+
+        var guesses = new List<HttpStatusCode>();
+        for (var i = 0; i < 6; i++)
+            guesses.Add((await client.PutAsJsonAsync("/api/me/password", new ChangePasswordRequest($"Guess#Passw0rd{i}", "NewP@ssw0rd2026"))).StatusCode);
+
+        await using var connection = new SqlConnection(ApiFactory.ConnectionString);
+        var openSessions = await connection.QuerySingleAsync<int>(
+            "SELECT COUNT(*) FROM dbo.RefreshTokens WHERE UserId = @UserId AND RevokedAt IS NULL", new { UserId = userId });
+
+        Assert.All(guesses.Take(5), status => Assert.Equal(HttpStatusCode.BadRequest, status));
+        Assert.Equal((HttpStatusCode)423, guesses[5]);
+        Assert.Equal(0, openSessions);
+        Assert.Contains("Hesabınız geçici olarak kilitlendi", await NotificationTitlesAsync(userId));
+    }
+
+    [Fact]
     public async Task ASignIn_IsAnnouncedToTheCustomer()
     {
         var registration = TestUsers.NewRegistration();

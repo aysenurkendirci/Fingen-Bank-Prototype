@@ -30,7 +30,8 @@ Planning and insight
 - Exchange rates from TCMB's public daily rates, a converter, and foreign currency balances estimated in lira.
 
 Customer
-- Profile, contact details, password change, data export and account erasure under KVKK.
+- Profile, contact details, password change, two-step verification with an authenticator app, data export and account
+  erasure under KVKK.
 - A notification centre: money sent or received, auto-saves, goals reached, a new password, a blocked card.
 - Light, dark or system theme and an accent colour, saved with the account.
 - A young mode for customers just starting out: a colour of its own, rounder shapes, a plainer first-name voice and
@@ -45,7 +46,7 @@ Customer
 | Accounts | A frozen or closed account neither sends nor receives. At most 5 open accounts per currency. Only an empty account closes, and the last lira demand account stays open. |
 | Savings | A goal's savings account only moves money to the owner's own accounts. A goal closes once its savings account is empty. Auto-save never goes past the target and never blocks the payment that triggered it. |
 | Cards | The daily limit cannot exceed the monthly limit. A temporary block can be lifted; cancellation is final, and a cancelled card can no longer be changed. |
-| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 12 characters with a letter and a digit, and must not be known from a data breach. |
+| Customers | The T.C. identity number is checked with its check digits. Phone numbers must be Turkish mobile numbers. Passwords need 12 characters with a letter and a digit, and must not be known from a data breach. Five wrong passwords or codes in a row lock the account for 15 minutes. |
 | Splits | Shares cannot add up to more than the expense. A friend's name must match the IBAN holder. A share is settled only by the friend's own transfer to the payer's account for exactly the share, and one transfer settles one share. |
 | Notifications | Written in the same transaction as the change, so a refused transfer leaves none. Moves between a customer's own accounts are not announced. Read ones are removed after 90 days, unread ones stay. |
 | Ledger | Every transfer is two postings that balance. Balances never go negative, enforced by the database as a last line of defence. |
@@ -54,10 +55,11 @@ Limits are read from the `Banking` section of `appsettings.json`. The reasoning 
 
 ## Security
 
-Short-lived access tokens kept in memory, rotating refresh cookies with reuse detection, new passwords checked against
-known breaches without the password leaving the server, rate limits on sign-in and on money movements, a strict
-Content-Security-Policy with a per-request nonce for styles, and secret scanning, CodeQL and Dependabot in CI. The threat
-model and the OWASP ASVS review are in [SECURITY.md](SECURITY.md).
+Short-lived access tokens kept in memory, rotating refresh cookies with reuse detection, an optional second factor
+(authenticator app codes, the key stored encrypted), account lockout after repeated wrong passwords, new passwords
+checked against known breaches without the password leaving the server, rate limits on sign-in and on money movements,
+a strict Content-Security-Policy with a per-request nonce for styles, and secret scanning, CodeQL and Dependabot in CI.
+The threat model and the OWASP ASVS review are in [SECURITY.md](SECURITY.md).
 
 ## Stack
 
@@ -330,8 +332,8 @@ Some choices worth knowing:
 
 What a bank going live would still need, marked in the code with "Known limit:" where it applies:
 
-- A second factor at sign-in (SMS or app approval), which BDDK expects for internet banking, and locking an account after
-  repeated failed sign-ins. Today guessing is slowed per client address only.
+- A second factor on every sign-in, as BDDK expects for internet banking. Today it is optional and an authenticator app
+  code; an SMS code needs an SMS provider.
 - Rate limit counters shared between API instances; each instance counts on its own.
 - Card payments. Card limits and switches are stored and checked, but no authorisation flow uses them yet.
 - A consumer for the published events, and an asymmetric signing key once other services need to check tokens.

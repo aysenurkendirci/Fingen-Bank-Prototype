@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<ProjectionInputLoader>();
         services.AddScoped<Features.Savings.SavingsTransfers>();
         services.AddScoped<Features.Notifications.Notices>();
+        services.AddScoped<Features.Auth.FailedPasswordGuard>();
         services.AddScoped<AnalyticsHistory>();
         services.AddScoped<Features.Auth.RefreshTokenIssuer>();
 
