@@ -17,6 +17,7 @@ Kolay yol, hedefin üstünde bir "biriken tutar" sayısı tutmaktı. Ama o zaman
 - `savings.AutoSaveRuns`, hangi gelen transferin hangi hedefi beslediğini tutar. Aynı para bir kurala iki kez işlemez.
 - Kural yerine getirilemezse (hesap boşalmış, hedef dolmuş) atlanır. Gelen ödeme hiçbir zaman bu yüzden reddedilmez.
 - İstek listesi ayrı bir tür değildir, `NewYearOf` alanı dolu olan hedeflerdir. Ekranda yıl yıl ayrı bir alanda gösterilir. Bir dilek kaç yıllık olduğunu hedef tarihiyle söyler: 2027 için 3 yıllık bir dilek 2029 sonunda biter.
+- İstek listesi ekim ayından itibaren bir sonraki yılla açılır, çünkü yeni yıl dilekleri genelde yılın son çeyreğinde yazılır; önceki aylarda içinde bulunulan yılla açılır. Müşteri yılı her zaman değiştirebilir. Yıl, API'nin de kullandığı İstanbul takvimine göre hesaplanır.
 - Her hedef bir türe (araba, ev, seyahat...) ve müşterinin kendi sözleriyle yazdığı ayrıntılara sahip olabilir. İsteğe bağlı fotoğraf ayrı bir tabloda (`savings.GoalPhotos`) durur, hedefler listelenirken resim verisi okunmaz. Hedef kapanınca fotoğraf da silinir.
 - Hedef, kumbarası boşken kapatılabilir. Hesap silindiğinde hedefler ve kural geçmişi de silinir, transferler defterde kalır.
 
