@@ -23,6 +23,21 @@ export function todayIsoDate(now: Date = new Date()): IsoDate {
   return istanbulDate.format(now);
 }
 
+/** A calendar date moved by whole days, without passing through any time zone. */
+export function addDays(date: IsoDate, days: number): IsoDate {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+/**
+ * The year a wish list opens on: the coming year once the last quarter has begun, when people write down what
+ * they want from the new year; the current year before that. Counted by the bank's calendar, like the API.
+ */
+export function upcomingWishListYear(today: IsoDate = todayIsoDate()): number {
+  const [year, month] = today.split('-').map(Number);
+  return month >= 10 ? year + 1 : year;
+}
+
 const shortMonth = new Intl.DateTimeFormat('tr-TR', { month: 'short', year: 'numeric' });
 const longMonth = new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' });
 

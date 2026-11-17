@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, injec
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { todayIsoDate } from '../../../core/util/dates';
+import { addDays, todayIsoDate } from '../../../core/util/dates';
 import { shrinkImage } from '../../../core/util/images';
 import { Goal, GoalCategory, GoalRequest } from '../../../data-access/models/savings.models';
 import { BaseForm } from '../../../shared/forms/base-form';
@@ -129,14 +129,10 @@ export class GoalFormComponent extends BaseForm<GoalFormResult> {
   readonly resolutionYear = input<number | null>(null);
 
   protected readonly categories = GOAL_CATEGORIES;
-  // The API accepts a wish list from this year up to five years ahead.
-  protected readonly years = [0, 1, 2, 3, 4, 5].map((i) => new Date().getFullYear() + i);
+  // The API accepts a wish list from this year up to five years ahead, by the bank's calendar.
+  protected readonly years = [0, 1, 2, 3, 4, 5].map((i) => Number(todayIsoDate().slice(0, 4)) + i);
   protected readonly horizons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  protected readonly tomorrow = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().slice(0, 10);
-  })();
+  protected readonly tomorrow = addDays(todayIsoDate(), 1);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     category: [null as GoalCategory | null],

@@ -3,6 +3,7 @@ import { Component, booleanAttribute, computed, effect, inject, input, signal, u
 import { Observable, map, of, switchMap } from 'rxjs';
 
 import { BasePage } from '../../core/page/base-page';
+import { todayIsoDate, upcomingWishListYear } from '../../core/util/dates';
 import { ConfirmService } from '../../core/ui/confirm.service';
 import { ToastService } from '../../core/ui/toast.service';
 import { VoiceService } from '../../core/ui/voice.service';
@@ -24,10 +25,6 @@ import { GoalPhotos } from './goal-photos';
 
 type Panel = { goalId: number; kind: Exclude<GoalAction, 'close'> };
 
-/** The year a new year's goal is made for by default: next year once the year's last quarter has begun. */
-function upcomingNewYear(today = new Date()): number {
-  return today.getMonth() >= 9 ? today.getFullYear() + 1 : today.getFullYear();
-}
 
 /**
  * Container for savings goals. Used twice: all goals, and the wish list with the wishes of one year.
@@ -65,10 +62,10 @@ export class GoalsPageComponent extends BasePage {
   protected readonly accounts = signal<readonly Account[]>([]);
   protected readonly creating = signal(false);
   protected readonly panel = signal<Panel | null>(null);
-  protected readonly selectedYear = signal(upcomingNewYear());
+  protected readonly selectedYear = signal(upcomingWishListYear());
 
   protected readonly years = computed(() => {
-    const years = new Set([new Date().getFullYear(), upcomingNewYear()]);
+    const years = new Set([Number(todayIsoDate().slice(0, 4)), upcomingWishListYear()]);
     for (const goal of this.goals()) if (goal.newYearOf) years.add(goal.newYearOf);
     return [...years].sort();
   });
