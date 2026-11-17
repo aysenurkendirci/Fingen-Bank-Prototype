@@ -72,7 +72,7 @@ CodeQL, C# ve TypeScript kodunu güvenlik açıklarına karşı tarar. Dependabo
 - Uygulamanın kendisi HTTPS sunmaz, TLS önündeki ters vekilde biter. HSTS başlığı bu durumda anlam kazanır.
 - İkinci doğrulama isteğe bağlıdır ve yalnızca doğrulayıcı uygulama kodu olarak vardır. BDDK internet bankacılığında her girişte ikinci doğrulama bekler; zorunlu kılmak bir ayar, SMS kodu ise bir SMS sağlayıcısı gerektirir.
 - Hesap kilidi, bir T.C. numarasının kayıtlı olduğunu beş denemeden sonra belli eder. Kilit olmasaydı şifre birçok adresten sınırsızca denenebilirdi; bankaların da kabul ettiği bir takas.
-- İkinci doğrulama anahtarlarını şifreleyen anahtar (`Security:EncryptionKey`) henüz döndürülemez; kaybolursa müşterilerin doğrulayıcıyı yeniden kurması gerekir.
+- İkinci doğrulama anahtarlarını şifreleyen anahtar (`Security:EncryptionKey`) `Security:PreviousEncryptionKeys` ile kimse yeniden kurulum yapmadan döndürülebilir, ama anahtar kaybolursa müşterilerin doğrulayıcıyı yeniden kurması gerekir. Anahtar yedeklenmelidir.
 - İstek sınırlarının sayaçları her API sürecinin kendi belleğinde tutulur. Birden fazla süreç çalışırsa sınır süreç sayısı kadar artar; ortak bir depo (Redis) gerekir.
 - JWT tek bir paylaşılan HMAC anahtarıyla imzalanır. Anahtar `Jwt:PreviousKeys` ile kimsenin oturumu düşmeden değiştirilebilir, ama token'ları başka servisler de doğrulayacaksa asimetrik anahtara geçilmelidir.
 - Stil öznitelikleri (`style="..."`) `style-src-attr` ile açık, çünkü ECharts araç ipuçlarını onlarla yazar. Bir öznitelik bir şey yükleyemez ya da çalıştıramaz. `style-src-attr` desteklemeyen eski tarayıcılarda bu ipuçları biçimsiz görünür.

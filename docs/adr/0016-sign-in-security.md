@@ -22,4 +22,4 @@ Giriş yalnızca şifreye dayanıyordu ve tahmin yalnızca istemci adresi başı
 
 - Kilit, beş denemeden sonra bir T.C. numarasının kayıtlı olduğunu belli eder. Kilitsiz bir sistemde şifre sınırsızca denenebileceği için bu takas kabul edildi.
 - İkinci doğrulama bilerek isteğe bağlı bırakıldı. Proje canlıya alınmayacak; zorunlu olsaydı uygulamayı denemek isteyen herkesin önce telefonuna bir doğrulayıcı kurması gerekirdi. Canlı bir bankada BDDK gereği zorunlu olur ve SMS kodu da sunulur; bu bir SMS sağlayıcısı ve girişte zorunlu kurulum adımı gerektirir.
-- Şifreleme anahtarı kaybolursa müşterilerin doğrulayıcıyı yeniden kurması gerekir. Anahtar döndürme için saklanan verinin başında bir sürüm baytı var.
+- Şifreleme anahtarı döndürülebilir: eski anahtar `Security:PreviousEncryptionKeys` listesine taşınır, onunla yazılmış anahtarlar okunmaya devam eder ve müşterinin bir sonraki girişinde yeni anahtarla yeniden yazılır. Anahtar kaybolursa ise müşterilerin doğrulayıcıyı yeniden kurması gerekir.
