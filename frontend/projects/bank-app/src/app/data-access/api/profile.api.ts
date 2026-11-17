@@ -23,8 +23,12 @@ export class ProfileApi extends BaseApi {
     return this.http.get<DisplayPreferences>(this.url('/preferences'));
   }
 
+  /**
+   * Sent with keepalive: the browser finishes the save even when the page is closed or reloaded right after a
+   * change, so the next sign-in brings back the latest choice.
+   */
   updatePreferences(preferences: DisplayPreferences): Observable<DisplayPreferences> {
-    return this.http.put<DisplayPreferences>(this.url('/preferences'), preferences);
+    return this.http.put<DisplayPreferences>(this.url('/preferences'), preferences, { keepalive: true });
   }
 
   /** Ends every other session; the answer is the new token for this one. */

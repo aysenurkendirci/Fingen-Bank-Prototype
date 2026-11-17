@@ -34,10 +34,11 @@ public sealed class AccountRepository : IAccountRepository
     public async Task<IReadOnlyList<AccountRow>> ListAsync(long userId, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT AccountId, Iban, AccountType, CurrencyCode, Balance, Status
-            FROM dbo.Accounts
-            WHERE UserId = @UserId
-            ORDER BY AccountId
+            SELECT a.AccountId, a.Iban, a.AccountType, a.CurrencyCode, a.Balance, a.Status, g.Name AS GoalName
+            FROM dbo.Accounts a
+            LEFT JOIN savings.Goals g ON g.AccountId = a.AccountId
+            WHERE a.UserId = @UserId
+            ORDER BY a.AccountId
             """;
 
         await using var connection = await _connections.OpenAsync(ct);

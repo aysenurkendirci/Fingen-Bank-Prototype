@@ -10,6 +10,12 @@ export const ACCOUNT_TYPE_DISPLAY: Record<AccountType, { label: string; icon: st
   Savings: { label: 'Kumbara', icon: 'savings' },
 };
 
+/** What an account is called on screen: a savings account by its goal ("Kumbara: İlk arabam"). */
+export function accountLabel(account: { accountType: AccountType; goalName?: string | null }): string {
+  const label = ACCOUNT_TYPE_DISPLAY[account.accountType].label;
+  return account.accountType === 'Savings' && account.goalName ? `${label}: ${account.goalName}` : label;
+}
+
 export const ACCOUNT_STATUS_LABELS: Record<AccountStatus, string> = {
   Active: 'Aktif',
   Frozen: 'Donduruldu',

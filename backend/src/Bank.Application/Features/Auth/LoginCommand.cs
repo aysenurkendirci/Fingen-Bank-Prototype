@@ -111,13 +111,18 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResu
             if (string.IsNullOrWhiteSpace(credentials.Code))
                 throw new SecondFactorRequiredException();
 
-            var step = Totp.Verify(_secrets.Unprotect(protectedSecret), credentials.Code, now);
+            var secret = _secrets.Unprotect(protectedSecret, out var writtenWithOldKey);
+            var step = Totp.Verify(secret, credentials.Code, now);
             if (step is null || !await _security.TryUseStepAsync(user.UserId, step.Value, ct))
             {
                 _logger.LogWarning("Login failed for user {UserId} ({TcNo}): wrong or reused second factor code", user.UserId, maskedTc);
                 await _failures.RecordAsync(user.UserId, ct);
                 throw new SecondFactorFailedException();
             }
+
+            // After an encryption key rotation the secret moves to the new key the first time it is used.
+            if (writtenWithOldKey)
+                await _security.ReplaceSecretAsync(user.UserId, _secrets.Protect(secret), ct);
         }
 
         await _failures.ClearAsync(user.UserId, ct);

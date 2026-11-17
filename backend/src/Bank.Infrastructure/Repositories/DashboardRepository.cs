@@ -42,10 +42,11 @@ public sealed class DashboardRepository : IDashboardRepository
             WHERE a.UserId = @UserId
             ORDER BY t.CreatedAt DESC;
 
-            SELECT AccountId, AccountType, CurrencyCode, Iban, Balance, Status
-            FROM dbo.Accounts
-            WHERE UserId = @UserId
-            ORDER BY AccountId;
+            SELECT a.AccountId, a.AccountType, a.CurrencyCode, a.Iban, a.Balance, a.Status, g.Name AS GoalName
+            FROM dbo.Accounts a
+            LEFT JOIN savings.Goals g ON g.AccountId = a.AccountId
+            WHERE a.UserId = @UserId
+            ORDER BY a.AccountId;
             """;
 
         await using var connection = await _connections.OpenAsync(ct);
@@ -86,7 +87,8 @@ public sealed class DashboardRepository : IDashboardRepository
                 a.CurrencyCode,
                 a.Iban,
                 a.Balance,
-                a.Status
+                a.Status,
+                a.GoalName
             )).ToList()
         );
     }
@@ -132,5 +134,6 @@ public sealed class DashboardRepository : IDashboardRepository
         public string Iban { get; init; } = "";
         public decimal Balance { get; init; }
         public string Status { get; init; } = "";
+        public string? GoalName { get; init; }
     }
 }

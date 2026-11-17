@@ -7,7 +7,7 @@ import { BasePage } from '../../core/page/base-page';
 import { formatIban, isValidIban } from '../../core/util/iban';
 import { AccountsApi, TransfersApi } from '../../data-access/api/banking.api';
 import { Account, TransferReceipt, TransferRequest } from '../../data-access/models/banking.models';
-import { ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
+import { accountLabel } from '../../shared/finance/account-display';
 import { IdempotentAttempt } from '../../shared/finance/idempotent-attempt';
 import { MoneyComponent } from '../../shared/finance/money.component';
 import { NoticeComponent } from '../../shared/ui/notice.component';
@@ -32,7 +32,7 @@ export class TransferPageComponent extends BasePage implements OnInit {
   private readonly transfers = inject(TransfersApi);
   private readonly attempt = new IdempotentAttempt<TransferRequest>();
 
-  protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
+  protected readonly label = accountLabel;
   protected readonly printed = formatIban;
 
   protected readonly step = signal<Step>('form');

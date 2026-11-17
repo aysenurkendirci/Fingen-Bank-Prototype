@@ -26,5 +26,5 @@ public sealed class ListAccountsQueryHandler : IRequestHandler<ListAccountsQuery
 internal static class AccountMapping
 {
     public static AccountResponse ToResponse(AccountRow a)
-        => new(a.AccountId, a.Iban, a.AccountType, a.CurrencyCode, a.Balance, a.Status);
+        => new(a.AccountId, a.Iban, a.AccountType, a.CurrencyCode, a.Balance, a.Status, a.GoalName);
 }

@@ -5,8 +5,11 @@ public interface ISecretProtector
 {
     byte[] Protect(byte[] plaintext);
 
-    /// <exception cref="System.Security.Cryptography.CryptographicException">The data was changed or another key wrote it.</exception>
-    byte[] Unprotect(byte[] protectedData);
+    /// <exception cref="System.Security.Cryptography.CryptographicException">The data was changed or no known key wrote it.</exception>
+    byte[] Unprotect(byte[] protectedData) => Unprotect(protectedData, out _);
+
+    /// <param name="writtenWithOldKey">True when a previous key opened it; the caller should protect it again.</param>
+    byte[] Unprotect(byte[] protectedData, out bool writtenWithOldKey);
 }
 
 /// <summary>How sign-in is guarded, read from configuration ("Security:SignIn").</summary>

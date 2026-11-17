@@ -25,7 +25,7 @@
             <select class="input" formControlName="sourceAccountId">
               @for (account of accounts(); track account.id) {
                 <option [ngValue]="account.id">
-                  {{ typeDisplay[account.accountType].label }} ({{ account.balance | currency: account.currencyCode : 'symbol-narrow' }})
+                  {{ label(account) }} ({{ account.balance | currency: account.currencyCode : 'symbol-narrow' }})
                 </option>
               }
             </select>

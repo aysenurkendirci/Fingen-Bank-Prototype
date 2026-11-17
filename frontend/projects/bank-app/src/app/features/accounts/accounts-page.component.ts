@@ -9,7 +9,7 @@ import { AccountsApi } from '../../data-access/api/banking.api';
 import { MarketApi } from '../../data-access/api/market.api';
 import { Account, AccountCurrency } from '../../data-access/models/banking.models';
 import { ExchangeRates } from '../../data-access/models/market.models';
-import { ACCOUNT_STATUS_LABELS, ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
+import { ACCOUNT_STATUS_LABELS, accountLabel } from '../../shared/finance/account-display';
 import { IbanCopyComponent } from '../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../shared/finance/money.component';
 import { hideClosedSavings } from '../../shared/finance/visible-accounts';
@@ -59,7 +59,7 @@ import { ExchangeRatesPanelComponent } from './components/exchange-rates-panel.c
               <li class="px-4 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-ink">
-                    {{ typeDisplay[account.accountType].label }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span>
+                    {{ label(account) }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span>
                     @if (account.status !== 'Active') {
                       <span class="badge bg-canvas text-ink-soft ml-1">{{ statusLabels[account.status] }}</span>
                     }
@@ -95,7 +95,7 @@ export class AccountsPageComponent extends BasePage {
   private readonly market = inject(MarketApi);
   private readonly dialog = inject(ConfirmService);
 
-  protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
+  protected readonly label = accountLabel;
   protected readonly statusLabels = ACCOUNT_STATUS_LABELS;
   protected readonly currencies: readonly { code: AccountCurrency; label: string }[] = [
     { code: 'TRY', label: 'Türk Lirası' },

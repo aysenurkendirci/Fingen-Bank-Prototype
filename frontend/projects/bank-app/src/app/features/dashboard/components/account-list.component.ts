@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 
 import { AccountItem } from '../../../data-access/models/dashboard.models';
-import { ACCOUNT_STATUS_LABELS, ACCOUNT_TYPE_DISPLAY } from '../../../shared/finance/account-display';
+import { ACCOUNT_STATUS_LABELS, accountLabel } from '../../../shared/finance/account-display';
 import { IbanCopyComponent } from '../../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../../shared/finance/money.component';
 import { hideClosedSavings } from '../../../shared/finance/visible-accounts';
@@ -27,7 +27,7 @@ import { hideClosedSavings } from '../../../shared/finance/visible-accounts';
           <li class="px-4 py-3">
             <div class="flex items-baseline justify-between gap-3">
               <a class="text-sm font-medium text-ink hover:text-brand" [routerLink]="['/dashboard/accounts', account.accountId]">
-                {{ typeDisplay[account.accountType].label }}
+                {{ label(account) }}
                 @if (account.status !== 'Active') {
                   <span class="badge bg-canvas text-ink-soft ml-1">{{ statusLabels[account.status] }}</span>
                 }
@@ -46,6 +46,6 @@ export class AccountListComponent {
 
   protected readonly shown = computed(() => hideClosedSavings(this.accounts()));
 
-  protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
+  protected readonly label = accountLabel;
   protected readonly statusLabels = ACCOUNT_STATUS_LABELS;
 }

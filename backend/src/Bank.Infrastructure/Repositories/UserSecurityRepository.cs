@@ -70,6 +70,10 @@ public sealed class UserSecurityRepository : IUserSecurityRepository
             WHERE UserId = @UserId
             """, new { UserId = userId }, ct);
 
+    public Task ReplaceSecretAsync(long userId, byte[] protectedSecret, CancellationToken ct = default)
+        => ExecuteAsync("UPDATE dbo.UserSecurity SET TotpSecret = @Secret WHERE UserId = @UserId AND TotpSecret IS NOT NULL",
+            new { UserId = userId, Secret = protectedSecret }, ct);
+
     public async Task<bool> TryUseStepAsync(long userId, long step, CancellationToken ct = default)
     {
         // Only a step later than the last one used passes, and claiming it is the same statement as checking it.

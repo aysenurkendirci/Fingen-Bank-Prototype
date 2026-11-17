@@ -53,7 +53,8 @@ public static class DependencyInjection
         if (string.IsNullOrWhiteSpace(encryptionKey))
             throw new InvalidOperationException(
                 "Security:EncryptionKey is not set. Locally: dotnet user-secrets set \"Security:EncryptionKey\" \"<at least 32 random characters>\"");
-        services.AddSingleton<ISecretProtector>(new AesGcmSecretProtector(encryptionKey));
+        services.AddSingleton<ISecretProtector>(new AesGcmSecretProtector(
+            encryptionKey, configuration.GetSection("Security:PreviousEncryptionKeys").Get<string[]>()));
         services.AddMemoryCache();
         services.AddMarketData(configuration);
         services.AddBreachedPasswords(configuration);

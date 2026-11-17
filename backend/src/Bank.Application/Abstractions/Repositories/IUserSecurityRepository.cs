@@ -23,6 +23,9 @@ public interface IUserSecurityRepository
 
     Task DisableSecretAsync(long userId, CancellationToken ct = default);
 
+    /// <summary>Stores the secret in use again, protected with the current key after a key rotation.</summary>
+    Task ReplaceSecretAsync(long userId, byte[] protectedSecret, CancellationToken ct = default);
+
     /// <summary>Claims a code's time step. False when this or a later code was already used: a replayed code.</summary>
     Task<bool> TryUseStepAsync(long userId, long step, CancellationToken ct = default);
 }
