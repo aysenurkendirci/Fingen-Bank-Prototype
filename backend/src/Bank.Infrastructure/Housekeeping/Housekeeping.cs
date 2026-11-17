@@ -22,16 +22,23 @@ public sealed class HousekeepingOptions
     /// <summary>Notifications the customer has read are kept this long; unread ones are never removed.</summary>
     public int ReadNotificationRetentionDays { get; init; } = 90;
 
+    /// <summary>
+    /// How long the identity number of an erased customer is kept: eight years, the period the anti money
+    /// laundering law sets for identity records after the relationship ends (5549 sayılı Kanun, article 8).
+    /// After that nothing justifies keeping it under KVKK.
+    /// </summary>
+    public int ErasedIdentityRetentionYears { get; init; } = 8;
+
     /// <summary>Rows removed per statement, so one run never holds long locks on a busy table.</summary>
     public int BatchSize { get; init; } = 1_000;
 }
 
-public sealed record HousekeepingResult(int RefreshTokens, int PublishedEvents, int ReadNotifications);
+public sealed record HousekeepingResult(int RefreshTokens, int PublishedEvents, int ReadNotifications, int ErasedIdentities);
 
 /// <summary>
-/// Removes rows that have done their job: refresh tokens long past expiry, events the broker already received and
-/// notifications read long ago. None of them is history a customer relies on; left alone they only grow. Deletes
-/// run in small batches.
+/// Removes rows that have done their job: refresh tokens long past expiry, events the broker already received,
+/// notifications read long ago, and the identity numbers of erased customers once their retention period is over.
+/// None of them is history a customer relies on; left alone they only grow. Deletes run in small batches.
 /// </summary>
 public sealed class HousekeepingRunner
 {
@@ -72,7 +79,17 @@ public sealed class HousekeepingRunner
         var removedEvents = await DeleteInBatchesAsync(connection, events, nowUtc.AddDays(-_options.PublishedEventRetentionDays), ct);
         var removedNotifications = await DeleteInBatchesAsync(
             connection, notifications, nowUtc.AddDays(-_options.ReadNotificationRetentionDays), ct);
-        return new HousekeepingResult(removedTokens, removedEvents, removedNotifications);
+
+        // The ledger itself stays: commercial law keeps transaction records for ten years (TTK article 82), and
+        // the other side of every transfer still needs them. Only the identity number kept apart is removed.
+        const string erasedIdentities = """
+            DELETE TOP (@Batch) FROM compliance.ErasedIdentities WHERE ErasedAt < @Cutoff;
+            SELECT @@ROWCOUNT;
+            """;
+        var removedIdentities = await DeleteInBatchesAsync(
+            connection, erasedIdentities, nowUtc.AddYears(-_options.ErasedIdentityRetentionYears), ct);
+
+        return new HousekeepingResult(removedTokens, removedEvents, removedNotifications, removedIdentities);
     }
 
     private async Task<int> DeleteInBatchesAsync(System.Data.Common.DbConnection connection, string sql, DateTime cutoff, CancellationToken ct)
@@ -113,10 +130,10 @@ public sealed class HousekeepingService : BackgroundService
             try
             {
                 var result = await _runner.RunOnceAsync(_time.GetUtcNow().UtcDateTime, stoppingToken);
-                if (result.RefreshTokens + result.PublishedEvents + result.ReadNotifications > 0)
+                if (result.RefreshTokens + result.PublishedEvents + result.ReadNotifications + result.ErasedIdentities > 0)
                     _logger.LogInformation(
-                        "Housekeeping removed {RefreshTokens} expired refresh tokens, {PublishedEvents} published events and {ReadNotifications} read notifications",
-                        result.RefreshTokens, result.PublishedEvents, result.ReadNotifications);
+                        "Housekeeping removed {RefreshTokens} expired refresh tokens, {PublishedEvents} published events, {ReadNotifications} read notifications and {ErasedIdentities} erased identities past retention",
+                        result.RefreshTokens, result.PublishedEvents, result.ReadNotifications, result.ErasedIdentities);
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {

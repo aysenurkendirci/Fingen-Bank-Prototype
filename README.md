@@ -346,7 +346,8 @@ What a bank going live would still need, marked in the code with "Known limit:" 
 - Rate limit counters shared between API instances; each instance counts on its own.
 - Card payments. Card limits and switches are stored and checked, but no authorisation flow uses them yet.
 - A consumer for the published events, and an asymmetric signing key once other services need to check tokens.
-- Retention periods for records other than the ledger, and deleting them when they run out.
+- Archiving the ledger after its ten-year retention. Every other record has a retention period and is removed when it
+  runs out (ADR-0005).
 
 ## Layout
 

@@ -18,6 +18,23 @@ public sealed class HousekeepingTests
     public HousekeepingTests(ApiFactory factory) => _factory = factory;
 
     [Fact]
+    public async Task AnErasedCustomersIdentityNumber_GoesAfterEightYears_NotBefore()
+    {
+        var (_, oldId) = await _factory.CreateUserAsync();
+        var (_, recentId) = await _factory.CreateUserAsync();
+        await using var connection = new SqlConnection(ApiFactory.ConnectionString);
+        const string insert = "INSERT INTO compliance.ErasedIdentities (UserId, TcNo, ErasedAt) VALUES (@UserId, '10000000146', @ErasedAt)";
+        await connection.ExecuteAsync(insert, new { UserId = oldId, ErasedAt = Now.AddYears(-8).AddDays(-1) });
+        await connection.ExecuteAsync(insert, new { UserId = recentId, ErasedAt = Now.AddYears(-8).AddDays(1) });
+
+        await _factory.Services.GetRequiredService<HousekeepingRunner>().RunOnceAsync(Now);
+
+        var left = (await connection.QueryAsync<long>(
+            "SELECT UserId FROM compliance.ErasedIdentities WHERE UserId IN @Ids", new { Ids = new[] { oldId, recentId } })).ToList();
+        Assert.Equal([recentId], left);
+    }
+
+    [Fact]
     public async Task LongExpiredTokensAndOldPublishedEvents_AreRemoved_RecentOnesStay()
     {
         var (_, userId) = await _factory.CreateUserAsync();

@@ -8,9 +8,6 @@ Güvenlik
 - [ ] İkinci doğrulama anahtarlarını şifreleyen anahtarı döndürebilmek
 - [ ] İstek sınırları için API süreçleri arasında ortak sayaç (Redis)
 
-Veri
-- [ ] Saklama süresi dolan bankacılık kayıtlarının silinmesi (süreler belli değil)
-
 Sunum
 - [ ] Ekran görüntüleri ve kısa bir tanıtım
 
