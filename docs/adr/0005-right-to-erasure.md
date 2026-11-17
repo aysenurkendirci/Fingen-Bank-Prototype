@@ -1,6 +1,6 @@
 # ADR-0005: KVKK silme hakkı nasıl karşılanacak
 
-Durum: Kabul edildi ve uygulandı. Yasal saklama sürelerinin kesin değerleri hukuki görüşle netleşecek (aşağıya bakın).
+Durum: Kabul edildi ve uygulandı. Saklama süreleri aşağıdaki tabloda; canlıya geçilseydi hukuki görüşle teyit edilmeleri gerekirdi.
 
 ## Bağlam
 
@@ -64,8 +64,20 @@ Uygulamada verilen ayrıntı kararlar:
 - Şifre yeniden isteniyor ve uç, giriş uçlarıyla aynı hız sınırına tabi: açık kalmış bir oturum tek başına bir hesabı yok etmeye
   yetmemeli ve bu uç bir şifre deneme yolu olmamalı.
 
-Hâlâ hukuki görüş bekleyen: bankacılık çekirdeği kayıtlarının ne kadar süre saklanacağı ve süre dolunca bu kayıtların (hesap, ledger,
-`compliance.ErasedIdentities`) silinmesi. Süreler koda gömülmedi, bu temizlik işi henüz yazılmadı.
+### Saklama süreleri
+
+Süreler bilinen yasal yükümlülüklere dayanır; bir yükümlülük yoksa kayıt işini bitirince silinir. Değerler `Housekeeping`
+ayarlarından değiştirilebilir.
+
+| Kayıt | Süre | Dayanak |
+|---|---|---|
+| Hesaplar, transferler, defter (`dbo.Accounts`, `payments.*`, `dbo.Transactions`) | Silinmez, anonim kalır | Ticari defter ve belgeler 10 yıl saklanır (TTK madde 82). Defter karşı tarafın kaydı olduğu için tek taraflı silinemez; 10 yıldan sonrası arşivleme işidir. |
+| Silinen müşterinin T.C. numarası (`compliance.ErasedIdentities`) | Silmeden 8 yıl sonra silinir | Kimlik kayıtları ilişki bittikten sonra 8 yıl saklanır (5549 sayılı Kanun, madde 8). |
+| Kişisel finans verisi, hedefler, fotoğraflar, harcama bölmeleri, bildirimler, tercihler | Hesap silinince hemen | Saklama yükümlülüğü yok. |
+| Okunmuş bildirimler | 90 gün | İşini bitirmiş kayıt. Okunmamışlar silinmez. |
+| Süresi dolmuş oturumlar | 30 gün | Eski bir token'ın tekrar kullanıldığını fark edebilmek için kısa bir süre. |
+| Yayınlanmış olaylar | 7 gün | Bir teslimatı sonradan izleyebilmek için. |
+| Kapanan hedefin fotoğrafı | Hedef kapanınca hemen | Artık gösterilmiyor. |
 
 ## Sonuçlar
 
@@ -73,4 +85,4 @@ Hâlâ hukuki görüş bekleyen: bankacılık çekirdeği kayıtlarının ne kad
   silme durumu oluşmaz.
 - Bir silme ancak şifre yeniden girilirse ve hesaplarda para yoksa çalışır. Silinen kullanıcının eski token'ları birkaç saniye içinde
   reddedilir.
-- Çekirdek kayıtların saklama süresi dolunca temizlenmesi, süreler hukuki görüşle netleşene kadar bekliyor.
+- Silinen müşterinin T.C. numarası 8 yıl sonra otomatik silinir. Defterin 10 yıldan sonra arşivlenmesi kapsam dışında.

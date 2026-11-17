@@ -8,9 +8,9 @@ namespace Bank.Application.Features.Privacy;
 
 /// <summary>Erases the signed-in customer (KVKK right to erasure). Final: there is no way back.</summary>
 /// <remarks>
-/// Known limit: commercial and banking law keep transaction records for ten years (Türk Ticaret Kanunu, article
-/// 82), which is why the ledger stays. The exact periods for the other records, and deleting them once they run out, are not settled
-/// yet; see docs/TODO.md.
+/// The ledger stays: commercial law keeps transaction records for ten years (Türk Ticaret Kanunu, article 82), and
+/// the other side of each transfer still needs it. The identity number kept apart in compliance.ErasedIdentities
+/// is removed by the housekeeping after eight years. The retention table is in ADR-0005.
 /// </remarks>
 public sealed record EraseAccountCommand(string Password) : IRequest;
 
