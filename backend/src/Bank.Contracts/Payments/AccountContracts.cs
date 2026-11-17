@@ -8,7 +8,9 @@ public sealed record AccountResponse(
     string AccountType,
     string CurrencyCode,
     decimal Balance,
-    string Status
+    string Status,
+    // For a savings account: the goal it belongs to, so the account can be called by it.
+    string? GoalName = null
 );
 
 public sealed record OpenAccountRequest(

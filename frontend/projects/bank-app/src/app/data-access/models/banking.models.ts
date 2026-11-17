@@ -10,6 +10,8 @@ export interface Account {
   currencyCode: string;
   balance: number;
   status: AccountStatus;
+  /** For a savings account: the goal it belongs to. */
+  goalName?: string | null;
 }
 
 export interface StatementEntry {

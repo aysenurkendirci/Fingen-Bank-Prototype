@@ -40,5 +40,7 @@ public sealed record AccountItem(
     string CurrencyCode,
     string Iban,
     decimal Balance,
-    string Status
+    string Status,
+    // For a savings account: the goal it belongs to.
+    string? GoalName = null
 );

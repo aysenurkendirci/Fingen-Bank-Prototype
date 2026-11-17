@@ -6,7 +6,7 @@ import { BasePage } from '../../core/page/base-page';
 import { formatIban } from '../../core/util/iban';
 import { AccountsApi } from '../../data-access/api/banking.api';
 import { Account, StatementEntry } from '../../data-access/models/banking.models';
-import { ACCOUNT_TYPE_DISPLAY } from '../../shared/finance/account-display';
+import { accountLabel } from '../../shared/finance/account-display';
 import { IbanCopyComponent } from '../../shared/finance/iban-copy.component';
 import { MoneyComponent } from '../../shared/finance/money.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
@@ -25,7 +25,7 @@ const PAGE_SIZE = 20;
     @if (account(); as account) {
       <header class="mt-3 mb-6 panel flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 class="section-title">{{ typeDisplay[account.accountType].label }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span></h1>
+          <h1 class="section-title">{{ label(account) }} <span class="font-normal text-ink-faint">{{ account.currencyCode }}</span></h1>
           <app-iban-copy class="block mt-1" [iban]="account.iban" />
         </div>
         <div class="text-right">
@@ -74,7 +74,7 @@ export class AccountStatementPageComponent extends BasePage implements OnInit {
   private readonly api = inject(AccountsApi);
   private readonly accountId = computed(() => Number(this.id()));
 
-  protected readonly typeDisplay = ACCOUNT_TYPE_DISPLAY;
+  protected readonly label = accountLabel;
   protected readonly printed = formatIban;
   protected readonly pageSize = PAGE_SIZE;
 

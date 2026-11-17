@@ -43,4 +43,6 @@ export interface AccountItem {
   iban: string;
   balance: number;
   status: AccountStatus;
+  /** For a savings account: the goal it belongs to. */
+  goalName?: string | null;
 }

@@ -30,6 +30,21 @@ public sealed class GoalsTests
     }
 
     [Fact]
+    public async Task AGoalsSavingsAccount_IsListedUnderTheGoalsName()
+    {
+        var (client, _) = await _factory.CreateUserAsync();
+        var goal = await CreateAsync(client, new GoalRequest("Yaz tatili", 30_000m, null, null));
+
+        var account = (await client.GetFromJsonAsync<List<AccountResponse>>("/api/accounts"))!.Single(a => a.Iban == goal.Iban);
+        var onHome = (await client.GetFromJsonAsync<Bank.Contracts.Dashboard.DashboardResponse>("/api/dashboard"))!.Accounts
+            .Single(a => a.Iban == goal.Iban);
+
+        Assert.Equal("Savings", account.AccountType);
+        Assert.Equal("Yaz tatili", account.GoalName);
+        Assert.Equal("Yaz tatili", onHome.GoalName);
+    }
+
+    [Fact]
     public async Task MoneyMovesInAndOut_ThroughTheLedger_AndARetryMovesItOnce()
     {
         var (client, userId) = await _factory.CreateUserAsync();

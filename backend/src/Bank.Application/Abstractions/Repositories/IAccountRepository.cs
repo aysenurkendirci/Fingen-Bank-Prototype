@@ -32,6 +32,7 @@ public sealed class AccountRow
     public string CurrencyCode { get; init; } = string.Empty;
     public decimal Balance { get; init; }
     public string Status { get; init; } = string.Empty;
+    public string? GoalName { get; init; }
 }
 
 public sealed class StatementEntryRow
