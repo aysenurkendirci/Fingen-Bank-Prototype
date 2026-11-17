@@ -28,7 +28,7 @@ Planning and insight
 - Installment scenarios compared side by side before a purchase.
 - Statement import from other banks and analytics on the history: category trends, recurring payments, unusual spending.
 - Exchange rates from VakıfBank's API Portal when its credentials are set, with TCMB's public daily rates behind it,
-  a converter, and foreign currency balances estimated in lira.
+  a converter that asks the bank's own calculator, and foreign currency balances estimated in lira.
 
 Customer
 - Profile, contact details, password change, two-step verification with an authenticator app, data export and account

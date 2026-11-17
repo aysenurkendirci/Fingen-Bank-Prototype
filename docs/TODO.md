@@ -1,7 +1,7 @@
 # TODO
 
 Özellikler
-- [ ] VakıfBank: token adresini portalın Yetkilendirme sayfasıyla teyit etmek, altın fiyatları servisi
+- [ ] VakıfBank: token adresini portalın Yetkilendirme sayfasıyla teyit etmek, altın fiyatları servisi (dokümanı gelince)
 
 Güvenlik
 - [ ] Canlıya geçilirse: ikinci doğrulamayı zorunlu kılmak ve SMS koduyla da sunmak (demo için bilerek isteğe bağlı, ADR-0016)

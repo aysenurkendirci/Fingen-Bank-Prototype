@@ -36,6 +36,13 @@ public static class MarketDataRegistration
                 })
                 .AddStandardResilienceHandler(BankApiResilience);
             services.AddTransient<IExchangeRateSource>(sp => sp.GetRequiredService<VakifBankExchangeRateSource>());
+            services.AddHttpClient<VakifBankCurrencyCalculator>(client =>
+                {
+                    client.BaseAddress = vakifBank.BaseUrl;
+                    client.MaxResponseContentBufferSize = 64 * 1024;
+                })
+                .AddStandardResilienceHandler(BankApiResilience);
+            services.AddTransient<ICurrencyCalculator>(sp => sp.GetRequiredService<VakifBankCurrencyCalculator>());
         }
 
         var tcmb = new Uri(configuration["MarketData:Tcmb:BaseUrl"] ?? "https://www.tcmb.gov.tr/");

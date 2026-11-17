@@ -28,7 +28,14 @@ Sağlayıcı aynı arayüzle eklendi (`VakifBankExchangeRateSource`) ve kimlik b
 - Yanıt `APIGW000000` dışında bir durum kodu taşırsa ya da kullanılabilir kur yoksa kaynak başarısız sayılır, sıradaki kaynak (TCMB) denenir.
 - Bankaya TCMB'den daha kısa süre tanınır (deneme başına 5, toplamda 10 saniye): yavaş bir cevap kurları bekletmek yerine TCMB'ye düşer.
 - Client id ve secret yalnızca user-secrets'ta ya da ortam değişkeninde durur (`MarketData:VakifBank:ClientId`, `MarketData:VakifBank:ClientSecret`), repoya ve CI'a girmez. Gizli bilgi yalnızca token isteğinin gövdesinde, HTTPS üzerinden gider ve günlüğe yazılmaz. Uygulama sandbox planında olduğu için yalnızca test verisi gelir.
-- Token adresi portalın "Yetkilendirme" sayfasına göre `MarketData:VakifBank:TokenUrl` ile değiştirilebilir.
+- Token adresi portalın "Yetkilendirme" sayfasına göre `MarketData:VakifBank:TokenUrl` ile değiştirilebilir. Scope `oob public`: portal kurlar için `oob public`, hesaplayıcı için `public` listeliyor.
+
+### Hesaplayıcı
+
+- Çevirici `POST /api/market/convert` ile sunucuya sorar. Kimlik bilgileri ayarlıysa cevabı VakıfBank'ın Döviz Hesaplayıcısı (`POST /currencyCalculator`) verir; bankanın kendi kuru ve yuvarlaması kullanılır (portal örneğinde 100 TL, 14,6058 değil 14,6 USD).
+- Banka hesaplayıcısı ayarlı değilse ya da cevap vermezse aynı hesap uygulamanın kurlarıyla yapılır: döviz alırken satış, bozdururken alış kuru kullanılır, iki döviz arasında lira ortadadır. Müşterinin alacağı tutar kuruşa aşağı yuvarlanır.
+- Hesaplayıcı lira için `TL` kodunu kullanır, uygulama `TRY`; kodlar iki yönde çevrilir.
+- Her istek bankaya gidebileceği için uç, para hareketleriyle aynı kullanıcı başı istek sınırını paylaşır. Çevirici yazım durunca sorar, yalnızca son sorunun cevabı gösterilir.
 
 ## Sonuçlar
 
